@@ -1,0 +1,60 @@
+From ac0bfbd34b73ae8a32f84dd5b2e615002207b471 Mon Sep 17 00:00:00 2001
+From: fis <ybbs.daans@hotmail.com>
+Date: Fri, 23 Mar 2018 17:45:43 +0800
+Subject: [PATCH] Restore USE_SYSTEM_CLBLAS and USE_SYSTEM_CLFFT.
+
+---
+ src/backend/opencl/CMakeLists.txt | 20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
+
+diff --git a/src/backend/opencl/CMakeLists.txt b/src/backend/opencl/CMakeLists.txt
+index 66b81d42..e5a1aa34 100644
+--- a/src/backend/opencl/CMakeLists.txt
++++ b/src/backend/opencl/CMakeLists.txt
+@@ -10,7 +10,12 @@ include(InternalUtils)
+ set(OPENCL_BLAS_LIBRARY clBLAS CACHE STRING "Select OpenCL BLAS back-end")
+ set_property(CACHE OPENCL_BLAS_LIBRARY PROPERTY STRINGS "clBLAS" "CLBlast")
+ 
+-include(build_clFFT)
++option(USE_SYSTEM_CLFFT "Use system clFFT" OFF)
++if(USE_SYSTEM_CLFFT)
++  find_package(clFFT REQUIRED)
++else()
++  include(build_clFFT)
++endif()
+ 
+ file(GLOB kernel_src kernel/*.cl kernel/KParam.hpp)
+ 
+@@ -393,19 +398,26 @@ target_link_libraries(afopencl
+     OpenCL::OpenCL
+     OpenCL::cl2hpp
+     afcommon_interface
+-    clFFT::clFFT
++    # clFFT::clFFT
++    ${CLFFT_LIBRARIES}
+     opencl_scan_by_key
+     opencl_sort_by_key
+     Boost::boost
+     Threads::Threads
+     )
+ 
++option(USE_SYSTEM_CLBLAS "Use system clBLAS" OFF)
+ if(OPENCL_BLAS_LIBRARY STREQUAL "clBLAS")
+-  include(build_clBLAS)
++  if(USE_SYSTEM_CLBLAS)
++    find_package(clBLAS REQUIRED)
++  else()
++    include(build_clBLAS)
++  endif()
+   target_compile_definitions(afopencl PRIVATE USE_CLBLAS)
+   target_link_libraries(afopencl
+     PRIVATE
+-      clBLAS::clBLAS)
++    ${CLBLAS_LIBRARIES})
++      # clBLAS::clBLAS)
+ elseif(OPENCL_BLAS_LIBRARY STREQUAL "CLBlast")
+   include(build_CLBlast)
+   target_compile_definitions(afopencl PRIVATE USE_CLBLAST)
+-- 
+2.14.3
+

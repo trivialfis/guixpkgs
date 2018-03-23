@@ -104,7 +104,11 @@
 	     (let* ((out (assoc-ref outputs "out")))
 	       (chdir "pkg/run_files/pkg")
 	       (invoke "./install-linux.pl" (string-append "--prefix=" out)
-		       "--noprompt"))))
+		       "--noprompt")
+	       (chdir out)
+	       (display (string-append out "/lib64/stubs/libcuda.so"))
+	       (symlink (string-append out "/lib64/stubs/libcuda.so")
+			(string-append out "/lib64/libcuda.so")))))
 
 	 (delete 'check)
 	 (delete 'validate-runpath))

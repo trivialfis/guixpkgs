@@ -4,7 +4,7 @@
   #:use-module (guix packages)
   #:use-module (gnu packages boost)
   #:use-module (guix build-system cmake)
-  #:use-module (clmath)
+  #:use-module (opencl)
   #:use-module ((guix licenses) #:prefix license:))
 
 (define-public boost-compute

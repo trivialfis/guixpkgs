@@ -6,6 +6,9 @@
   #:use-module (guix packages)
   #:use-module (boost-compute)
   #:use-module (clmath)
+  #:use-module (cuda)
+  #:use-module (opencl)
+  ;; #:use-module (gnu packages)
   #:use-module (gnu packages algebra)
   #:use-module (gnu packages boost)
   #:use-module (gnu packages curl)
@@ -40,23 +43,29 @@
    (version "3.5.1")
    (source (origin
 	    (method url-fetch)
-	    (uri (string-append "http://arrayfire.com/arrayfire_source/arrayfire-full-" version ".tar.bz2"))
+	    (uri (string-append
+		  "http://arrayfire.com/arrayfire_source/arrayfire-full-"
+		  version ".tar.bz2"))
 	    (file-name (string-append name "-full-" version ".tar.bz2"))
+	    ;; (patches (search-patches
+	    ;; 	      "Restore-USE_SYSTEM_CLBLAS-and-USE_SYSTEM_CLFFT.patch"))
 	    (sha256
 	     (base32
 	      "1w11kfw20nqhvw8fnrab6n4cs8a7az3fq7xygrnq4kcx4zy2zzxn"))))
    (native-inputs `(("boost-compute" ,boost-compute)
-		    ("curl" ,curl)
+		    ("cl2hpp-header" ,cl2hpp-header)
+		    ;; ("curl" ,curl)
 		    ("git" ,git)
 		    ("opencl-headers" ,opencl-headers)
 		    ("pkg-config" ,pkg-config)))
    (inputs `(("clBLAS" ,clBLAS)
 	     ("clFFT" ,clFFT)
+	     ;; ("cuda" ,cuda)
 	     ;; ("glew" ,glew)
-	     ("glfw" ,glfw)
+	     ;; ("glfw" ,glfw)
 	     ;; ("glu" ,glu)
-	     ("glbinding" ,glbinding)
-	     ("freeimage" ,freeimage)
+	     ;; ("glbinding" ,glbinding)
+	     ;; ("freeimage" ,freeimage)
 	     ("lapack" ,lapack)
 	     ("openblas" ,openblas)
 	     ("fftw" ,fftw)
@@ -65,14 +74,16 @@
 	     ("boost" ,boost)))
    (build-system cmake-build-system)
    (arguments
-    `(#:tests? #f			; Cl test failed.
-      #:configure-flags '("-DBUILD_CUDA=OFF"
-			  ;; "-DUSE_SYSTEM_BOOST_COMPUTE=ON"
-			  ;; "-DUSE_SYSTEM_CLBLAS=ON"
-			  ;; "-DUSE_SYSTEM_CLFFT=ON"
-			  "-DBUILD_TEST=ON"
-			  "-DBUILD_GRAPHICS=OFF"
-			  )))
+    ;; For master branch, use: AF_BUILD_CL, AF_WITH_GRAPHICS
+    ;; USE_SYSTEM_* need to be patched back.
+    `(#:configure-flags '("-DBUILD_CUDA=OFF"
+			  "-DBUILD_CL=ON"
+			  "-DBUILD_GRAPHICS=OFF" ; FIXME
+			  "-DUSE_SYSTEM_BOOST_COMPUTE=ON"
+			  "-DUSE_SYSTEM_CL2HPP=ON"
+			  "-DUSE_SYSTEM_CLBLAS=ON"
+			  "-DUSE_SYSTEM_CLFFT=ON"
+			  "-DBUILD_TEST=ON")))
    (home-page "http://arrayfire.com/")
    (synopsis "ArrayFire: a general purpose GPU library.")
    (description "ArrayFire is a general-purpose library that simplifies the
