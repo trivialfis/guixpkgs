@@ -90,6 +90,3 @@
 process of developing software that targets parallel and massively-parallel
 architectures including CPUs, GPUs, and other hardware acceleration devices.")
    (license (list license:bsd-3))))
-
-;; glbinding
-arrayfire
