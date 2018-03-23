@@ -1,4 +1,4 @@
-This repository hosts some packages can not be upstreamed.
+This repository hosts some packages that can not be upstreamed.
 
-Some definition are ported from https://gitlab.com/genenetwork/guix-bioinformatics.
+Some definitions are ported from https://gitlab.com/genenetwork/guix-bioinformatics.
 #  LocalWords:  upstreamed LocalWords
