@@ -25,6 +25,9 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages autotools)
   #:use-module (gnu packages bootstrap)
+  #:use-module (gnu packages bison)
+  #:use-module (gnu packages check)
+  #:use-module (gnu packages flex)
   #:use-module (gnu packages libedit)
   #:use-module (gnu packages gnupg)
   #:use-module (gnu packages gl)
@@ -213,3 +216,31 @@ non free) ICD")
     (synopsis "Intel's OpenCL framework")
     (description "Intel's OpenCL framework that works with Intel IvyBridge GPUs and above")
     (license license:gpl2)))
+
+(define-public gmmlib
+  (let* ((commit "b32d2124aa5187b20b64df24d2e83bcbe7a57d7d")
+	 (revision "1")
+	 (version (git-version "0.0.0" revision commit)))
+    (package
+      (name "gmmlib")
+      (version version)
+      (home-page "https://github.com/intel/gmmlib")
+      (source (origin
+		(method git-fetch)
+		(uri (git-reference (url home-page)
+				    (commit commit)))
+		(sha256
+		 (base32
+		  "0d6w7bfp1my3jb8m5wa8ighjr8msq993m0flhfb0d34sackyn7s6"))))
+      (build-system cmake-build-system)
+      (arguments
+       `(#:phases (modify-phases %standard-phases
+		    (delete 'install))	; No such a phase
+	 #:tests? #f))			; Run automatically.
+      (native-inputs `(("googletest" ,googletest)))
+      (synopsis "Device specific buffer management for Intel(R) Graphics
+Compute Runtime.")
+      (description "The Intel(R) Graphics Memory Management Library provides
+device specific and buffer management for the Intel(R) Graphics Compute Runtime
+for OpenCL(TM) and the Intel(R) Media Driver for VAAPI.")
+      (license license:non-copyleft))))
