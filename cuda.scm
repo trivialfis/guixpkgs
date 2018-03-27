@@ -48,15 +48,15 @@
     (name "cuda")
     (version "9.1.85")
     (source (origin
-	     (method url-fetch)
-	     (uri (string-append
-		   "https://developer.nvidia.com/compute/cuda/9.1/Prod/local_installers/cuda_"
-		   version
-		   "_387.26_linux"))
-	     (sha256
-	      (base32
-	       "0lz9bwhck1ax4xf1fyb5nicb7l1kssslj518z64iirpy2qmwg5l4"
-	       ))))
+	      (method url-fetch)
+	      (uri (string-append
+		    "https://developer.nvidia.com/compute/cuda/9.1/Prod/local_installers/cuda_"
+		    version
+		    "_387.26_linux"))
+	      (sha256
+	       (base32
+		"0lz9bwhck1ax4xf1fyb5nicb7l1kssslj518z64iirpy2qmwg5l4"
+		))))
     (build-system gnu-build-system)
     (native-inputs `(("perl" ,perl)
 		     ("bash" ,bash)
@@ -92,6 +92,8 @@
 		       "cuda-linux.9.1.85-23083092.run")
 	       (invoke sh "cuda-linux.9.1.85-23083092.run" "--keep" "--noexec"
 		       "--tmpdir" (string-append build-root "/tmp"))
+	       (invoke sh "cuda-samples.9.1.85-23083092-linux.run" "--keep" "--noexec"
+		       "--tempdir" (string-append build-root "/tmp"))
 
 	       (invoke "mv" "pkg" (string-append "../../cuda"))
 	       (chdir "../../")
@@ -101,83 +103,102 @@
 
 	 (delete 'configure)
 	 (delete 'build)
-	 ;; (replace 'build	; patchelf
+	 (replace 'install	; patchelf
+	   (lambda* (#:key inputs outputs #:allow-other-keys)
+	     (use-modules (ice-9 ftw)
+	 		  (ice-9 regex)
+	 		  (ice-9 popen)
+	 		  (ice-9 rdelim)) ; for read-line
+	     (let* ((ld-so (string-append
+	 		    (assoc-ref
+	 		     inputs "libc") ,(glibc-dynamic-linker)))
+	 	    (gcclib (string-append (assoc-ref
+	 				    inputs "gcc:lib") "/lib"))
+	 	    (out (assoc-ref outputs "out"))
+	 	    (rpath (string-append
+	 		    gcclib ":"
+	 		    (string-append out "/lib64" ":")
+	 		    (string-append out "/lib" ":")
+	 		    (string-append out "/nvvm/lib64" ":")
+	 		    (string-append out "/nvvm/lib"))))
+	       (invoke "pwd")
+	       (invoke "ls" "-l")
+	       (let* ((out (assoc-ref outputs "out")))
+		 (chdir "cuda")
+		 (invoke "./install-linux.pl" (string-append "--prefix=" out)
+	 		 "--noprompt")
+		 (chdir out))
+
+	       (invoke "rm" "-rf" (string-append out "lib"))
+	       (invoke "rm" "-rf" (string-append out "bin/uninstall*"))
+
+	       (let ((hd (string-append out "include/host_defines.h"))
+		     (sedcommand (string-append "'1 i#define _BITS_FLOATN_H " hd "'")))
+		 (invoke "sed" "-i" sedcommand))
+	       ;; (invoke "sed" "-i" "'1 i#define _BITS_FLOATN_H" "$out/include/host_defines.h'")
+	       ;; (setenv "lib" lib)
+	       (display (string-append "out: " out))
+	       (nftw "./cuda"
+	 	     (lambda (filename statinfo flag base level)
+	 	       ;; (display (string-append "filename" filename "\n"))
+	 	       (let* ((port (open-input-pipe
+	 			     (string-append "file " filename)))
+	 		      (elf (read-line port)))
+	 		 (close-pipe port)
+	 		 (if (and
+	 		      ;; (not (equal? flag 'symlink))
+	 		      (string-match "ELF" elf))
+	 		     (begin
+	 		       (display (string-append "Patching: " filename ".\n"))
+	 		       ;; (display (string-append rpath "\n"))
+	 		       (system* "patchelf" "--set-interpreter"
+	 		     		ld-so filename)
+	 		       (invoke "patchelf" "--set-rpath"
+	 			       rpath "--force-rpath" filename))))
+	 	       #t)))))
+	 ;; (add-after 'install 'fixup
+	 ;;   (lambda (#:key inputs outputs #:allow-other-keys)
+	 
+	 ;;     ))
+	 ;; (add-after 'install 'warp-program
 	 ;;   (lambda* (#:key inputs outputs #:allow-other-keys)
-	 ;;     (use-modules (ice-9 ftw)
-	 ;; 		  (ice-9 regex)
-	 ;; 		  (ice-9 popen)
-	 ;; 		  (ice-9 rdelim)) ; for read-line
-	 ;;     (let* ((ld-so (string-append
-	 ;; 			    (assoc-ref
-	 ;; 			     inputs "libc") ,(glibc-dynamic-linker)))
-	 ;; 	    (gcclib (string-append (assoc-ref
-	 ;; 				    inputs "gcc:lib") "/lib"))
-	 ;; 	    (out (assoc-ref outputs "out"))
-	 ;; 	    (rpath (string-append
-	 ;; 			    gcclib ":"
-	 ;; 			    (string-append out "/lib64" ":")
-	 ;; 			    (string-append out "/lib" ":")
-	 ;; 			    (string-append out "/nvvm/lib64" ":")
-	 ;; 			    (string-append out "/nvvm/lib"))))
-	 ;;       (invoke "pwd")
-	 ;;       (invoke "ls" "-l")
+	 ;;     (let* ((out (assoc-ref outputs "out"))
+	 ;; 	    (nvcc (string-append out "/bin/nvcc")))
+	 ;;       ;; The environment variable DTK_PROGRAM tells emacspeak what
+	 ;;       ;; program to use for speech.
+         ;;       (wrap-program nvcc
+         ;;         `("--prefix" ))
+         ;;       #t)))
+
+	 ;; (replace 'install
+	 ;;   (lambda* (#:key inputs outputs #:allow-other-keys)
+	 ;;     (use-modules (guix build utils))
 
 	 ;;       (invoke "rm" "-rf" (string-append out "lib"))
-	 ;;       ;; (setenv "lib" lib)
-	 ;;       (nftw "./pkg/run_files/pkg"
-	 ;; 	   (lambda (filename statinfo flag base level)
-	 ;; 	     ;; (display (string-append "filename" filename "\n"))
-	 ;; 	     (let* ((port (open-input-pipe
-	 ;; 			   (string-append "file " filename)))
-	 ;; 		    (elf (read-line port)))
-	 ;; 	       (close-pipe port)
-	 ;; 	       (if (and
-	 ;; 		    ;; (not (equal? flag 'symlink))
-	 ;; 			(string-match "ELF" elf))
-	 ;; 		   (begin
-	 ;; 		     (display (string-append "Patching: " filename ".\n"))
-	 ;; 		     ;; (display (string-append rpath "\n"))
-	 ;; 		     (system* "patchelf" "--set-interpreter"
-	 ;; 		     	      ld-so filename)
-	 ;; 		     (invoke "patchelf" "--set-rpath"
-	 ;; 			     rpath "--force-rpath" filename))))
-	 ;; 	     #t)))))
-
-	 (replace 'install
-	   (lambda* (#:key inputs outputs #:allow-other-keys)
-	     (use-modules (guix build utils))
-
-	     (let* ((out (assoc-ref outputs "out")))
-	       (setenv "out" out)
-	       (chdir "cuda")
-	       (invoke "./install-linux.pl" (string-append "--prefix=" out)
-		       "--noprompt")
-	       (chdir out)
-	       (invoke "rm" "-rf" (string-append out "lib"))
-	       (system*
-		"while IFS= read -r -d ''$'\0' i; do
-		   if ! isELF \"$i\"; then continue; fi
-		   echo \"patching $i...\"
-		   if [[ ! $i =~ \\.so ]]; then
-		     patchelf \\
-		       --set-interpreter \"''$(cat $NIX_CC/nix-support/dynamic-linker)\" $i
-		   fi
-		   if [[ $i =~ libcudart ]]; then
-		     rpath2=
-		   else
-		     rpath2=$rpath:$lib/lib:$out/jre/lib/amd64/jli:$out/lib:$out/lib64:$out/nvvm/lib:$out/nvvm/lib64
-		   fi
-		     patchelf --set-rpath $rpath2 --force-rpath $i
-		   done < <(find $out -type f -print0)")
-	       ;; (invoke "sed" "-i" (string-append out "/include/host_config -e 's/#error\(.*unsupported GNU version\)/#warning\1"))
-	       ;; (display (string-append out "/lib64/stubs/libcuda.so"))
-	       ;; (symlink (string-append out "/lib64/stubs/libcuda.so")
-	       ;; 		(string-append out "/lib64/libcuda.so"))
-	       )))
+	 ;;       (system*
+	 ;; 	"while IFS= read -r -d ''$'\0' i; do
+	 ;; 	   if ! isELF \"$i\"; then continue; fi
+	 ;; 	   echo \"patching $i...\"
+	 ;; 	   if [[ ! $i =~ \\.so ]]; then
+	 ;; 	     patchelf \\
+	 ;; 	       --set-interpreter \"''$(cat $NIX_CC/nix-support/dynamic-linker)\" $i
+	 ;; 	   fi
+	 ;; 	   if [[ $i =~ libcudart ]]; then
+	 ;; 	     rpath2=
+	 ;; 	   else
+	 ;; 	     rpath2=$rpath:$lib/lib:$out/jre/lib/amd64/jli:$out/lib:$out/lib64:$out/nvvm/lib:$out/nvvm/lib64
+	 ;; 	   fi
+	 ;; 	     patchelf --set-rpath $rpath2 --force-rpath $i
+	 ;; 	   done < <(find $out -type f -print0)")
+	 ;;       ;; (invoke "sed" "-i" (string-append out "/include/host_config -e 's/#error\(.*unsupported GNU version\)/#warning\1"))
+	 ;;       ;; (display (string-append out "/lib64/stubs/libcuda.so"))
+	 ;;       ;; (symlink (string-append out "/lib64/stubs/libcuda.so")
+	 ;;       ;; 		(string-append out "/lib64/libcuda.so"))
+	 ;;       )))
 
 	 (delete 'check)
-	 (delete 'validate-runpath))
-       #:strip-binaries? #f))
+	 ;; (delete 'validate-runpath)
+	 #:strip-binaries? #f)))
     (home-page "https://developer.nvidia.com/cuda-toolkit")
     (supported-systems '("x86_64-linux"))
     (synopsis "The NVIDIA® CUDA® Toolkit provides a development environment for
