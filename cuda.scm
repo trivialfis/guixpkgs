@@ -29,22 +29,12 @@
   #:use-module (gnu packages file)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages perl)
-  #:use-module (ice-9 popen)
-  #:use-module (ice-9 rdelim))		;for read-line
+  )
 
 ;; (define EULA
 ;;   (license "EULA"
 ;; 	   "http://www.nvidia.com/object/nv_sw_license.html"
 ;; 	   "http://www.nvidia.com/object/nv_sw_license.html"))
-
-(define (elf? filename)
-  (let* ((port (open-input-pipe
-		(string-append "file " filename))) ; execute `file` command.
-	 (file-return (read-line port)))
-    (close-pipe port)
-    (if (string-match "ELF" file-return)
-	#t
-	#f)))				; convert to boolean.
 
 (define-private cuda-patch-85-1
   (package
@@ -105,6 +95,8 @@
 		     ;; ("sed" ,sed)
 		     ("patchelf" ,patchelf)))
     (inputs `(("gcc:lib" ,gcc-6 "lib")))
+    (propagated-inputs `(("gcc:lib" ,gcc-6 "lib")
+			 ("gcc:out" ,gcc-6 "out")))
     (arguments
      `(#:phases
        (modify-phases %standard-phases
@@ -139,7 +131,8 @@
 	   (lambda* (#:key inputs outputs #:allow-other-keys)
 	     (use-modules (ice-9 ftw)
 	 		  (ice-9 regex)
-	 		  )
+	 		  (ice-9 popen)
+			  (ice-9 rdelim)) ;for read-line
 	     (let* ((ld-so (string-append
 	 		    (assoc-ref
 	 		     inputs "libc") ,(glibc-dynamic-linker)))
@@ -163,25 +156,53 @@
 	       (invoke "rm" "-rf" (string-append out "lib"))
 	       (invoke "rm" "-rf" (string-append out "bin/uninstall*"))
 
-	       (let ((hd (string-append out "include/host_defines.h"))
-		     (sedcommand (string-append "'1 i#define _BITS_FLOATN_H " hd "'")))
-		 (invoke "sed" "-i" sedcommand))
+	       ;; (let* ((hd (string-append out "include/host_defines.h"))
+	       ;; 	      (sedcommand (string-append "'1 i#define _BITS_FLOATN_H " hd "'")))
+	       ;; 	 (invoke "sed" "-i" sedcommand))
 	       ;; (invoke "sed" "-i" "'1 i#define _BITS_FLOATN_H" "$out/include/host_defines.h'")
 	       ;; (setenv "lib" lib)
 	       (format #t "ld-so: ~s\n" ld-so)
 	       (format #t "rpath: ~s\n" rpath)
 	       (format #t "out: ~s\n" out)
 	       (format #t "gcclib: ~s\n" gcclib)
-
-	       (nftw "./cuda"
-	 	     (lambda (filename statinfo flag base level)
-	 	       ;; (display (string-append "filename" filename "\n"))
-		       (if (elf? filename)
-			   (if (string-match ".so" filename)
-			       (invoke "patchelf" "--set-interpreter" ld-so filename))
-			   (if (string-match "libcudart" filename)
-			       (invoke "patchelf" "--set-rpath" " " "--force-rpath" filename)
-			       (invoke "patchelf" "--set-rpath" rpath "--force-rpath" filename))))))))
+	       (display "\n")
+	       (format "cwd ~s\n" (getcwd))
+	       (invoke "ls" "-l")
+	       ;; (invoke "chmod" "u-x" (string-append out "/libnsight/icon.xpm"))
+	       (let ([elf?
+		      (lambda (filename)
+			(let* ((file-port (open-input-pipe
+					   (string-append "file " filename)))
+			       (file-return (read-line file-port)))
+			  (close-pipe file-port)
+			  (if (or (and (zero? (system* "test" "-x" filename))
+				       (not (zero? (system* "test" "-d" filename))))
+				  (and (not (eof-object? file-return))
+				       (string-match "ELF" file-return)))
+			      #t
+			      #f)))])
+		 (nftw "./"
+	 	       (lambda (filename statinfo flag base level)
+			 (format #t "Testing: ~s\n" filename)
+			 (if (elf? filename) ; use if-let
+			     (begin
+			       (format #t "Filename: ~s is an ELF file.\n" filename)
+			       (format #t "CWD: ~s\n" (getcwd))
+			       (when (string-match "\\.so" filename)
+				 (begin
+				   (format #t "patching ~s for interpreter\n" filename)
+				   (system* "patchelf" "--set-interpreter" ld-so filename)))
+			       (format #t "Patching ~s rpath.\n" filename)
+			       (if (string-match "libcudart" filename)
+				   (begin
+				     (format #t "libcudart? ~s\n" filename)
+				     (format #t "rpath: ~s\n" "(nil)")
+				     (system* "patchelf" "--set-rpath" " " "--force-rpath" filename))
+				   (begin
+				     (format #t "Not libcudart\n")
+				     (format #t "rpath: ~s\n" rpath)
+				     (system* "patchelf" "--set-rpath" rpath filename))))) ; "--force-rpath"
+			 #t))))))
 	 ;; (add-after 'install 'wrap-program
 	 ;;   (lambda* (#:key inputs outputs #:allow-other-keys)
 	 ;;     (let* ((out (assoc-ref outputs "out"))
@@ -191,10 +212,8 @@
          ;;       (wrap-program nvcc
          ;;         `("--prefix" ))
          ;;       #t)))
-
-	 (delete 'check)
 	 ;; (delete 'validate-runpath)
-	 )
+	 (delete 'check))
        #:strip-binaries? #f))
     (home-page "https://developer.nvidia.com/cuda-toolkit")
     (supported-systems '("x86_64-linux"))
