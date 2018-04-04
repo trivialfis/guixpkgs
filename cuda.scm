@@ -90,13 +90,11 @@
 		"0lz9bwhck1ax4xf1fyb5nicb7l1kssslj518z64iirpy2qmwg5l4"))))
     (build-system gnu-build-system)
     (native-inputs `(
-		     ;; ("perl" ,perl)
+		     ("perl" ,perl)
 		     ;; ("bash" ,bash)
 		     ;; ("sed" ,sed)
 		     ("patchelf" ,patchelf)))
-    (inputs `(
-	      ;; ("gcc:lib" ,gcc-6 "lib")
-	      ))
+    (inputs `(("gcc:lib" ,gcc-6 "lib")))
     (arguments
      `(#:phases
        (modify-phases %standard-phases
@@ -105,28 +103,18 @@
 	     (use-modules (guix build utils))
 	     (let* ((source (assoc-ref inputs "source"))
 		    (file-name (string-append ,name "-" ,version ".run"))
-		    ;; (sh (string-append (assoc-ref inputs "bash") "/bin/bash"))
-		    ;; (sed (string-append (assoc-ref inputs "sed") "/bin/sed"))
-		    ;; (perl (string-append (assoc-ref inputs "perl") "/bin/perl"))
 		    (build-root (getcwd)))
 	       (copy-file source (string-append ,name "-" ,version ".run"))
 
 	       (mkdir-p "tmp")
-	       ;; (invoke sed "-i"
-	       ;; 	       (string-append " 1s|.*|#!" sh "|") file-name)
-	       ;; (invoke sed "-i" (string-append " 518s|.*|rm -rf $tmpdir|")
-	       ;; 	       file-name)
-	       ;; (display (string-append "--tmpdir=" build-root "/tmp"))
-	       (invoke (string-append "./" ,name "-" ,version ".run")
+	       (invoke "sh" (string-append "./" ,name "-" ,version ".run")
 		       "--keep" "--noexec"
 		       "--tmpdir=" (string-append build-root "/tmp")
 		       "--verbose")
 	       (chdir "pkg/run_files")
-	       ;; (invoke sed "-i" (string-append " 137s|> /dev/tty|>& 1|")
-	       ;; 	       "cuda-linux.9.1.85-23083092.run")
-	       (invoke "./cuda-linux.9.1.85-23083092.run" "--keep" "--noexec"
+	       (invoke "sh" "./cuda-linux.9.1.85-23083092.run" "--keep" "--noexec"
 		       "--tmpdir" (string-append build-root "/tmp"))
-	       (invoke "./cuda-samples.9.1.85-23083092-linux.run" "--keep" "--noexec"
+	       (invoke "sh" "./cuda-samples.9.1.85-23083092-linux.run" "--keep" "--noexec"
 		       "--tempdir" (string-append build-root "/tmp"))
 
 	       (invoke "mv" "pkg" (string-append "../../cuda"))
@@ -147,7 +135,7 @@
 	 		    (assoc-ref
 	 		     inputs "libc") ,(glibc-dynamic-linker)))
 	 	    (gcclib (string-append (assoc-ref
-	 				    inputs "gcc:lib") "/lib"))
+	 	    			    inputs "gcc:lib") "/lib"))
 	 	    (out (assoc-ref outputs "out"))
 	 	    (rpath (string-append
 	 		    gcclib ":"
