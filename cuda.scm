@@ -35,12 +35,44 @@
 ;; 	   "http://www.nvidia.com/object/nv_sw_license.html"
 ;; 	   "http://www.nvidia.com/object/nv_sw_license.html"))
 
-(define (cuda-patches)
-  (origin
-   (method url-fetch)
-   (uri "https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/1/cuda_9.1.85.1_linux")
-   (sha256
-    (base32 "1f53ij5nb7g0vb5pcpaqvkaj1x4mfq3l0mhkfnqbk8sfrvby775g"))))
+(define-private cuda-patch-85-1
+  (package
+    (name "cuda-patch-85-1")
+    (version "9.1.85.1")
+    (source
+     (origin
+       (method url-fetch)
+       (uri
+	(string-append
+	 "https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/1/cuda_"
+	 version "_linux"))
+       (sha256
+	(base32 "1f53ij5nb7g0vb5pcpaqvkaj1x4mfq3l0mhkfnqbk8sfrvby775g"))))
+    (build-system gnu-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+	 (replace 'unpack
+	   (lambda (#:key inputs outputs #:allow-other-keys)
+	     (use-modules (guix build utils))
+	     (let* ([source (assoc-ref inputs "source")]
+		    [file-name "cuda-patch.run"])
+	       (copy-file source file-name))))
+	 (delete 'build)
+	 (delete 'configure)
+	 (replace 'install
+	   (lambda (#:key inputs outputs #:allow-other-keys)
+	     (let* ([out (assoc-ref outputs "out")])
+	       (copy-file "cuda-patch.run" (string-append out "cuda-patch.run")))))
+	 (delete 'validate-runpath)
+	 (delete 'check)
+	 )
+       #:strip-binaries? #f))
+    (home-page "https://developer.nvidia.com/cuda-toolkit")
+    (synopsis "Cuda binary patches.")
+    (description "Cuda binary patches.")
+    (license gpl3+)))
+
 
 (define-public cuda
   ;; This DOESN'T work yet, due to runpath, I'm kind of running out of idea now.
@@ -55,14 +87,16 @@
 		    "_387.26_linux"))
 	      (sha256
 	       (base32
-		"0lz9bwhck1ax4xf1fyb5nicb7l1kssslj518z64iirpy2qmwg5l4"
-		))))
+		"0lz9bwhck1ax4xf1fyb5nicb7l1kssslj518z64iirpy2qmwg5l4"))))
     (build-system gnu-build-system)
-    (native-inputs `(("perl" ,perl)
-		     ("bash" ,bash)
-		     ("sed" ,sed)
+    (native-inputs `(
+		     ;; ("perl" ,perl)
+		     ;; ("bash" ,bash)
+		     ;; ("sed" ,sed)
 		     ("patchelf" ,patchelf)))
-    (inputs `(("gcc:lib" ,gcc-6 "lib")))
+    (inputs `(
+	      ;; ("gcc:lib" ,gcc-6 "lib")
+	      ))
     (arguments
      `(#:phases
        (modify-phases %standard-phases
@@ -71,33 +105,33 @@
 	     (use-modules (guix build utils))
 	     (let* ((source (assoc-ref inputs "source"))
 		    (file-name (string-append ,name "-" ,version ".run"))
-		    (sh (string-append (assoc-ref inputs "bash") "/bin/bash"))
-		    (sed (string-append (assoc-ref inputs "sed") "/bin/sed"))
-		    (perl (string-append (assoc-ref inputs "perl") "/bin/perl"))
+		    ;; (sh (string-append (assoc-ref inputs "bash") "/bin/bash"))
+		    ;; (sed (string-append (assoc-ref inputs "sed") "/bin/sed"))
+		    ;; (perl (string-append (assoc-ref inputs "perl") "/bin/perl"))
 		    (build-root (getcwd)))
 	       (copy-file source (string-append ,name "-" ,version ".run"))
 
 	       (mkdir-p "tmp")
-	       (invoke sed "-i"
-		       (string-append " 1s|.*|#!" sh "|") file-name)
-	       (invoke sed "-i" (string-append " 518s|.*|rm -rf $tmpdir|")
-		       file-name)
-	       (display (string-append "--tmpdir=" build-root "/tmp"))
-	       (invoke sh (string-append ,name "-" ,version ".run")
+	       ;; (invoke sed "-i"
+	       ;; 	       (string-append " 1s|.*|#!" sh "|") file-name)
+	       ;; (invoke sed "-i" (string-append " 518s|.*|rm -rf $tmpdir|")
+	       ;; 	       file-name)
+	       ;; (display (string-append "--tmpdir=" build-root "/tmp"))
+	       (invoke (string-append "./" ,name "-" ,version ".run")
 		       "--keep" "--noexec"
 		       "--tmpdir=" (string-append build-root "/tmp")
 		       "--verbose")
 	       (chdir "pkg/run_files")
-	       (invoke sed "-i" (string-append " 137s|> /dev/tty|>& 1|")
-		       "cuda-linux.9.1.85-23083092.run")
-	       (invoke sh "cuda-linux.9.1.85-23083092.run" "--keep" "--noexec"
+	       ;; (invoke sed "-i" (string-append " 137s|> /dev/tty|>& 1|")
+	       ;; 	       "cuda-linux.9.1.85-23083092.run")
+	       (invoke "./cuda-linux.9.1.85-23083092.run" "--keep" "--noexec"
 		       "--tmpdir" (string-append build-root "/tmp"))
-	       (invoke sh "cuda-samples.9.1.85-23083092-linux.run" "--keep" "--noexec"
+	       (invoke "./cuda-samples.9.1.85-23083092-linux.run" "--keep" "--noexec"
 		       "--tempdir" (string-append build-root "/tmp"))
 
 	       (invoke "mv" "pkg" (string-append "../../cuda"))
 	       (chdir "../../")
-	       (invoke "ls" "-l" "--color")
+	       (invoke "ls" "-l")
 
 	       (invoke "rm" "-rf" "./pkg"))))
 
@@ -198,7 +232,8 @@
 
 	 (delete 'check)
 	 ;; (delete 'validate-runpath)
-	 #:strip-binaries? #f)))
+	 )
+       #:strip-binaries? #f))
     (home-page "https://developer.nvidia.com/cuda-toolkit")
     (supported-systems '("x86_64-linux"))
     (synopsis "The NVIDIA® CUDA® Toolkit provides a development environment for
