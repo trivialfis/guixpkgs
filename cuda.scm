@@ -28,12 +28,15 @@
   #:use-module (gnu packages elf)
   #:use-module (gnu packages file)
   #:use-module (gnu packages gcc)
-  #:use-module (gnu packages perl))
+  #:use-module (gnu packages perl)
+  #:use-module (ice-9 popen)
+  #:use-module (ice-9 rdelim))		;for read-line
 
 ;; (define EULA
 ;;   (license "EULA"
 ;; 	   "http://www.nvidia.com/object/nv_sw_license.html"
 ;; 	   "http://www.nvidia.com/object/nv_sw_license.html"))
+
 (define (elf? filename)
   (let* ((port (open-input-pipe
 		(string-append "file " filename))) ; execute `file` command.
@@ -136,8 +139,7 @@
 	   (lambda* (#:key inputs outputs #:allow-other-keys)
 	     (use-modules (ice-9 ftw)
 	 		  (ice-9 regex)
-	 		  (ice-9 popen)
-	 		  (ice-9 rdelim)) ; for read-line
+	 		  )
 	     (let* ((ld-so (string-append
 	 		    (assoc-ref
 	 		     inputs "libc") ,(glibc-dynamic-linker)))
@@ -166,30 +168,21 @@
 		 (invoke "sed" "-i" sedcommand))
 	       ;; (invoke "sed" "-i" "'1 i#define _BITS_FLOATN_H" "$out/include/host_defines.h'")
 	       ;; (setenv "lib" lib)
-	       (display (string-append "out: " out))
+	       (format #t "ld-so: ~s\n" ld-so)
+	       (format #t "rpath: ~s\n" rpath)
+	       (format #t "out: ~s\n" out)
+	       (format #t "gcclib: ~s\n" gcclib)
+
 	       (nftw "./cuda"
 	 	     (lambda (filename statinfo flag base level)
 	 	       ;; (display (string-append "filename" filename "\n"))
-	 	       (let* ((port (open-input-pipe
-	 			     (string-append "file " filename)))
-	 		      (elf (read-line port)))
-	 		 (close-pipe port)
-	 		 (if (and
-	 		      ;; (not (equal? flag 'symlink))
-	 		      (string-match "ELF" elf))
-	 		     (begin
-	 		       (display (string-append "Patching: " filename ".\n"))
-	 		       ;; (display (string-append rpath "\n"))
-	 		       (system* "patchelf" "--set-interpreter"
-	 		     		ld-so filename)
-	 		       (invoke "patchelf" "--set-rpath"
-	 			       rpath "--force-rpath" filename))))
-	 	       #t)))))
-	 ;; (add-after 'install 'fixup
-	 ;;   (lambda (#:key inputs outputs #:allow-other-keys)
-
-	 ;;     ))
-	 ;; (add-after 'install 'warp-program
+		       (if (elf? filename)
+			   (if (string-match ".so" filename)
+			       (invoke "patchelf" "--set-interpreter" ld-so filename))
+			   (if (string-match "libcudart" filename)
+			       (invoke "patchelf" "--set-rpath" " " "--force-rpath" filename)
+			       (invoke "patchelf" "--set-rpath" rpath "--force-rpath" filename))))))))
+	 ;; (add-after 'install 'wrap-program
 	 ;;   (lambda* (#:key inputs outputs #:allow-other-keys)
 	 ;;     (let* ((out (assoc-ref outputs "out"))
 	 ;; 	    (nvcc (string-append out "/bin/nvcc")))
@@ -198,32 +191,6 @@
          ;;       (wrap-program nvcc
          ;;         `("--prefix" ))
          ;;       #t)))
-
-	 ;; (replace 'install
-	 ;;   (lambda* (#:key inputs outputs #:allow-other-keys)
-	 ;;     (use-modules (guix build utils))
-
-	 ;;       (invoke "rm" "-rf" (string-append out "lib"))
-	 ;;       (system*
-	 ;; 	"while IFS= read -r -d ''$'\0' i; do
-	 ;; 	   if ! isELF \"$i\"; then continue; fi
-	 ;; 	   echo \"patching $i...\"
-	 ;; 	   if [[ ! $i =~ \\.so ]]; then
-	 ;; 	     patchelf \\
-	 ;; 	       --set-interpreter \"''$(cat $NIX_CC/nix-support/dynamic-linker)\" $i
-	 ;; 	   fi
-	 ;; 	   if [[ $i =~ libcudart ]]; then
-	 ;; 	     rpath2=
-	 ;; 	   else
-	 ;; 	     rpath2=$rpath:$lib/lib:$out/jre/lib/amd64/jli:$out/lib:$out/lib64:$out/nvvm/lib:$out/nvvm/lib64
-	 ;; 	   fi
-	 ;; 	     patchelf --set-rpath $rpath2 --force-rpath $i
-	 ;; 	   done < <(find $out -type f -print0)")
-	 ;;       ;; (invoke "sed" "-i" (string-append out "/include/host_config -e 's/#error\(.*unsupported GNU version\)/#warning\1"))
-	 ;;       ;; (display (string-append out "/lib64/stubs/libcuda.so"))
-	 ;;       ;; (symlink (string-append out "/lib64/stubs/libcuda.so")
-	 ;;       ;; 		(string-append out "/lib64/libcuda.so"))
-	 ;;       )))
 
 	 (delete 'check)
 	 ;; (delete 'validate-runpath)
