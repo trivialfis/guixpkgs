@@ -34,6 +34,14 @@
 ;;   (license "EULA"
 ;; 	   "http://www.nvidia.com/object/nv_sw_license.html"
 ;; 	   "http://www.nvidia.com/object/nv_sw_license.html"))
+(define (elf? filename)
+  (let* ((port (open-input-pipe
+		(string-append "file " filename))) ; execute `file` command.
+	 (file-return (read-line port)))
+    (close-pipe port)
+    (if (string-match "ELF" file-return)
+	#t
+	#f)))				; convert to boolean.
 
 (define-private cuda-patch-85-1
   (package
@@ -65,8 +73,7 @@
 	     (let* ([out (assoc-ref outputs "out")])
 	       (copy-file "cuda-patch.run" (string-append out "cuda-patch.run")))))
 	 (delete 'validate-runpath)
-	 (delete 'check)
-	 )
+	 (delete 'check))
        #:strip-binaries? #f))
     (home-page "https://developer.nvidia.com/cuda-toolkit")
     (synopsis "Cuda binary patches.")
@@ -180,7 +187,7 @@
 	 	       #t)))))
 	 ;; (add-after 'install 'fixup
 	 ;;   (lambda (#:key inputs outputs #:allow-other-keys)
-	 
+
 	 ;;     ))
 	 ;; (add-after 'install 'warp-program
 	 ;;   (lambda* (#:key inputs outputs #:allow-other-keys)
