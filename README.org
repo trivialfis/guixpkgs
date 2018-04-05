@@ -1,4 +1,24 @@
 This repository hosts some packages that can not be upstreamed.
 
 Some definitions are ported from https://gitlab.com/genenetwork/guix-bioinformatics.
+
+* Status
+
+** Cuda
+   + _libcuda.so.1_ comes from your NVidia module, not cuda, might not load
+   successfully.
+   + _cuda-gdb_ dependent on ncurses@5, which is not in guix and hard to
+   package, so is not presented.
+   + Binary patches are not applied.
+
+** OpenCL
+   + OpenCL headers.
+   + _ocl-icd_
+   + ClMath: _clBLAS_, _clFFT_
+   + _boost_compute_
+   + _beignet_ is *NOT* working
+
+** Arrayfire
+   Not working yet.
+
 #  LocalWords:  upstreamed LocalWords
