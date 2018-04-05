@@ -89,10 +89,7 @@
 	       (base32
 		"0lz9bwhck1ax4xf1fyb5nicb7l1kssslj518z64iirpy2qmwg5l4"))))
     (build-system gnu-build-system)
-    (native-inputs `(
-		     ("perl" ,perl)
-		     ;; ("bash" ,bash)
-		     ;; ("sed" ,sed)
+    (native-inputs `(("perl" ,perl)
 		     ("patchelf" ,patchelf)))
     (inputs `(("gcc:lib" ,gcc-6 "lib")))
     (propagated-inputs `(("gcc:lib" ,gcc-6 "lib")
@@ -132,6 +129,7 @@
 	     (use-modules (ice-9 ftw)
 	 		  (ice-9 regex)
 	 		  (ice-9 popen)
+			  (ice-9 textual-ports)
 			  (ice-9 rdelim)) ;for read-line
 	     (let* ((ld-so (string-append
 	 		    (assoc-ref
@@ -169,40 +167,55 @@
 	       (format "cwd ~s\n" (getcwd))
 	       (invoke "ls" "-l")
 	       ;; (invoke "chmod" "u-x" (string-append out "/libnsight/icon.xpm"))
-	       (let ([elf?
-		      (lambda (filename)
-			(let* ((file-port (open-input-pipe
-					   (string-append "file " filename)))
-			       (file-return (read-line file-port)))
-			  (close-pipe file-port)
-			  (if (or (and (zero? (system* "test" "-x" filename))
-				       (not (zero? (system* "test" "-d" filename))))
-				  (and (not (eof-object? file-return))
-				       (string-match "ELF" file-return)))
-			      #t
-			      #f)))])
-		 (nftw "./"
-	 	       (lambda (filename statinfo flag base level)
-			 (format #t "Testing: ~s\n" filename)
-			 (if (elf? filename) ; use if-let
-			     (begin
-			       (format #t "Filename: ~s is an ELF file.\n" filename)
-			       (format #t "CWD: ~s\n" (getcwd))
-			       (when (string-match "\\.so" filename)
-				 (begin
-				   (format #t "patching ~s for interpreter\n" filename)
-				   (system* "patchelf" "--set-interpreter" ld-so filename)))
-			       (format #t "Patching ~s rpath.\n" filename)
-			       (if (string-match "libcudart" filename)
-				   (begin
-				     (format #t "libcudart? ~s\n" filename)
-				     (format #t "rpath: ~s\n" "(nil)")
-				     (system* "patchelf" "--set-rpath" " " "--force-rpath" filename))
-				   (begin
-				     (format #t "Not libcudart\n")
-				     (format #t "rpath: ~s\n" rpath)
-				     (system* "patchelf" "--set-rpath" rpath filename))))) ; "--force-rpath"
-			 #t))))))
+	       (let* ([elf?
+	       	       (lambda (filename)
+	       		 (let* ((file-port (open-input-pipe
+	       				    (string-append "file " filename)))
+	       			(file-return (read-line file-port)))
+	       		   (close-pipe file-port)
+	       		   (if (or (and (zero? (system* "test" "-x" filename))
+	       				(not (zero? (system* "test" "-d" filename))))
+	       			   (and (not (eof-object? file-return))
+	       				(string-match "ELF" file-return)))
+	       		       #t
+	       		       #f)))]
+		      [get-name (lambda (tree) (car tree))]
+		      [get-stat (lambda (tree) (cadr tree))]
+		      [get-children (lambda (tree) (cddr tree))]
+		      [symlink? (lambda (tree)
+				  (equal? (stat:type (get-stat tree)) 'symlink))]
+		      [patchelf (lambda (filename)
+				  (if (elf? filename) ; use if-let
+	       	 		      (begin
+	       	 			(format #t "Filename: ~s is an ELF file.\n" filename)
+	       	 			(format #t "CWD: ~s\n" (getcwd))
+	       	 			(when (string-match "\\.so" filename)
+	       	 			  (begin
+	       	 			    (format #t "patching ~s for interpreter\n" filename)
+	       	 			    (system* "patchelf" "--set-interpreter" ld-so filename)))
+	       	 			(format #t "Patching ~s rpath.\n" filename)
+	       	 			(if (string-match "libcudart" filename)
+	       	 			    (begin
+	       	 			      (format #t "libcudart? ~s\n" filename)
+	       	 			      (format #t "rpath: ~s\n" "(nil)")
+	       	 			      (system* "patchelf" "--set-rpath" " " "--force-rpath" filename))
+	       	 			    (begin
+	       	 			      (format #t "Not libcudart\n")
+	       	 			      (format #t "rpath: ~s\n" rpath)
+	       	 			      (system* "patchelf" "--set-rpath" rpath filename))))))]
+		      [all-files (list (file-system-tree "."))])
+		 (define (walk root tree)
+		   (define (join-path root node)
+		     (string-append root "/" (get-name node)))
+		   (unless (nil? tree)
+		     (for-each
+		      (lambda (node)
+			(unless (symlink? node)
+			  (patchelf (join-path root node)))
+			(walk (join-path root node) (get-children node)))
+		      tree)))
+		 (walk "." all-files)
+		 ))))
 	 ;; (add-after 'install 'wrap-program
 	 ;;   (lambda* (#:key inputs outputs #:allow-other-keys)
 	 ;;     (let* ((out (assoc-ref outputs "out"))
