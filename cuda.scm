@@ -19,17 +19,15 @@
   #:use-module (guix download)
   #:use-module (guix licenses)
   #:use-module (guix packages)
-  #:use-module (guix build-system trivial)
   #:use-module (guix build-system gnu)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages bootstrap)
-  ;; #:use-module (gnu packages commencement)
   #:use-module (gnu packages elf)
   #:use-module (gnu packages file)
   #:use-module (gnu packages gcc)
-  #:use-module (gnu packages perl)
-  )
+  #:use-module (gnu packages ncurses)
+  #:use-module (gnu packages perl))
 
 ;; (define EULA
 ;;   (license "EULA"
@@ -64,7 +62,7 @@
 	 (replace 'install
 	   (lambda (#:key inputs outputs #:allow-other-keys)
 	     (let* ([out (assoc-ref outputs "out")])
-	       (copy-file "cuda-patch.run" (string-append out "cuda-patch.run")))))
+	       (copy-file "cuda-patch.run" (string-append out "/cuda-patch.run")))))
 	 (delete 'validate-runpath)
 	 (delete 'check))
        #:strip-binaries? #f))
@@ -75,7 +73,9 @@
 
 
 (define-public cuda
-  ;; This DOESN'T work yet, due to runpath, I'm kind of running out of idea now.
+  ;; FIXME: + Apply those binary patches.
+  ;;        + Move stuffs into bin, out, doc
+  ;;        + Load libcuda.so.1
   (package
     (name "cuda")
     (version "9.1.85")
@@ -91,9 +91,11 @@
     (build-system gnu-build-system)
     (native-inputs `(("perl" ,perl)
 		     ("patchelf" ,patchelf)))
-    (inputs `(("gcc:lib" ,gcc-6 "lib")))
-    (propagated-inputs `(("gcc:lib" ,gcc-6 "lib")
-			 ("gcc:out" ,gcc-6 "out")))
+    (inputs `(("gcc:lib" ,gcc-6 "lib")
+	      ("gcc:out" ,gcc-6 "out")
+	      ("ncurses" ,ncurses)))
+    ;; (propagated-inputs `(("gcc:lib" ,gcc-6 "lib")
+    ;; 			    ("gcc:out" ,gcc-6 "out")))
     (arguments
      `(#:phases
        (modify-phases %standard-phases
@@ -124,8 +126,10 @@
 
 	 (delete 'configure)
 	 (delete 'build)
-	 (replace 'install	; patchelf
+	 (replace 'install
 	   (lambda* (#:key inputs outputs #:allow-other-keys)
+	     ;; During installation, we first invoke the install scripts in
+	     ;; cuda, then we use patchelf to change the RUNPATH in binaries.
 	     (use-modules (ice-9 ftw)
 	 		  (ice-9 regex)
 	 		  (ice-9 popen)
@@ -136,37 +140,57 @@
 	 		     inputs "libc") ,(glibc-dynamic-linker)))
 	 	    (gcclib (string-append (assoc-ref
 	 	    			    inputs "gcc:lib") "/lib"))
+		    (ncurlib (string-append
+			      (assoc-ref inputs "ncurses") "/lib"))
 	 	    (out (assoc-ref outputs "out"))
 	 	    (rpath (string-append
 	 		    gcclib ":"
-	 		    (string-append out "/lib64" ":")
-	 		    (string-append out "/lib" ":")
+			    ncurlib ":"
+			    (string-append out "/lib64" ":")
+	 		    ;; (string-append out "/lib" ":")
 	 		    (string-append out "/nvvm/lib64" ":")
 	 		    (string-append out "/nvvm/lib"))))
 	       (invoke "pwd")
 	       (invoke "ls" "-l")
-	       (let* ((out (assoc-ref outputs "out")))
-		 (chdir "cuda")
-		 (invoke "./install-linux.pl" (string-append "--prefix=" out)
-	 		 "--noprompt")
-		 (chdir out))
 
-	       (invoke "rm" "-rf" (string-append out "lib"))
-	       (invoke "rm" "-rf" (string-append out "bin/uninstall*"))
+	       (chdir "cuda")
+	       (invoke "./install-linux.pl" (string-append "--prefix=" out)
+	 	       "--noprompt")
+	       (chdir out)
+
+	       (invoke "rm" "-rf" (string-append out "/lib"))
+	       (invoke "rm" "-rf" (string-append out "/bin/uninstall*"))
+
+	       (format #t "cuda-gdb: ~s\n"
+		       (string-append out "/bin/cuda-gdb"))
+	       (format #t "uninstall: ~s\n"
+		       (string-append out "/bin/uninstall_cuda_toolkit_9.1.pl"))
+	       (format #t "gdbserver:   ~s\n"
+		       (string-append out "/bin/cuda-gdbserver"))
+	       (delete-file
+		(string-append out "/bin/uninstall_cuda_toolkit_9.1.pl"))
+	       ;; FIXME: cuda-gdb requires ncurses@5, which is also painful
+	       ;; to package.
+	       (delete-file (string-append out "/bin/cuda-gdb"))
+	       (delete-file (string-append out "/bin/cuda-gdbserver"))
+
+	       (format #t "libcuda: ~s\n"
+		       (string-append out "/lib64/stubs/libcuda.so"))
+	       (copy-file (string-append out "/lib64/stubs/libcuda.so")
+			  (string-append out "/lib64/libcuda.so.1"))
 
 	       ;; (let* ((hd (string-append out "include/host_defines.h"))
 	       ;; 	      (sedcommand (string-append "'1 i#define _BITS_FLOATN_H " hd "'")))
 	       ;; 	 (invoke "sed" "-i" sedcommand))
 	       ;; (invoke "sed" "-i" "'1 i#define _BITS_FLOATN_H" "$out/include/host_defines.h'")
-	       ;; (setenv "lib" lib)
+
 	       (format #t "ld-so: ~s\n" ld-so)
 	       (format #t "rpath: ~s\n" rpath)
 	       (format #t "out: ~s\n" out)
 	       (format #t "gcclib: ~s\n" gcclib)
 	       (display "\n")
-	       (format "cwd ~s\n" (getcwd))
-	       (invoke "ls" "-l")
-	       ;; (invoke "chmod" "u-x" (string-append out "/libnsight/icon.xpm"))
+	       (format "cwd: ~s\n" (getcwd))
+
 	       (let* ([elf?
 	       	       (lambda (filename)
 	       		 (let* ((file-port (open-input-pipe
@@ -184,26 +208,29 @@
 		      [get-children (lambda (tree) (cddr tree))]
 		      [symlink? (lambda (tree)
 				  (equal? (stat:type (get-stat tree)) 'symlink))]
-		      [patchelf (lambda (filename)
-				  (if (elf? filename) ; use if-let
-	       	 		      (begin
-	       	 			(format #t "Filename: ~s is an ELF file.\n" filename)
-	       	 			(format #t "CWD: ~s\n" (getcwd))
-	       	 			(when (string-match "\\.so" filename)
-	       	 			  (begin
-	       	 			    (format #t "patching ~s for interpreter\n" filename)
-	       	 			    (system* "patchelf" "--set-interpreter" ld-so filename)))
-	       	 			(format #t "Patching ~s rpath.\n" filename)
-	       	 			(if (string-match "libcudart" filename)
-	       	 			    (begin
-	       	 			      (format #t "libcudart? ~s\n" filename)
-	       	 			      (format #t "rpath: ~s\n" "(nil)")
-	       	 			      (system* "patchelf" "--set-rpath" " " "--force-rpath" filename))
-	       	 			    (begin
-	       	 			      (format #t "Not libcudart\n")
-	       	 			      (format #t "rpath: ~s\n" rpath)
-	       	 			      (system* "patchelf" "--set-rpath" rpath filename))))))]
+
 		      [all-files (list (file-system-tree "."))])
+		 (define (patchelf filename)
+		   (if (elf? filename)
+	       	       (begin
+	       	 	 (format #t "Filename: ~s is an ELF file.\n" filename)
+	       	 	 (format #t "CWD: ~s\n" (getcwd))
+	       	 	 (when (string-match "\\.so" filename)
+	       	 	   (begin
+	       	 	     (format #t "patching ~s for interpreter\n"
+				     filename)
+	       	 	     (system* "patchelf" "--set-interpreter" ld-so
+				      filename)))
+	       	 	 (format #t "Patching ~s rpath.\n" filename)
+			 ;; FIXME: use if-let or cond
+	       	 	 (if (string-match "libcudart" filename)
+	       	 	     (begin
+	       	 	       (format #t "rpath: ~s\n" "(nil)")
+	       	 	       (system* "patchelf" "--set-rpath" " " filename))
+	       	 	     (begin
+	       	 	       (format #t "rpath: ~s\n" rpath)
+	       	 	       (system* "patchelf" "--set-rpath" rpath
+					filename))))))
 		 (define (walk root tree)
 		   (define (join-path root node)
 		     (string-append root "/" (get-name node)))
@@ -214,18 +241,16 @@
 			  (patchelf (join-path root node)))
 			(walk (join-path root node) (get-children node)))
 		      tree)))
-		 (walk "." all-files)
-		 ))))
-	 ;; (add-after 'install 'wrap-program
-	 ;;   (lambda* (#:key inputs outputs #:allow-other-keys)
-	 ;;     (let* ((out (assoc-ref outputs "out"))
-	 ;; 	    (nvcc (string-append out "/bin/nvcc")))
-	 ;;       ;; The environment variable DTK_PROGRAM tells emacspeak what
-	 ;;       ;; program to use for speech.
-         ;;       (wrap-program nvcc
-         ;;         `("--prefix" ))
-         ;;       #t)))
-	 ;; (delete 'validate-runpath)
+		 (walk "." all-files)))))
+
+	 (add-after 'install 'wrap-program
+	   (lambda* (#:key inputs outputs #:allow-other-keys)
+	     (let* ((out (assoc-ref outputs "out"))
+		    (gcc-bin (string-append (assoc-ref inputs "gcc:out") "/bin/"))
+	 	    (nvcc (string-append out "/bin/nvcc")))
+               (wrap-program nvcc
+                 `("PATH" ":" = (,gcc-bin)))
+               #t)))
 	 (delete 'check))
        #:strip-binaries? #f))
     (home-page "https://developer.nvidia.com/cuda-toolkit")
