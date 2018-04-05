@@ -164,7 +164,7 @@ non free) ICD")
 					   (assoc-ref outputs "out")
 					   "/include/CL")))))))
      (synopsis "The Khronos OpenCL headers")
-     (description "This package provides the Khronos OpenCL headers")
+     (description "This package provides the Khronos OpenCL c headers")
      (home-page "https://www.khronos.org/registry/cl/")
      (license (list license:gpl2)))))
 

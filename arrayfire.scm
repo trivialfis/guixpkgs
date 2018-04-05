@@ -31,6 +31,7 @@
   #:use-module (gnu packages boost)
   #:use-module (gnu packages check)
   #:use-module (gnu packages curl)
+  #:use-module (gnu packages fontutils)
   #:use-module (gnu packages gl)
   #:use-module (gnu packages image)
   #:use-module (gnu packages maths)
@@ -76,11 +77,12 @@
       (if s "ON" "OFF"))
     (define (make-flags)
       `((string-append "-DBUILD_CUDA=" ,(switchs cuda?))
-	(string-append "-DBUILD_CL=" ,(switchs cl?))
+	(string-append "-DBUILD_OPENCL=" ,(switchs cl?))
 	(if ,cl? "-DUSE_SYSTEM_CLBLAS=ON" "")
 	(if ,cl? "-DUSE_SYSTEM_CLFFT=OFF" "")
 	(if ,cl? "-DUSE_SYSTEM_CL2HPP=ON" "")
 	(string-append "-DBUILD_GRAPHICS" ,(switchs graphics?))
+	"-DUSE_SYSTEM_FORGE=ON"
 	"-DUSE_SYSTEM_BOOST_COMPUTE=ON"
 	"-DBUILD_TEST=ON"))
     (package
@@ -110,7 +112,7 @@
 			    "-DUSE_SYSTEM_CLBLAS=ON"
 			    "-DUSE_SYSTEM_CLFFT=ON"
 			    "-DUSE_SYSTEM_CL2HPP=ON"
-			    "-DBUILD_GRAPHICS=OFF"
+			    "-DBUILD_GRAPHICS=ON"
 			    "-DUSE_SYSTEM_BOOST_COMPUTE=ON"
 			    "-DBUILD_TEST=ON")))
      (home-page "http://arrayfire.com/")
@@ -128,6 +130,38 @@ architectures including CPUs, GPUs, and other hardware acceleration devices.")
   (make-arrayfire #f #t #f "arrayfire-cuda"))
 (define-public arrayfire-full
   (make-arrayfire #t #t #f "arrayfire-full"))
+
+(define-public forge
+  (package
+   (name "forge")
+   (version "1.0.1")
+   (source (origin
+	    (method url-fetch)
+	    (uri (string-append
+		  "https://github.com/arrayfire/forge/archive/v"
+		  version
+		  ".tar.gz"))
+	    (sha256
+	     (base32 "1zpv88laqsb01kclkxf6ww15b4wqhm23simkhs5v069063spznjw"))))
+   (native-inputs `(("cl2hpp-header" ,cl2hpp-header)))
+   (inputs `(("freetype" ,freetype)
+	     ("glbinding" ,glbinding)
+	     ("glm" ,glm)))
+   (build-system cmake-build-system)
+   (arguments
+    `(#:configure-flags '("-DUSE_SYSTEM_CL2HPP=ON"
+			  "-DUSE_SYSTEM_GLBINDING=ON"
+			  "-DUSE_SYSTEM_FREETYPE=ON"
+			  "-DUSE_SYSTEM_GLM=ON"
+			  "-DBUILD_DOCUMENTATION=OFF"
+			  "-DBUILD_EXAMPLES=OFF")))
+   (home-page "https://github.com/arrayfire/forge")
+   (synopsis "High Performance Visualization.")
+   (description "An OpenGL interop library that can be used with ArrayFire or
+any other application using CUDA or OpenCL compute backend. The goal of Forge
+is to provide high performance OpenGL visualizations for C/C++ applications
+that use CUDA/OpenCL. ")
+   (license license:bsd-3)))
 
 (define-public glbinding
   (package
