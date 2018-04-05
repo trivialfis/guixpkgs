@@ -5,20 +5,24 @@ Some definitions are ported from https://gitlab.com/genenetwork/guix-bioinformat
 * Status
 
 ** Cuda
-   + _libcuda.so.1_ comes from your NVidia module, not cuda, might not load
-   successfully.
-   + _cuda-gdb_ dependent on ncurses@5, which is not in guix and hard to
-   package, so is not presented.
-   + Binary patches are not applied.
+   Doesn't work yet, at least not in real pure environment. it seems some
+   dynamic load path is messed up in the binary. If I omit testing in
+   wrap-program, cuda builds all right, and *nvcc* can be used on host system,
+   but it can not be used inside the environment of store.
+   I am still trying to get all those dynamic load path right. How come the
+   definition from nix looks some simple anyway?
 
 ** OpenCL
+*** Working:
    + OpenCL headers.
    + _ocl-icd_
    + ClMath: _clBLAS_, _clFFT_
    + _boost_compute_
+
+*** In repo but not working:
    + _beignet_ is *NOT* working
 
 ** Arrayfire
-   Not working yet.
+   The old cpu version is working.
 
 #  LocalWords:  upstreamed LocalWords
