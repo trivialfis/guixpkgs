@@ -113,6 +113,7 @@
 			    "-DUSE_SYSTEM_CLFFT=ON"
 			    "-DUSE_SYSTEM_CL2HPP=ON"
 			    "-DBUILD_GRAPHICS=ON"
+			    "-DUSE_SYSTEM_FORGE=ON"
 			    "-DUSE_SYSTEM_BOOST_COMPUTE=ON"
 			    "-DBUILD_TEST=ON")))
      (home-page "http://arrayfire.com/")
@@ -131,22 +132,49 @@ architectures including CPUs, GPUs, and other hardware acceleration devices.")
 (define-public arrayfire-full
   (make-arrayfire #t #t #f "arrayfire-full"))
 
+(define-public glm
+  (package
+   (name "glm")
+   (version "0.9.8.5")
+   (source (origin
+	    (method url-fetch)
+	    (uri (string-append "https://github.com/g-truc/glm/archive/"
+				version
+				".tar.gz"))
+	    (sha256
+	     (base32
+	      "08691x1xmh0n18ff62wk080jf4blx3yi9sj5vzw08mbfy1c9kkw0"))))
+   (build-system cmake-build-system)
+   (arguments
+    `(#:configure-flags '("-DGLM_TEST_ENABLE=ON"
+			  "-DGLM_TEST_ENABLE_CXX_11=ON"
+			  "-DGLM_TEST_FORCE_PURE=ON")))
+   (home-page "http://glm.g-truc.net")
+   (synopsis "OpenGL Mathematics library")
+   (description "OpenGL Mathematics (GLM) is a header-only C++ mathematics
+library for graphics software based on the OpenGL Shading Language (GLSL)
+specifications.")
+   (license license:expat)))
+
 (define-public forge
   (package
    (name "forge")
-   (version "1.0.1")
+   (version "1.0.2")
    (source (origin
 	    (method url-fetch)
 	    (uri (string-append
 		  "https://github.com/arrayfire/forge/archive/v"
-		  version
-		  ".tar.gz"))
+		  version "-ft.tar.gz"))
 	    (sha256
-	     (base32 "1zpv88laqsb01kclkxf6ww15b4wqhm23simkhs5v069063spznjw"))))
-   (native-inputs `(("cl2hpp-header" ,cl2hpp-header)))
-   (inputs `(("freetype" ,freetype)
-	     ("glbinding" ,glbinding)
-	     ("glm" ,glm)))
+	     (base32 "0m0bc75a6gdq84gs3sh069f7q0idmgh1ikc6znjjm2hxc35pz7wd"))))
+   (native-inputs `(("cl2hpp-header" ,cl2hpp-header)
+		    ("glm" ,glm)))
+   (inputs `(("freeimage" ,freeimage)
+	     ("freetype" ,freetype)
+	     ("fontconfig" ,fontconfig)
+	     ("glfw" ,glfw)
+	     ("boost" ,boost)
+	     ("glbinding" ,glbinding)))
    (build-system cmake-build-system)
    (arguments
     `(#:configure-flags '("-DUSE_SYSTEM_CL2HPP=ON"
@@ -154,7 +182,8 @@ architectures including CPUs, GPUs, and other hardware acceleration devices.")
 			  "-DUSE_SYSTEM_FREETYPE=ON"
 			  "-DUSE_SYSTEM_GLM=ON"
 			  "-DBUILD_DOCUMENTATION=OFF"
-			  "-DBUILD_EXAMPLES=OFF")))
+			  "-DBUILD_EXAMPLES=OFF")
+      #:tests? #f))
    (home-page "https://github.com/arrayfire/forge")
    (synopsis "High Performance Visualization.")
    (description "An OpenGL interop library that can be used with ArrayFire or
