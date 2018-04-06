@@ -33,5 +33,7 @@ Copyright notice is included.
 ** Others
    + qBittorrent
    + bear
+   + unittest-cpp
+   + amule: Test not enabled.
 
 #  LocalWords:  upstreamed LocalWords
