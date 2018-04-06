@@ -14,7 +14,9 @@
 		  "https://github.com/unittest-cpp/unittest-cpp/archive/v"
 		  version ".tar.gz"))
 	    (sha256
-	     (base32 ""))))
+	     (base32 "1fgmna2la7z4pwwy2gd10gpgi2q1fk89npjfvkmzvhkxhyc231bl"))))
+   (arguments
+    `(#:tests? #f))			; It's run after build automatically.
    (build-system cmake-build-system)
    (home-page "https://github.com/unittest-cpp/unittest-cpp")
    (synopsis "Lightweight unit testing framework for C++.")
