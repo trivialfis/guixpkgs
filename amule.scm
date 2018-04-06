@@ -3,6 +3,7 @@
   #:use-module (guix build-system gnu)
   #:use-module (guix packages)
   #:use-module (guix download)
+  #:use-module (gnu packages)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages crypto)
   #:use-module (gnu packages image)
@@ -24,7 +25,8 @@
               (file-name (string-append "amule-" version ".tar.gz"))
               (sha256
                (base32
-                "1wvcj0n9xz03xz5c2xwp6dwfp7sqjhhwbki3m0lwikskpn9lkzk2"))))
+                "1wvcj0n9xz03xz5c2xwp6dwfp7sqjhhwbki3m0lwikskpn9lkzk2"))
+	      (patches (search-patches "Amule_Crypto-6.patch"))))
     (build-system gnu-build-system)
     (arguments
      `(#:phases
