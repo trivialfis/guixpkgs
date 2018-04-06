@@ -7,7 +7,27 @@
   #:use-module (gnu packages qt)
   #:use-module (gnu packages boost)
   #:use-module (gnu packages compression)
-  #:use-module (gnu packages bittorrent))
+  #:use-module (gnu packages python)
+  #:use-module (gnu packages bittorrent)
+  #:use-module (gnu packages tls))
+
+;; For qBittorrent
+;; see  https://github.com/qbittorrent/qBittorrent/issues/8402
+;; and  https://github.com/qbittorrent/qBittorrent/issues/5265
+(define-public libtorrent-rasterbar-c++11
+  (package
+    (inherit libtorrent-rasterbar)
+    (arguments
+     `(#:configure-flags
+       (list (string-append "--with-boost-libdir="
+			    (assoc-ref %build-inputs "boost")
+			    "/lib")
+	     "--enable-python-binding"
+	     "--enable-tests"
+	     "CXXFLAGS=-std=c++11")	; std::chrono
+       #:make-flags (list
+                     (string-append "LDFLAGS=-Wl,-rpath="
+                                    (assoc-ref %outputs "out") "/lib"))))))
 
 (define-public qBittorrent
   (package
@@ -23,29 +43,30 @@
 			name "-release-" version ".tar.gz"))
 	    (sha256
 	     (base32
-	      "18wlcsgappiy6xk700w0g8pspj5hd1d31z5hl37lhkzdxaazmcwv"))))
+	      "145r4lv7rqdhrm5znn3ndxsfdf579n46zvj7c53c422am8ir5xhp"))))
    (build-system gnu-build-system)
    (arguments
     `(#:configure-flags
-      (list (string-append "--with-boost-libdir="
-                           (assoc-ref %build-inputs "boost")
-                           "/lib")
-     	    ;; (string-append "ac_cv_path_LRELEASE="
-            ;;                (assoc-ref %build-inputs "qttools")
-            ;;                "/bin/lrelease")
-	    "QMAKE_LRELEASE=lrelease")
-      ))
+      (list
+       (string-append "--with-boost-libdir="
+                      (assoc-ref %build-inputs "boost")
+                      "/lib")
+       "--enable-debug"
+       ;; "CXXFLAGS=-std=c++11"
+       "QMAKE_LRELEASE=lrelease")))
    (native-inputs
     `(("pkg-config" ,pkg-config)
       ("qttools" ,qttools)))
    (inputs
-    `(("qtbase" ,qtbase)
-      ("zlib" ,zlib)
+    `(("boost" ,boost)
+      ("libtorrent-rasterbar" ,libtorrent-rasterbar-c++11)
+      ("openssl" ,openssl)
+      ("python" ,python)
+      ("qtbase" ,qtbase)
       ("qtsvg" ,qtsvg)
-      ("boost" ,boost)			;libtorrent-rasterbar
-      ("libtorrent-rasterbar" ,libtorrent-rasterbar)))
+      ("zlib" ,zlib)))
    (home-page "https://www.qbittorrent.org/")
-   (synopsis "qBittorrent BitTorrent client")
+   (synopsis "qBittorrent BitTorrent client.")
    (description
     "qBittorrent is a bittorrent client programmed in C++ / Qt that uses
  libtorrent (sometimes called libtorrent-rasterbar) by Arvid Norberg.
@@ -54,5 +75,4 @@ It aims to be a good alternative to all other bittorrent clients out there.
  qBittorrent is fast, stable and provides unicode support as well as many
  features.")
    ;; FIXME, additional OpenSSL license
-   (license license:gpl2+))
-  )
+   (license license:gpl2+)))
