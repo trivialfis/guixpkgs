@@ -1,28 +1,37 @@
-This repository hosts some packages that can not be upstreamed.
+This repository hosts some guix package definitions that yet to be upstreamed
+or simply can not be upstreamed.
 
-Some definitions are ported from https://gitlab.com/genenetwork/guix-bioinformatics.
+Some definitions are ported from:
+https://gitlab.com/genenetwork/guix-bioinformatics.
+Copyright notice is included.
 
 * Status
-
 ** Cuda
-   Doesn't work yet, at least not in real pure environment. it seems some
-   dynamic load path is messed up in the binary. If I omit testing in
-   wrap-program, cuda builds all right, and *nvcc* can be used on host system,
-   but it can not be used inside the environment of store.
-   I am still trying to get all those dynamic load path right. How come the
-   definition from nix looks some simple anyway?
+   Doesn't work yet, at least not in real pure environment. It seems that some
+   dynamic load path are messed up in the binaries. If I omit testing in
+   wrap-program, cuda builds alright, and /nvcc/ *can* be used on *host system*.
+   However, it can not be invoked inside the store environment, which means you
+   *can't* package other software having cuda as dependency, but you *can* use
+   it with `guix environment` during development process.
+   The failure is weird, no error message is emitted, nvcc just failed with
+   non-zero return code. I am still trying to get all those dynamic load path
+   right. How come the definition from nix looks so innocently simple anyway?
 
 ** OpenCL
 *** Working:
    + OpenCL headers.
-   + _ocl-icd_
-   + ClMath: _clBLAS_, _clFFT_
-   + _boost_compute_
+   + ocl-icd
+   + ClMath: clBLAS, clFFT
+   + boost_compute
 
 *** In repo but not working:
-   + _beignet_ is *NOT* working
+   + beignet is *NOT* building.
 
 ** Arrayfire
-   The old cpu version is working.
+   The old cpu version is working. I can't get any further due to broken cuda.
+
+** Others
+   + qBittorrent
+   + bear
 
 #  LocalWords:  upstreamed LocalWords
