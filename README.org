@@ -18,14 +18,12 @@ Copyright notice is included.
    right. How come the definition from nix looks so innocently simple anyway?
 
 ** OpenCL
-*** Working:
    + OpenCL headers.
    + ocl-icd
    + ClMath: clBLAS, clFFT
    + boost_compute
-
-*** In repo but not working:
-   + beignet is *NOT* building.
+*** Not tested:
+   + beignet
 
 ** Arrayfire
    The old cpu version is working. I can't get any further due to broken cuda.

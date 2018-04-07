@@ -23,6 +23,7 @@
   #:use-module (guix build-system cmake)
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (gnu packages)
   #:use-module (gnu packages autotools)
   #:use-module (gnu packages bootstrap)
   #:use-module (gnu packages bison)
@@ -168,53 +169,52 @@ non free) ICD")
      (home-page "https://www.khronos.org/registry/cl/")
      (license (list license:gpl2)))))
 
-;; Doesn't work.
 (define-public beignet
   (package
-   (name "beignet")
-   (version "1.3.2")
-   (source (origin
-             (method url-fetch)
-	     (uri (string-append
-		   "https://github.com/intel/beignet/archive/Release_v"
-		   version
-		   ".tar.gz"))
-             (file-name (string-append name "-" version ".tar.gz"))
-             (sha256
-              (base32
-	       "18r0lq3dkd4yn6bxa45s2lrr9cjbg70nr2nn6xablvgqwzw0jb0r"))))
-   (native-inputs `(("pkg-config" ,pkg-config)))
-   (inputs `(("libpthread-stubs", libpthread-stubs)
-             ("clang" ,clang-3.5)
-             ("libdrm" ,libdrm)
-             ("libsm" ,libsm)
-             ("libxfixes" ,libxfixes)
-             ("libxext" ,libxext)
-             ("libedit" ,libedit)
-             ("xextproto" ,xextproto)
-             ("python" ,python)
-             ("opencl-headers" ,opencl-headers)
-             ("glu" ,glu)
-             ("zlib" ,zlib)
-	     ("libva" ,libva)
-	     ("llvm" ,llvm)
-             ;; ("freeglut" ,freeglut)
-	     ("clang-runtime" ,clang-runtime)
-             ("mesa-utils" ,mesa-utils)
-             ("ncurses" ,ncurses)
-             ("ocl-icd" ,ocl-icd)))
+    (name "beignet")
+    (version "1.3.2")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "https://github.com/intel/beignet/archive/Release_v"
+                    version
+                    ".tar.gz"))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "18r0lq3dkd4yn6bxa45s2lrr9cjbg70nr2nn6xablvgqwzw0jb0r"))
+              (patches (search-patches "beignet-correct-paths.patch"))))
+    (native-inputs `(("pkg-config" ,pkg-config)))
+    (inputs `(("libpthread-stubs", libpthread-stubs)
+              ("clang@3.7" ,clang-3.7)
+              ("libdrm" ,libdrm)
+              ("libsm" ,libsm)
+              ("libxfixes" ,libxfixes)
+              ("libxext" ,libxext)
+              ("libedit" ,libedit)
+              ("xextproto" ,xextproto)
+              ("python" ,python)
+              ("opencl-headers" ,opencl-headers)
+              ("glu" ,glu)
+              ("zlib" ,zlib)
+              ("libva" ,libva)
+              ("llvm@3.7" ,llvm-3.7)
+              ("clang-runtime@3.7" ,clang-runtime-3.7)
+              ("mesa-utils" ,mesa-utils)
+              ("ncurses" ,ncurses)
+              ("ocl-icd" ,ocl-icd)))
     (build-system cmake-build-system)
     (arguments
      `(#:configure-flags
-       (let ((llvm (assoc-ref %build-inputs "llvm")))
-	 (list (string-append "-DLLVM_INSTALL_DIR=" llvm)
-	       ;; "-DCMAKE_BUILD_TYPE=Release"
-	       "-DENABLE_GL_SHARING=ON"
-	       "-DEXPERIMENTAL_DOUBLE=ON"))
+       (list (string-append "-DCLANG_LIBRARY_DIR="
+                            (assoc-ref %build-inputs "clang@3.7") "/lib")
+             "-DENABLE_GL_SHARING=ON"
+             "-DEXPERIMENTAL_DOUBLE=ON")
        #:tests? #f))
     (home-page "https://wiki.freedesktop.org/www/Software/Beignet/")
     (synopsis "Intel's OpenCL framework")
-    (description "Intel's OpenCL framework that works with Intel IvyBridge GPUs and above")
+    (description "Intel's OpenCL framework that works with Intel IvyBridge GPUs
+and above.")
     (license license:gpl2)))
 
 (define-public gmmlib
@@ -239,7 +239,7 @@ non free) ICD")
 	 #:tests? #f))			; Run automatically.
       (native-inputs `(("googletest" ,googletest)))
       (synopsis "Device specific buffer management for Intel(R) Graphics
-Compute Runtime.")
+Compute Runtime")
       (description "The Intel(R) Graphics Memory Management Library provides
 device specific and buffer management for the Intel(R) Graphics Compute Runtime
 for OpenCL(TM) and the Intel(R) Media Driver for VAAPI.")
