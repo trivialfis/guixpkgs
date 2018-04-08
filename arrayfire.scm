@@ -75,7 +75,7 @@
 	      ("freetype" ,freetype)
 	      ("fontconfig" ,fontconfig)
 	      ("glfw" ,glfw)
-	      ("glu" ,glu) 
+	      ("glu" ,glu)
 	      ("boost" ,boost)
 	      ("glbinding" ,glbinding)))
     (build-system cmake-build-system)
@@ -130,7 +130,7 @@ that use CUDA/OpenCL. ")
 		  "-DUSE_SYSTEM_CLBLAS=ON"
 		  "-DUSE_SYSTEM_CLFFT=ON"
 		  "-DUSE_SYSTEM_CL2HPP=ON"
-		  "-DBUILD_GRAPHICS=ON"
+		  "-DBUILD_GRAPHICS=OFF"
 		  "-DUSE_SYSTEM_FORGE=ON"
 		  "-DUSE_SYSTEM_GLBINDING=ON"
 		  "-DUSE_SYSTEM_BOOST_COMPUTE=ON"
@@ -206,67 +206,35 @@ library for graphics software based on the OpenGL Shading Language (GLSL)
 specifications.")
    (license license:expat)))
 
-
-;; FIXME: Dead code, to be remove. 
-(define-public arrayfire
+(define-public arrayfire-minimum
   (package
-   (name "arrayfire")
-   (version "3.5.1")
-   (source (origin
-	    (method url-fetch)
-	    (uri (string-append
-		  "http://arrayfire.com/arrayfire_source/arrayfire-full-"
-		  version ".tar.bz2"))
-	    (file-name (string-append name "-full-" version ".tar.bz2"))
-	    ;; (patches (search-patches
-	    ;; 	      "Restore-USE_SYSTEM_CLBLAS-and-USE_SYSTEM_CLFFT.patch"))
-	    (sha256
-	     (base32
-	      "1w11kfw20nqhvw8fnrab6n4cs8a7az3fq7xygrnq4kcx4zy2zzxn"))))
-   (native-inputs `(("boost-compute" ,boost-compute)
-		    ("cl2hpp-header" ,cl2hpp-header)
-		    ("googletest" ,googletest)
-		    ("ocl-icd" ,ocl-icd)
-		    ("git" ,git)
-		    ("opencl-headers" ,opencl-headers)
-		    ("pkg-config" ,pkg-config)))
-   (inputs `(("clBLAS" ,clBLAS)
-	     ("clFFT" ,clFFT)
-	     ;; ("cuda" ,cuda)
-	     ;; ("glew" ,glew)
-	     ;; ("glfw" ,glfw)
-	     ;; ("glu" ,glu)
-	     ;; ("glbinding" ,glbinding)
-	     ("freeimage" ,freeimage)
-	     ("lapack" ,lapack)
-	     ("openblas" ,openblas)
-	     ("fftw" ,fftw)
-	     ("fftwf" ,fftwf)
-	     ("fftw-avx" ,fftw-avx)
-	     ("boost" ,boost)))
-   (build-system cmake-build-system)
-   (arguments
-    ;; For master branch, use: AF_BUILD_CL, AF_WITH_GRAPHICS
-    ;; USE_SYSTEM_* need to be patched back.
-    `(#:configure-flags '("-DBUILD_CUDA=OFF"
-			  "-DBUILD_CL=ON"
-			  "-DBUILD_GRAPHICS=OFF" ; FIXME
-			  "-DUSE_SYSTEM_BOOST_COMPUTE=ON"
-			  "-DUSE_SYSTEM_CL2HPP=ON"
-			  "-DUSE_SYSTEM_CLBLAS=ON"
-			  "-DUSE_SYSTEM_CLFFT=ON"
-			  "-DBUILD_TEST=OFF")
-			;; #:phases (modify-phases %standard-phases
-			;; 		 (replace 'check
-			;; 		   (lambda _
-			;; 		     (invoke "ctest" "-R" "Test_.*_cpu")
-			;; 		     (invoke "ctest" "-R" "Test_.*_opencl")
-			;; 		     ;; (invoke "ctest" "-R" "Test_.*_unified")
-			;; 		     )))
-			#:tests? #f))
-   (home-page "http://arrayfire.com/")
-   (synopsis "ArrayFire: a general purpose GPU library.")
-   (description "ArrayFire is a general-purpose library that simplifies the
+    (name "arrayfire-minimum")
+    (version "3.5.1")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "http://arrayfire.com/arrayfire_source/arrayfire-full-"
+                    version ".tar.bz2"))
+              (file-name (string-append name "-full-" version ".tar.bz2"))
+              (sha256
+               (base32
+                "1w11kfw20nqhvw8fnrab6n4cs8a7az3fq7xygrnq4kcx4zy2zzxn"))))
+    ;; (native-inputs `(("googletest" ,googletest)))
+    (inputs `(("openblas" ,openblas)
+              ("fftw" ,fftw)
+              ("fftwf" ,fftwf)
+              ("fftw-avx" ,fftw-avx)))
+    (build-system cmake-build-system)
+    (arguments
+     `(#:configure-flags
+       '("-DBUILD_CUDA=OFF"
+         "-DBUILD_CL=OFF"
+         "-DBUILD_GRAPHICS=OFF"
+         "-DBUILD_TEST=OFF")
+       #:tests? #f))
+    (home-page "http://arrayfire.com/")
+    (synopsis "ArrayFire: a general purpose GPU library.")
+    (description "ArrayFire is a general-purpose library that simplifies the
 process of developing software that targets parallel and massively-parallel
 architectures including CPUs, GPUs, and other hardware acceleration devices.")
-   (license (list license:bsd-3))))
+    (license (list license:bsd-3))))
