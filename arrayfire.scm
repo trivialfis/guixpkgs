@@ -110,9 +110,10 @@ that use CUDA/OpenCL. ")
 			      ("lapack" ,lapack)
 			      ("boost" ,boost))))
 	 (cl-native `(,cl?
-		      (("opencl-headers" ,opencl-headers)
+		      (("beignet" ,beignet) ; Only used for testing.
+		       ("boost-compute" ,boost-compute)
 		       ("cl2hpp-header" ,cl2hpp-header)
-		       ("boost-compute" ,boost-compute))))
+		       ("opencl-headers" ,opencl-headers))))
 	 (cl-inputs `(,cl?
 		      (("clBLAS" ,clBLAS)
 		       ("clFFT" ,clFFT)
@@ -126,16 +127,14 @@ that use CUDA/OpenCL. ")
 	 (flags `(list
 		  (string-append "-DBUILD_CUDA=" (if ,cuda? "ON" "OFF"))
 		  (string-append "-DBUILD_OPENCL=" (if ,cl? "ON" "OFF"))
-		  ;; (if ,cl? "-DUSE_SYSTEM_CLBLAS=ON" "-Wdev")
-		  ;; (if ,cl? "-DUSE_SYSTEM_CLFFT=ON" "-Wdev")
-		  ;; (if ,cl? "-DUSE_SYSTEM_CL2HPP=ON" "-Wdev")
+		  "-DUSE_SYSTEM_CLBLAS=ON"
+		  "-DUSE_SYSTEM_CLFFT=ON"
+		  "-DUSE_SYSTEM_CL2HPP=ON"
 		  "-DBUILD_GRAPHICS=ON"
 		  "-DUSE_SYSTEM_FORGE=ON"
 		  "-DUSE_SYSTEM_GLBINDING=ON"
 		  "-DUSE_SYSTEM_BOOST_COMPUTE=ON"
-		  "-DBUILD_TEST=ON"))
-	 ;; (switchs (lambda (s) (if s "ON" "OFF")))
-	 )
+		  "-DBUILD_TEST=ON")))
     (define (make-inputs inputs-list)
       (if (equal? inputs-list '())
 	  '()
@@ -144,18 +143,6 @@ that use CUDA/OpenCL. ")
 	    (if (equal? (car first) #t)
 		(append (cadr first) (make-inputs rest))
 		(make-inputs rest)))))
-    ;; (define (switchs s)
-    ;;   (if s "ON" "OFF"))
-    ;; (define make-flags
-    ;;   `(,(string-append "-DBUILD_CUDA=" (switchs cuda?))
-    ;; 	,(string-append "-DBUILD_OPENCL=" (switchs cl?))
-    ;; 	,(if cl? "-DUSE_SYSTEM_CLBLAS=ON" "")
-    ;; 	,(if cl? "-DUSE_SYSTEM_CLFFT=OFF" "")
-    ;; 	,(if cl? "-DUSE_SYSTEM_CL2HPP=ON" "")
-    ;; 	"-DBUILD_GRAPHICS=ON"
-    ;; 	"-DUSE_SYSTEM_FORGE=ON"
-    ;; 	"-DUSE_SYSTEM_BOOST_COMPUTE=ON"
-    ;; 	"-DBUILD_TEST=ON"))
     (package
       (name name)
       (version "3.5.1")
