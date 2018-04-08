@@ -24,7 +24,6 @@
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages)
-  #:use-module (gnu packages autotools)
   #:use-module (gnu packages bootstrap)
   #:use-module (gnu packages bison)
   #:use-module (gnu packages check)
@@ -101,30 +100,24 @@
 (define-public ocl-icd
   (package
    (name "ocl-icd")
-   (version "2.2.9")
+   (version "2.2.12")
    (source (origin
             (method url-fetch)
             (uri (string-append
-		  "https://forge.imag.fr/frs/download.php/716/ocl-icd-"
-                  version ".tar.gz"))
+		  "https://forge.imag.fr/frs/download.php/836/ocl-icd-"
+		  version ".tar.gz"))
             (file-name (string-append name "-" version ".tar.gz"))
             (sha256
              (base32
-	      "1rgaixwnxmrq2aq4kcdvs0yx7i6krakarya9vqs7qwsv5hzc32hc"))))
-   (inputs `(("zip" ,zip)
-             ("autoconf" ,autoconf)
-             ("automake" ,automake)
-             ("ruby" ,ruby)
-             ("libtool" ,libtool)
+	      "1x2dr8p4dkfds56r38av360i3nv1y3326jmshxvjngaf6mlg6rbn"))))
+   (inputs `(("ruby" ,ruby)
              ("opencl-headers" ,opencl-headers)
              ("libgcrypt" ,libgcrypt)))
    (build-system gnu-build-system)
-   (arguments
-    '(#:phases
-      (modify-phases %standard-phases
-		     (add-after 'unpack `bootstrap
-				(lambda _
-				  (zero? (system* "autoreconf" "-vfi")))))))
+   ;; FIXME:
+   ;; (arguments
+   ;;  '(#:configure-flags
+   ;;    '("--enable-update-database")))
    (home-page "https://forge.imag.fr/projects/ocl-icd/")
    (synopsis "OpenCL implementations are provided as ICD (Installable Client
  Driver).")
@@ -210,7 +203,29 @@ non free) ICD")
                             (assoc-ref %build-inputs "clang@3.7") "/lib")
              "-DENABLE_GL_SHARING=ON"
              "-DEXPERIMENTAL_DOUBLE=ON")
-       #:tests? #f))
+       #:tests? #f
+       ;; #:phases
+       ;; (modify-phases %standard-phases
+       ;; 	 (replace 'check
+       ;; 	   (lambda* (#:key inputs outputs #:allow-other-keys)
+       ;; 	     (let* ((builddir (getcwd))
+       ;; 		    (testdir (string-append builddir "/utests"))
+       ;; 		    (pc (number->string (total-processor-count))))
+       ;; 	       (format #t "builddir: ~s\n" builddir)
+       ;; 	       (format #t "testdir: ~s\n" testdir)
+       ;; 	       (invoke "ls" "-l")
+       ;; 	       (invoke "make" (string-append "-j" pc) "utest")
+       ;; 	       (chdir testdir)
+       ;; 	       (invoke "ls" "-l")
+       ;; 	       ;; Test doesn't pass, don't know why.
+       ;; 	       (let ((status (system ". ./setenv.sh")))
+       ;; 		 (unless (zero? status)
+       ;; 		   (error (format #f ". exit with non-zero code" status))))
+       ;; 	       (let ((status (system ". ./setenv.sh && ./utest_run")))
+       ;; 		 (unless (zero? status)
+       ;; 		   (error (format #f "Tests exit with non-zero code" status)))
+       ;; 		 (zero? status))))))
+       ))
     (home-page "https://wiki.freedesktop.org/www/Software/Beignet/")
     (synopsis "Intel's OpenCL framework")
     (description "Intel's OpenCL framework that works with Intel IvyBridge GPUs
