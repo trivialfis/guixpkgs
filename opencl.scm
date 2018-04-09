@@ -55,7 +55,6 @@
 	       (base32
 		"0awg6yznbz3h285kmnd47fykx2qa34a07sr4x1657yn3jmi4a9zs"))))
     (build-system cmake-build-system)
-    (native-inputs `(()))
     (home-page "https://github.com/KhronosGroup/OpenCL-CLHPP")
     (synopsis "Khronos OpenCL-CLHPP")
     (description "Sources for the OpenCL Host API C++ bindings
