@@ -1,6 +1,8 @@
 This repository hosts some guix package definitions that yet to be upstreamed
 or simply can not be upstreamed.
 
+If any of the package is upstreamed, it will be removed here.
+
 Some definitions are ported from:
 https://gitlab.com/genenetwork/guix-bioinformatics.
 Copyright notice is included.
@@ -30,8 +32,11 @@ Copyright notice is included.
 
 ** Others
    + qBittorrent
+   + amule: Test not enabled.
+
+
+* Upstreamed
    + bear
    + unittest-cpp
-   + amule: Test not enabled.
 
 #  LocalWords:  upstreamed LocalWords
