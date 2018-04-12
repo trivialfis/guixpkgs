@@ -38,5 +38,6 @@ Copyright notice is included.
 * Upstreamed
    + bear
    + unittest-cpp
+   + qBittorrent
 
 #  LocalWords:  upstreamed LocalWords
