@@ -26,6 +26,7 @@
               (sha256
                (base32
                 "1wvcj0n9xz03xz5c2xwp6dwfp7sqjhhwbki3m0lwikskpn9lkzk2"))
+	      ;; Patch for adopting crypto++ >= 6.0
 	      (patches (search-patches "Amule_Crypto-6.patch"))))
     (build-system gnu-build-system)
     (arguments
@@ -33,10 +34,9 @@
        (modify-phases %standard-phases
          (add-after 'patch-source-shebangs 'autogen
            (lambda _
-             (zero? (system* "sh" "autogen.sh")))))
+	     (invoke "sh" "autogen.sh"))))
        #:configure-flags
-       '("--disable-debug"
-         "--disable-rpath"
+       '("--disable-rpath"
          "--enable-wxcas"
          "--enable-cas"
          "--enable-alc"
@@ -50,8 +50,7 @@
          "--enable-amule-gui"
          "--enable-amule-daemon"
          "--enable-webserver"
-         "--with-denoise-level=0")
-       #:tests? #f))
+         "--with-denoise-level=0")))
     (native-inputs
      `(("autoconf" ,autoconf)
        ("automake" ,automake)
