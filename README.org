@@ -32,8 +32,7 @@ Copyright notice is included.
    The old cpu version is working. I can't get any further due to broken cuda.
 
 ** Others
-   + qBittorrent
-   + amule: Test not enabled.
+   + amule
 
 
 * Upstreamed
