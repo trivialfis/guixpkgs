@@ -24,6 +24,7 @@
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages)
+  #:use-module (gnu packages autotools)
   #:use-module (gnu packages bootstrap)
   #:use-module (gnu packages bison)
   #:use-module (gnu packages check)
@@ -38,6 +39,7 @@
   #:use-module (gnu packages python)
   #:use-module (gnu packages ruby)
   #:use-module (gnu packages video)
+  #:use-module (gnu packages mpi)
   #:use-module (gnu packages xorg)
   #:use-module (gnu packages xdisorg))
 
@@ -230,6 +232,40 @@ non free) ICD")
     (description "Intel's OpenCL framework that works with Intel IvyBridge GPUs
 and above.")
     (license license:gpl2)))
+
+(define-public pocl
+  (package
+    (name "pocl")
+    (version "1.1")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "https://github.com/pocl/pocl/archive/v"
+                    version ".tar.gz"))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0lrw3hlb0w53xzmrf2hvbda406l70ar4gyadflvlkj4879lx138y"))))
+    (build-system cmake-build-system)
+    (native-inputs
+     `(("pkg-config" ,pkg-config)
+       ("libltdl" ,libltdl)))
+    (inputs
+     `(("llvm" ,llvm)
+       ("hwloc" ,hwloc "lib")
+       ("clang" ,clang)
+       ("ocl-icd" ,ocl-icd)))
+    (arguments
+     `(#:configure-flags
+       '("-DENABLE_ICD=ON"
+         "-DENABLE_TESTSUITES=all"
+         "-DENABLE_CONFORMANCE=ON")
+       #:tests? #f))
+    (home-page "http://portablecl.org/")
+    (synopsis "Portable Computing Language (pocl)")
+    (description "pocl is being developed towards an efficient implementation
+of OpenCL standard which can be easily adapted for new targets.")
+    (license license:non-copyleft)))
 
 (define-public gmmlib
   (let* ((commit "b32d2124aa5187b20b64df24d2e83bcbe7a57d7d")

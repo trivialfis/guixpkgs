@@ -24,8 +24,9 @@ Copyright notice is included.
    + ocl-icd
    + ClMath: clBLAS, clFFT
    + boost_compute
-*** Not tested:
+*** Tests failed:
    + beignet
+   + pocl
 
 ** Arrayfire
    The old cpu version is working. I can't get any further due to broken cuda.
