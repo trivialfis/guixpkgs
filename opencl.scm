@@ -98,6 +98,39 @@
     (description "OpenCL Host API C++ bindings cl2.hpp.")
     (license license:non-copyleft)))
 
+(define-public clinfo
+  ;; Not working yet, ld can't find OpenCL. Should I give it a cmake build?
+  (package
+    (name "clinfo")
+    (version "2.2.18.04.06")
+    (source (origin
+	      (method url-fetch)
+	      (uri (string-append
+		    "https://github.com/Oblomov/clinfo/archive/"
+		    version ".tar.gz"))
+	      (file-name (string-append name "-" version ".tar.gz"))
+	      (sha256
+	       (base32
+		"0v7cy01irwdgns6lzaprkmm0502pp5a24zhhffydxz1sgfjj2w7p"))))
+    (build-system gnu-build-system)
+    (native-inputs `(("opencl-headers" ,opencl-headers)
+		     ("pocl" ,pocl)))
+    (arguments
+     '(#:phases (modify-phases %standard-phases
+		  (delete 'configure)
+		  (replace 'build
+		    (lambda _
+		      (let ((cores (number->string (parallel-job-count))))
+			(setenv "CC" "gcc")
+			(invoke "make" "-j" cores)))))))
+    (home-page "https://github.com/Oblomov/clinfo")
+    (synopsis "Print all known information about all available OpenCL platforms
+and devices in the system")
+    (description "clinfo is a simple command-line application that enumerates
+all possible (known) properties of the OpenCL platform and devices available on
+the system.")
+    (license license:non-copyleft)))
+
 (define-public ocl-icd
   (package
    (name "ocl-icd")
