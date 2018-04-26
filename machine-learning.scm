@@ -75,6 +75,34 @@ projects,  offers the bricks to build efficient and scalable distributed
 xmachine learning libraries.")
       (license license:asl2.0))))
 
+(define-public rabit
+  (let* ((commit "7bc46b8c75a6d530b2ad4efcf407b6aeab71e44f")
+	 (revision "0")
+	 (version (git-version "0.0.0" revision commit)))
+    (package
+     (name "rabit")
+     (home-page "https://github.com/dmlc/rabit")
+     (version version)
+     (source (origin (method git-fetch)
+		     (uri (git-reference
+                      (url home-page)
+                      (commit commit)))
+		     (sha256
+                      (base32
+		       "1zybls07a7kwafn0m97cvwcrvnmch95y0mw0ir1485mdlix7qwac"))
+                     (file-name (git-file-name name version))))
+     (build-system cmake-build-system)
+     (arguments
+      `(#:configure-flags
+	'("-DCMAKE_CXX_FLAGS=-std=gnu++11")
+	#:tests? #f))			; use test.mk, not cmake
+     (synopsis "Reliable Allreduce and Broadcast Interface")
+     (description "Rabit is a light weight library that provides a fault
+tolerant interface of Allreduce and Broadcast. It is designed to support easy
+implementations of distributed machine learning programs, many of which fall
+naturally under the Allreduce abstraction.")
+     (license license:asl2.0))))
+
 (define-public xgboost
   ;; Not working yet.
   (package
