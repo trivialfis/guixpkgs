@@ -1,6 +1,8 @@
 (define-module  (machine-learning)
   #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (guix build-system cmake)
   #:use-module (guix build-system python)
+  #:use-module (guix download)
   #:use-module (guix packages)
   #:use-module (guix git-download)
   #:use-module (gnu packages check)
@@ -48,3 +50,48 @@ is gradient-based optimization.")
 
 (define-public python2-autograd
   (package-with-python2 python-autograd))
+
+(define-public dmlc-core
+  (let* ((commit "d26d9e7982b233d4aa105ae084fbecc500d254ff")
+	 (revision "0")
+	 (version (git-version "0.0.0" revision commit)))
+    (package
+      (name "dmlc-core")
+      (version version)
+      (home-page "https://github.com/dmlc/dmlc-core")
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url home-page)
+                      (commit commit)))
+                (sha256
+                 (base32
+		  "0lf8my5b9p458q5y45q2hav07i8q7qnlvqi6145zzb9nrzkjdkgp"))
+                (file-name (git-file-name name version))))
+      (build-system cmake-build-system)
+      (synopsis "Distributed machine learning common codebase")
+      (description "DMLC-Core is the backbone library to support all DMLC
+projects,  offers the bricks to build efficient and scalable distributed
+xmachine learning libraries.")
+      (license license:asl2.0))))
+
+(define-public xgboost
+  ;; Not working yet.
+  (package
+    (name "xgboost")
+    (version "0.71")
+    (source (origin
+	      (method url-fetch)
+	      (uri (string-append "https://github.com/dmlc/xgboost/archive/v"
+				  version ".tar.gz"))
+	      (sha256
+	       (base32
+		"0csvwmanqfqm1cy0gmz3yjpk9088iyk0770qc02zwxm0wazkkb8q"))
+	      (file-name (git-file-name name version))))
+    (build-system cmake-build-system)
+    (home-page "https://xgboost.readthedocs.io/en/latest/")
+    (synopsis "Scalable and flexible gradient boosting")
+    (description "XGBoost is an optimized distributed gradient boosting library
+designed to be highly efficient, flexible and portable. It implements machine
+learning algorithms under the Gradient Boosting framework.")
+    (license license:asl2.0)))

@@ -33,6 +33,9 @@ Copyright notice is included.
 
 ** Others
    + amule
+   + python-autograd
+     
+Many libraries are packaged as dependencies, just grep "define-public".
 
 
 * Upstreamed
