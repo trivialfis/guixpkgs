@@ -197,6 +197,8 @@ non free) ICD")
      (license (list license:gpl2)))))
 
 (define-public beignet
+  ;; Beignet failed to recognize device at tests, which means all tests
+  ;; failed.
   (package
     (name "beignet")
     (version "1.3.2")
@@ -237,28 +239,87 @@ non free) ICD")
                             (assoc-ref %build-inputs "clang@3.7") "/lib")
              "-DENABLE_GL_SHARING=ON"
              "-DEXPERIMENTAL_DOUBLE=ON")
-       #:tests? #f
-       ;; #:phases
-       ;; (modify-phases %standard-phases
-       ;; 	 (replace 'check
-       ;; 	   (lambda* (#:key inputs outputs #:allow-other-keys)
-       ;; 	     (let* ((builddir (getcwd))
-       ;; 		    (testdir (string-append builddir "/utests"))
-       ;; 		    (pc (number->string (total-processor-count))))
-       ;; 	       (format #t "builddir: ~s\n" builddir)
-       ;; 	       (format #t "testdir: ~s\n" testdir)
-       ;; 	       (invoke "ls" "-l")
-       ;; 	       (invoke "make" (string-append "-j" pc) "utest")
-       ;; 	       (chdir testdir)
-       ;; 	       (invoke "ls" "-l")
-       ;; 	       ;; Test doesn't pass, don't know why.
-       ;; 	       (let ((status (system ". ./setenv.sh")))
-       ;; 		 (unless (zero? status)
-       ;; 		   (error (format #f ". exit with non-zero code" status))))
-       ;; 	       (let ((status (system ". ./setenv.sh && ./utest_run")))
-       ;; 		 (unless (zero? status)
-       ;; 		   (error (format #f "Tests exit with non-zero code" status)))
-       ;; 		 (zero? status))))))
+       #:phases
+       (modify-phases %standard-phases
+         (delete 'check)
+         (add-after 'install 'check
+           (lambda* (#:key inputs outputs #:allow-other-keys)
+             ;; Don't be mislead by this function, tests don't work.
+             (let* ((builddir (getcwd))
+                    (testdir (string-append builddir "/utests"))
+                    (beignet-src (string-append builddir "/.."))
+                    (cores (number->string (parallel-job-count)))
+                    ;; (source (assoc-ref inputs "source"))
+                    (out (assoc-ref outputs "out"))
+                    (libocl-path "/backend/src/libocl")
+                    (setenv-with-tests (lambda (name value)
+                                         (format #t "Name: ~s\nValue: ~s\n" name value)
+                                         (if (not (file-exists? value))
+                                             (error name)
+                                             (setenv name value)))))
+
+               (invoke "make" (string-append "-j" cores) "utest")
+
+               (format #t "builddir: ~s\n" builddir)
+               (format #t "testdir: ~s\n" testdir)
+               (invoke "ls" "-l")
+
+               (let ((source-dir (string-append
+                                  builddir
+                                  "/../beignet-Release_v1.3.2/kernels")))
+                 (copy-recursively source-dir (string-append
+                                               out
+                                               "/lib/beignet/kernels")))
+
+               ;; (format #t "src: ~s target: ~s\n"
+               ;;              (string-append testdir "/libutests.so")
+               ;;              (string-append out "/lib/libutests.so"))
+               ;; (install-file (string-append testdir "/libutests.so")
+               ;;                 (string-append out "/lib/libutests.so"))
+
+               ;; (mkdir (string-append out "/bin"))
+               ;; (format #t "src: ~s target: ~s\n"
+               ;;              (string-append testdir "/utest_run")
+               ;;              (string-append out "/bin/utest_run"))
+               ;; (install-file (string-append testdir "/utest_run")
+               ;;                 (string-append out "/bin/utest_run"))
+
+               (setenv-with-tests "OCL_BITCODE_LIB_PATH"
+                                  (string-append builddir
+                                                 libocl-path
+                                                 out
+                                                 "/lib/beignet/beignet.bc"))
+               (setenv-with-tests "OCL_HEADER_FILE_DIR"
+                                  (string-append builddir
+                                                 libocl-path
+                                                 out
+                                                 "/lib/beignet/include"))
+               (setenv "OCL_BITCODE_LIB_20_PATH" "")
+               (setenv-with-tests "OCL_PCH_PATH"
+                                  (string-append builddir
+                                                 libocl-path
+                                                 out
+                                                 "/lib/beignet/beignet.local.pch"))
+               (setenv "OCL_PCH_20_PATH" "")
+               (setenv-with-tests "OCL_KERNEL_PATH"
+                                  (string-append
+                                   out "/lib/beignet/kernels"))
+               (setenv-with-tests "OCL_GBE_PATH"
+                                  (string-append
+                                   builddir "/backend/src/libgbe.so"))
+               (setenv-with-tests "OCL_INTERP_PATH"
+                                  (string-append
+                                   builddir
+                                   "/backend/src/libgbeinterp.so"))
+               (setenv "OCL_IGNORE_SELF_TEST" "1")
+
+               (chdir testdir)
+               (invoke "ls" "-l")
+               ;; Tests don't pass, failed to recognize device
+               (let ((status (system "./utest_run")))
+                 (unless (zero? status)
+                   (error (format #f "Tests exit with non-zero code" status)))
+                 (zero? status))))))
        ))
     (home-page "https://wiki.freedesktop.org/www/Software/Beignet/")
     (synopsis "Intel's OpenCL framework")
