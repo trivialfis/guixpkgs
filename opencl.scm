@@ -59,7 +59,8 @@
                       (commit commit)))
                 (file-name (string-append name "-" commit))
                 (sha256
-                 (base32 "176ydpbyws5nr4av6hf8p41pkhc0rc4m4vrah9w6gp2fw2i32838"))))
+                 (base32
+                  "176ydpbyws5nr4av6hf8p41pkhc0rc4m4vrah9w6gp2fw2i32838"))))
       (build-system gnu-build-system)
       (arguments
        `(#:phases
@@ -98,13 +99,13 @@
     (name "opencl-clhpp")
     (version "2.0.10")
     (source (origin
-	      (method url-fetch)
-	      (uri (string-append
-		     "https://github.com/KhronosGroup/OpenCL-CLHPP/archive/v"
-		     version ".tar.gz"))
-	      (sha256
-	       (base32
-		"0awg6yznbz3h285kmnd47fykx2qa34a07sr4x1657yn3jmi4a9zs"))))
+              (method url-fetch)
+              (uri (string-append
+                    "https://github.com/KhronosGroup/OpenCL-CLHPP/archive/v"
+                    version ".tar.gz"))
+              (sha256
+               (base32
+                "0awg6yznbz3h285kmnd47fykx2qa34a07sr4x1657yn3jmi4a9zs"))))
     (native-inputs
      `(("python" ,python-wrapper)))
     (propagated-inputs
@@ -112,7 +113,7 @@
     (arguments
      '(#:configure-flags
        '("-DBUILD_EXAMPLES=OFF"
-	 "-DBUILD_TESTS=OFF")
+         "-DBUILD_TESTS=OFF")
        #:tests? #f))
     (build-system cmake-build-system)
     (home-page "http://github.khronos.org/OpenCL-CLHPP/")
@@ -126,25 +127,25 @@
     (name "clinfo")
     (version "2.2.18.04.06")
     (source (origin
-	      (method url-fetch)
-	      (uri (string-append
-		    "https://github.com/Oblomov/clinfo/archive/"
-		    version ".tar.gz"))
-	      (file-name (string-append name "-" version ".tar.gz"))
-	      (sha256
-	       (base32
-		"0v7cy01irwdgns6lzaprkmm0502pp5a24zhhffydxz1sgfjj2w7p"))))
+              (method url-fetch)
+              (uri (string-append
+                    "https://github.com/Oblomov/clinfo/archive/"
+                    version ".tar.gz"))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0v7cy01irwdgns6lzaprkmm0502pp5a24zhhffydxz1sgfjj2w7p"))))
     (build-system gnu-build-system)
     (native-inputs `(("opencl-headers@2.2" ,opencl-headers-2.2)
-		     ("pocl" ,pocl)))
+                     ("pocl" ,pocl)))
     (arguments
      '(#:phases (modify-phases %standard-phases
-		  (delete 'configure)
-		  (replace 'build
-		    (lambda _
-		      (let ((cores (number->string (parallel-job-count))))
-			(setenv "CC" "gcc")
-			(invoke "make" "-j" cores)))))))
+                  (delete 'configure)
+                  (replace 'build
+                    (lambda _
+                      (let ((cores (number->string (parallel-job-count))))
+                        (setenv "CC" "gcc")
+                        (invoke "make" "-j" cores)))))))
     (home-page "https://github.com/Oblomov/clinfo")
     (synopsis "Print all known information about all available OpenCL platforms
 and devices in the system")
@@ -155,33 +156,33 @@ the system.")
 
 (define-public ocl-icd
   (package
-   (name "ocl-icd")
-   (version "2.2.12")
-   (source (origin
-            (method url-fetch)
-            (uri (string-append
-		  "https://forge.imag.fr/frs/download.php/836/ocl-icd-"
-		  version ".tar.gz"))
-            (file-name (string-append name "-" version ".tar.gz"))
-            (sha256
-             (base32
-	      "1x2dr8p4dkfds56r38av360i3nv1y3326jmshxvjngaf6mlg6rbn"))))
-   (inputs `(("ruby" ,ruby)
-             ("opencl-headers@2.2" ,opencl-headers-2.2)
-             ("libgcrypt" ,libgcrypt)))
-   (build-system gnu-build-system)
-   ;; FIXME:
-   ;; (arguments
-   ;;  '(#:configure-flags
-   ;;    '("--enable-update-database")))
-   (home-page "https://forge.imag.fr/projects/ocl-icd/")
-   (synopsis "OpenCL implementations are provided as ICD (Installable Client
+    (name "ocl-icd")
+    (version "2.2.12")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "https://forge.imag.fr/frs/download.php/836/ocl-icd-"
+                    version ".tar.gz"))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1x2dr8p4dkfds56r38av360i3nv1y3326jmshxvjngaf6mlg6rbn"))))
+    (inputs `(("ruby" ,ruby)
+              ("opencl-headers@2.2" ,opencl-headers-2.2)
+              ("libgcrypt" ,libgcrypt)))
+    (build-system gnu-build-system)
+    ;; FIXME:
+    ;; (arguments
+    ;;  '(#:configure-flags
+    ;;    '("--enable-update-database")))
+    (home-page "https://forge.imag.fr/projects/ocl-icd/")
+    (synopsis "OpenCL implementations are provided as ICD (Installable Client
  Driver).")
-   (description "OpenCL implementations are provided as ICD (Installable Client
+    (description "OpenCL implementations are provided as ICD (Installable Client
  Driver). An OpenCL program can use several ICD thanks to the use of an ICD
 Loader as provided by this project. This free ICD Loader can load any (free or
 non free) ICD")
-   (license (list license:gpl2 license:ruby))))
+    (license (list license:gpl2 license:ruby))))
 
 
 (define-public beignet
@@ -351,24 +352,24 @@ of OpenCL standard which can be easily adapted for new targets.")
 
 (define-public gmmlib
   (let* ((commit "b32d2124aa5187b20b64df24d2e83bcbe7a57d7d")
-	 (revision "1")
-	 (version (git-version "0.0.0" revision commit)))
+         (revision "1")
+         (version (git-version "0.0.0" revision commit)))
     (package
       (name "gmmlib")
       (version version)
       (home-page "https://github.com/intel/gmmlib")
       (source (origin
-		(method git-fetch)
-		(uri (git-reference (url home-page)
-				    (commit commit)))
-		(sha256
-		 (base32
-		  "0d6w7bfp1my3jb8m5wa8ighjr8msq993m0flhfb0d34sackyn7s6"))))
+                (method git-fetch)
+                (uri (git-reference (url home-page)
+                                    (commit commit)))
+                (sha256
+                 (base32
+                  "0d6w7bfp1my3jb8m5wa8ighjr8msq993m0flhfb0d34sackyn7s6"))))
       (build-system cmake-build-system)
       (arguments
        `(#:phases (modify-phases %standard-phases
-		    (delete 'install))	; No such a phase
-	 #:tests? #f))			; Run automatically.
+                    (delete 'install))  ; No such a phase
+                  #:tests? #f))                 ; Run automatically.
       (native-inputs `(("googletest" ,googletest)))
       (synopsis "Device specific buffer management for Intel(R) Graphics
 Compute Runtime")
