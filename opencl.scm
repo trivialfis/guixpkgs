@@ -122,7 +122,6 @@
     (license license:expat)))
 
 (define-public clinfo
-  ;; Not working yet, ld can't find OpenCL. Should I give it a cmake build?
   (package
     (name "clinfo")
     (version "2.2.18.04.06")
@@ -136,16 +135,24 @@
                (base32
                 "0v7cy01irwdgns6lzaprkmm0502pp5a24zhhffydxz1sgfjj2w7p"))))
     (build-system gnu-build-system)
-    (native-inputs `(("opencl-headers@2.2" ,opencl-headers-2.2)
-                     ("pocl" ,pocl)))
+    (native-inputs `(("opencl-headers@2.2" ,opencl-headers-2.2)))
+    (inputs
+     `(("ocl-icd" ,ocl-icd)))
     (arguments
-     '(#:phases (modify-phases %standard-phases
-                  (delete 'configure)
-                  (replace 'build
-                    (lambda _
-                      (let ((cores (number->string (parallel-job-count))))
-                        (setenv "CC" "gcc")
-                        (invoke "make" "-j" cores)))))))
+     '(#:phases
+       (modify-phases %standard-phases
+         (delete 'configure)
+         (replace 'build
+           (lambda _
+             (let ((cores (number->string (parallel-job-count))))
+               (setenv "CC" "gcc")
+               (invoke "make" "-j" cores))))
+         (replace 'install
+           (lambda* (#:key outputs #:allow-other-keys)
+             (invoke "make" "install" (string-append
+                                       "PREFIX="
+                                       (assoc-ref outputs "out"))))))
+       #:tests? #f))
     (home-page "https://github.com/Oblomov/clinfo")
     (synopsis "Print all known information about all available OpenCL platforms
 and devices in the system")
