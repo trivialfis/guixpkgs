@@ -113,7 +113,7 @@ that use CUDA/OpenCL. ")
 		      (("beignet" ,beignet) ; Only used for testing.
 		       ("boost-compute" ,boost-compute)
 		       ("cl2hpp-header" ,cl2hpp-header)
-		       ("opencl-headers" ,opencl-headers))))
+		       ("opencl-headers@2.2" ,opencl-headers-2.2))))
 	 (cl-inputs `(,cl?
 		      (("clBLAS" ,clBLAS)
 		       ("clFFT" ,clFFT)

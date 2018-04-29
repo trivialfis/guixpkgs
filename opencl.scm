@@ -113,7 +113,7 @@
 	       (base32
 		"0v7cy01irwdgns6lzaprkmm0502pp5a24zhhffydxz1sgfjj2w7p"))))
     (build-system gnu-build-system)
-    (native-inputs `(("opencl-headers" ,opencl-headers)
+    (native-inputs `(("opencl-headers@2.2" ,opencl-headers-2.2)
 		     ("pocl" ,pocl)))
     (arguments
      '(#:phases (modify-phases %standard-phases
@@ -145,7 +145,7 @@ the system.")
              (base32
 	      "1x2dr8p4dkfds56r38av360i3nv1y3326jmshxvjngaf6mlg6rbn"))))
    (inputs `(("ruby" ,ruby)
-             ("opencl-headers" ,opencl-headers)
+             ("opencl-headers@2.2" ,opencl-headers-2.2)
              ("libgcrypt" ,libgcrypt)))
    (build-system gnu-build-system)
    ;; FIXME:
@@ -161,40 +161,54 @@ Loader as provided by this project. This free ICD Loader can load any (free or
 non free) ICD")
    (license (list license:gpl2 license:ruby))))
 
-(define-public opencl-headers
-  (let ((commit "c1770dc"))
+(define (opencl-headers major-version subversion)
+  (let ((commit "e986688daf750633898dfd3994e14a9e618f2aa5")
+        (revision "0"))
     (package
-     (name "opencl-headers")
-     (version (string-append "2.1-" commit ))
-     (source (origin
-	      (method git-fetch)
-	      (uri (git-reference
-		    (url "https://github.com/KhronosGroup/OpenCL-Headers.git")
-		    (commit commit)))
-	      (file-name (string-append name "-" commit))
-	      (sha256
-	       (base32
-                "0m9fkblqja0686i2jjqiszvq3df95gp01a2674xknlmkd6525rck"))))
-     (propagated-inputs '())
-     (inputs '())
-     (native-inputs '())
-     (build-system gnu-build-system)
-     (arguments
-      '(#:phases
-	(modify-phases
-	 %standard-phases
-	 (delete 'configure)
-	 (delete 'build)
-	 (delete 'check)
-	 (replace 'install
-		  (lambda* (#:key outputs #:allow-other-keys)
-		    (copy-recursively "." (string-append
-					   (assoc-ref outputs "out")
-					   "/include/CL")))))))
-     (synopsis "The Khronos OpenCL headers")
-     (description "This package provides the Khronos OpenCL c headers")
-     (home-page "https://www.khronos.org/registry/cl/")
-     (license (list license:gpl2)))))
+      (name "opencl-headers")
+      (version (git-version
+                (string-append major-version "." subversion ".0")
+                revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/KhronosGroup/OpenCL-Headers.git")
+                      (commit commit)))
+                (file-name (string-append name "-" commit))
+                (sha256
+                 (base32 "176ydpbyws5nr4av6hf8p41pkhc0rc4m4vrah9w6gp2fw2i32838"))))
+      (build-system gnu-build-system)
+      (arguments
+       `(#:phases
+         (modify-phases %standard-phases
+           (delete 'configure)
+           (delete 'build)
+           (delete 'check)
+           (replace 'install
+             (lambda* (#:key outputs #:allow-other-keys)
+               (copy-recursively (string-append "./opencl" (string-append
+                                                            ,major-version
+                                                            ,subversion) "/CL")
+                                 (string-append
+                                  (assoc-ref outputs "out")
+                                  "/include/CL")))))))
+      (synopsis "The Khronos OpenCL headers")
+      (description "This package provides the Khronos OpenCL c headers.")
+      (home-page "https://www.khronos.org/registry/cl/")
+      (license license:expat))))
+
+(define-public opencl-headers-2.2
+  (opencl-headers "2" "2"))
+(define-public opencl-headers-2.1
+  (opencl-headers "2" "1"))
+(define-public opencl-headers-2.0
+  (opencl-headers "2" "0"))
+(define-public opencl-headers-1.2
+  (opencl-headers "1" "2"))
+(define-public opencl-headers-1.1
+  (opencl-headers "1" "1"))
+(define-public opencl-headers-1.0
+  (opencl-headers "1" "0"))
 
 (define-public beignet
   ;; Beignet failed to recognize device at tests, which means all tests
@@ -223,7 +237,7 @@ non free) ICD")
               ("libedit" ,libedit)
               ("xextproto" ,xextproto)
               ("python" ,python)
-              ("opencl-headers" ,opencl-headers)
+              ("opencl-headers@2.2" ,opencl-headers-2.2)
               ("glu" ,glu)
               ("zlib" ,zlib)
               ("libva" ,libva)
