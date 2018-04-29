@@ -43,60 +43,82 @@
   #:use-module (gnu packages xorg)
   #:use-module (gnu packages xdisorg))
 
-(define-public cl2-hpp
-  ;; Not working yet, requires cmock.
+
+(define (opencl-headers major-version subversion)
+  (let ((commit "e986688daf750633898dfd3994e14a9e618f2aa5")
+        (revision "0"))
+    (package
+      (name "opencl-headers")
+      (version (git-version
+                (string-append major-version "." subversion ".0")
+                revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/KhronosGroup/OpenCL-Headers.git")
+                      (commit commit)))
+                (file-name (string-append name "-" commit))
+                (sha256
+                 (base32 "176ydpbyws5nr4av6hf8p41pkhc0rc4m4vrah9w6gp2fw2i32838"))))
+      (build-system gnu-build-system)
+      (arguments
+       `(#:phases
+         (modify-phases %standard-phases
+           (delete 'configure)
+           (delete 'build)
+           (delete 'check)
+           (replace 'install
+             (lambda* (#:key outputs #:allow-other-keys)
+               (copy-recursively (string-append "./opencl" (string-append
+                                                            ,major-version
+                                                            ,subversion) "/CL")
+                                 (string-append
+                                  (assoc-ref outputs "out")
+                                  "/include/CL")))))))
+      (synopsis "The Khronos OpenCL headers")
+      (description "This package provides the Khronos OpenCL c headers.")
+      (home-page "https://www.khronos.org/registry/cl/")
+      (license license:expat))))
+
+(define-public opencl-headers-2.2
+  (opencl-headers "2" "2"))
+(define-public opencl-headers-2.1
+  (opencl-headers "2" "1"))
+(define-public opencl-headers-2.0
+  (opencl-headers "2" "0"))
+(define-public opencl-headers-1.2
+  (opencl-headers "1" "2"))
+(define-public opencl-headers-1.1
+  (opencl-headers "1" "1"))
+(define-public opencl-headers-1.0
+  (opencl-headers "1" "0"))
+
+(define-public opencl-clhpp
   (package
-    (name "cl2-hpp")
+    (name "opencl-clhpp")
     (version "2.0.10")
     (source (origin
 	      (method url-fetch)
 	      (uri (string-append
-		    "https://github.com/KhronosGroup/OpenCL-CLHPP/archive/v"
-		    version ".tar.gz"))
+		     "https://github.com/KhronosGroup/OpenCL-CLHPP/archive/v"
+		     version ".tar.gz"))
 	      (sha256
 	       (base32
 		"0awg6yznbz3h285kmnd47fykx2qa34a07sr4x1657yn3jmi4a9zs"))))
-    (build-system cmake-build-system)
-    (home-page "https://github.com/KhronosGroup/OpenCL-CLHPP")
-    (synopsis "Khronos OpenCL-CLHPP")
-    (description "Sources for the OpenCL Host API C++ bindings
- (cl.hpp and cl2.hpp).")
-    (license license:non-copyleft)))
-
-(define-public cl2hpp-header
-  (package
-    (name "cl2hpp-header")
-    (version "2.0.10")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (string-append
-	     "https://github.com/KhronosGroup/OpenCL-CLHPP/releases/download/v"
-	     version "/cl2.hpp"))
-       (sha256
-	(base32
-	 "1v4q0g6b6mwwsi0kn7kbjn749j3qafb9r4ld3zdq1163ln9cwnvw"))))
-    (build-system gnu-build-system)
+    (native-inputs
+     `(("python" ,python-wrapper)))
+    (propagated-inputs
+     `(("opencl-headers@2.2" ,opencl-headers-2.2)))
     (arguments
-     `(#:phases (modify-phases %standard-phases
-		  ;; (delete 'unpack)
-		  (replace 'unpack
-		    (lambda* (#:key inputs outputs #:allow-other-keys)
-		      (let* ((source (assoc-ref inputs "source")))
-			(copy-file source "cl2.hpp"))))
-		  (delete 'configure)
-		  (delete 'build)
-		  (delete 'check)
-		  (replace 'install
-		    (lambda* (#:key outputs #:allow-other-keys)
-		      (delete-file "environment-variables")
-		      (copy-recursively "." (string-append
-					     (assoc-ref outputs "out")
-					     "/include/CL")))))))
-    (home-page "https://github.com/KhronosGroup/OpenCL-CLHPP")
+     '(#:configure-flags
+       '("-DBUILD_EXAMPLES=OFF"
+	 "-DBUILD_TESTS=OFF")
+       #:tests? #f))
+    (build-system cmake-build-system)
+    (home-page "http://github.khronos.org/OpenCL-CLHPP/")
     (synopsis "Khronos OpenCL-CLHPP")
     (description "OpenCL Host API C++ bindings cl2.hpp.")
-    (license license:non-copyleft)))
+    (license license:expat)))
 
 (define-public clinfo
   ;; Not working yet, ld can't find OpenCL. Should I give it a cmake build?
@@ -161,54 +183,6 @@ Loader as provided by this project. This free ICD Loader can load any (free or
 non free) ICD")
    (license (list license:gpl2 license:ruby))))
 
-(define (opencl-headers major-version subversion)
-  (let ((commit "e986688daf750633898dfd3994e14a9e618f2aa5")
-        (revision "0"))
-    (package
-      (name "opencl-headers")
-      (version (git-version
-                (string-append major-version "." subversion ".0")
-                revision commit))
-      (source (origin
-                (method git-fetch)
-                (uri (git-reference
-                      (url "https://github.com/KhronosGroup/OpenCL-Headers.git")
-                      (commit commit)))
-                (file-name (string-append name "-" commit))
-                (sha256
-                 (base32 "176ydpbyws5nr4av6hf8p41pkhc0rc4m4vrah9w6gp2fw2i32838"))))
-      (build-system gnu-build-system)
-      (arguments
-       `(#:phases
-         (modify-phases %standard-phases
-           (delete 'configure)
-           (delete 'build)
-           (delete 'check)
-           (replace 'install
-             (lambda* (#:key outputs #:allow-other-keys)
-               (copy-recursively (string-append "./opencl" (string-append
-                                                            ,major-version
-                                                            ,subversion) "/CL")
-                                 (string-append
-                                  (assoc-ref outputs "out")
-                                  "/include/CL")))))))
-      (synopsis "The Khronos OpenCL headers")
-      (description "This package provides the Khronos OpenCL c headers.")
-      (home-page "https://www.khronos.org/registry/cl/")
-      (license license:expat))))
-
-(define-public opencl-headers-2.2
-  (opencl-headers "2" "2"))
-(define-public opencl-headers-2.1
-  (opencl-headers "2" "1"))
-(define-public opencl-headers-2.0
-  (opencl-headers "2" "0"))
-(define-public opencl-headers-1.2
-  (opencl-headers "1" "2"))
-(define-public opencl-headers-1.1
-  (opencl-headers "1" "1"))
-(define-public opencl-headers-1.0
-  (opencl-headers "1" "0"))
 
 (define-public beignet
   ;; Beignet failed to recognize device at tests, which means all tests

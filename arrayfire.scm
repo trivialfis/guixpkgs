@@ -69,7 +69,7 @@
 		    version "-ft.tar.gz"))
 	      (sha256
 	       (base32 "0m0bc75a6gdq84gs3sh069f7q0idmgh1ikc6znjjm2hxc35pz7wd"))))
-    (native-inputs `(("cl2hpp-header" ,cl2hpp-header)
+    (native-inputs `(("opencl-clhpp" ,opencl-clhpp)
 		     ("glm" ,glm)))
     (inputs `(("freeimage" ,freeimage)
 	      ("freetype" ,freetype)
@@ -112,7 +112,7 @@ that use CUDA/OpenCL. ")
 	 (cl-native `(,cl?
 		      (("beignet" ,beignet) ; Only used for testing.
 		       ("boost-compute" ,boost-compute)
-		       ("cl2hpp-header" ,cl2hpp-header)
+		       ("opencl-clhpp" ,opencl-clhpp)
 		       ("opencl-headers@2.2" ,opencl-headers-2.2))))
 	 (cl-inputs `(,cl?
 		      (("clBLAS" ,clBLAS)
