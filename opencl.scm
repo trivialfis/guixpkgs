@@ -111,9 +111,15 @@
     (propagated-inputs
      `(("opencl-headers@2.2" ,opencl-headers-2.2)))
     (arguments
-     '(#:configure-flags
-       '("-DBUILD_EXAMPLES=OFF"
-         "-DBUILD_TESTS=OFF")
+     `(#:configure-flags
+       (let ((out (assoc-ref %outputs "out")))
+         (list
+          "-DBUILD_EXAMPLES=OFF"
+          "-DBUILD_TESTS=OFF"
+          (string-append "-DCMAKE_INSTALL_PREFIX="
+                         (assoc-ref %outputs "out")
+                         "/include")))
+       ;; regression tests requires a lot more dependencies
        #:tests? #f))
     (build-system cmake-build-system)
     (home-page "http://github.khronos.org/OpenCL-CLHPP/")
@@ -139,7 +145,7 @@
     (inputs
      `(("ocl-icd" ,ocl-icd)))
     (arguments
-     '(#:phases
+     `(#:phases
        (modify-phases %standard-phases
          (delete 'configure)
          (replace 'build
@@ -147,11 +153,20 @@
              (let ((cores (number->string (parallel-job-count))))
                (setenv "CC" "gcc")
                (invoke "make" "-j" cores))))
-         (replace 'install
+         (delete 'install)
+         (add-after 'build 'make-install
            (lambda* (#:key outputs #:allow-other-keys)
              (invoke "make" "install" (string-append
                                        "PREFIX="
-                                       (assoc-ref outputs "out"))))))
+                                       (assoc-ref outputs "out")))))
+         (add-after 'make-install 'wrap
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let* ((out (assoc-ref outputs "out"))
+                    (bin (string-append out "/bin/clinfo")))
+               (wrap-program bin
+                 `("OPENCL_VENDOR_PATH" ":" prefix
+                   ("$GUIX_PROFILE/etc/OpenCL/vendors")))))))
+       ;; Cannot be run in store environment.
        #:tests? #f))
     (home-page "https://github.com/Oblomov/clinfo")
     (synopsis "Print all known information about all available OpenCL platforms
@@ -173,15 +188,26 @@ the system.")
               (file-name (string-append name "-" version ".tar.gz"))
               (sha256
                (base32
-                "1x2dr8p4dkfds56r38av360i3nv1y3326jmshxvjngaf6mlg6rbn"))))
+                "1x2dr8p4dkfds56r38av360i3nv1y3326jmshxvjngaf6mlg6rbn"))
+              ;; The patch is used to get all debug message, need to disable
+              ;; tests.
+              ;; (patches (search-patches "ocl-icd-Full-debug.patch"))
+              ))
     (inputs `(("ruby" ,ruby)
               ("opencl-headers@2.2" ,opencl-headers-2.2)
               ("libgcrypt" ,libgcrypt)))
     (build-system gnu-build-system)
-    ;; FIXME:
-    ;; (arguments
-    ;;  '(#:configure-flags
-    ;;    '("--enable-update-database")))
+    ;; FIXME: enable database
+    (arguments
+     '(#:configure-flags
+       '(
+         ;; "--enable-update-database"
+         "DEBUG_OCL_ICD=1")))
+    (native-search-paths
+     (list (search-path-specification
+            (variable "OPENCL_VENDOR_PATH")
+            (files '("etc/OpenCL/vendors")))))
+    (search-paths native-search-paths)
     (home-page "https://forge.imag.fr/projects/ocl-icd/")
     (synopsis "OpenCL implementations are provided as ICD (Installable Client
  Driver).")
@@ -245,11 +271,11 @@ non free) ICD")
                     (testdir (string-append builddir "/utests"))
                     (beignet-src (string-append builddir "/.."))
                     (cores (number->string (parallel-job-count)))
-                    ;; (source (assoc-ref inputs "source"))
                     (out (assoc-ref outputs "out"))
                     (libocl-path "/backend/src/libocl")
                     (setenv-with-tests (lambda (name value)
-                                         (format #t "Name: ~s\nValue: ~s\n" name value)
+                                         (format #t "Name: ~s\nValue: ~s\n"
+                                                 name value)
                                          (if (not (file-exists? value))
                                              (error name)
                                              (setenv name value)))))
@@ -266,6 +292,9 @@ non free) ICD")
                  (copy-recursively source-dir (string-append
                                                out
                                                "/lib/beignet/kernels")))
+
+               ;; Nix put the tests file in a seperate output, here simply
+               ;; copying the file will result in wrong rpath.
 
                ;; (format #t "src: ~s target: ~s\n"
                ;;              (string-append testdir "/libutests.so")
@@ -292,10 +321,11 @@ non free) ICD")
                                                  "/lib/beignet/include"))
                (setenv "OCL_BITCODE_LIB_20_PATH" "")
                (setenv-with-tests "OCL_PCH_PATH"
-                                  (string-append builddir
-                                                 libocl-path
-                                                 out
-                                                 "/lib/beignet/beignet.local.pch"))
+                                  (string-append
+                                   builddir
+                                   libocl-path
+                                   out
+                                   "/lib/beignet/beignet.local.pch"))
                (setenv "OCL_PCH_20_PATH" "")
                (setenv-with-tests "OCL_KERNEL_PATH"
                                   (string-append
@@ -324,6 +354,8 @@ and above.")
     (license license:gpl2)))
 
 (define-public pocl
+  ;; pocl tests failed at beginning.
+  ;; ocl-icd loads libpocl.so correctly, I don't know why the tests fail.
   (package
     (name "pocl")
     (version "1.1")
@@ -350,7 +382,7 @@ and above.")
        '("-DENABLE_ICD=ON"
          "-DENABLE_TESTSUITES=all"
          "-DENABLE_CONFORMANCE=ON")
-       #:tests? #f))
+       #:tests? #f))                    ; failed
     (home-page "http://portablecl.org/")
     (synopsis "Portable Computing Language (pocl)")
     (description "pocl is being developed towards an efficient implementation

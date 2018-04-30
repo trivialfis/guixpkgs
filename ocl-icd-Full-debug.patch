@@ -1,0 +1,121 @@
+From 155df07e13d02c608f26f5468aedb8db56dc9483 Mon Sep 17 00:00:00 2001
+From: fis <ybbs.daans@hotmail.com>
+Date: Sun, 29 Apr 2018 21:33:08 +0800
+Subject: [PATCH] Full debug.
+
+---
+ ocl_icd_debug.h | 74 ++++++++++++++++++++++++++++-----------------------------
+ 1 file changed, 37 insertions(+), 37 deletions(-)
+
+diff --git a/ocl_icd_debug.h b/ocl_icd_debug.h
+index 2f29355..7c3a269 100644
+--- a/ocl_icd_debug.h
++++ b/ocl_icd_debug.h
+@@ -1,26 +1,26 @@
+ /**
+-Copyright (c) 2012, Vincent Danjean <Vincent.Danjean@ens-lyon.org>
+-All rights reserved.
++   Copyright (c) 2012, Vincent Danjean <Vincent.Danjean@ens-lyon.org>
++   All rights reserved.
+       
+-Redistribution and use in source and binary forms, with or without
+-modification, are permitted provided that the following conditions are met:
++   Redistribution and use in source and binary forms, with or without
++   modification, are permitted provided that the following conditions are met:
+     
+-1. Redistributions of source code must retain the above copyright notice, this
++   1. Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+-2. Redistributions in binary form must reproduce the above copyright notice,
++   2. Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+         
+-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
++   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++   DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
++   ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++   (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++   LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++   ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+ #ifndef OCL_ICD_LOADER_DEBUG_H
+ #define OCL_ICD_LOADER_DEBUG_H
+@@ -40,31 +40,31 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ #include "config.h"
+ 
+ #define D_ALWAYS 0
+-#define D_WARN 1
+-#define D_LOG 2
+-#define D_TRACE 4
+-#define D_DUMP 8
++#define D_WARN 0
++#define D_LOG 0
++#define D_TRACE 0
++#define D_DUMP 0
+ #ifdef DEBUG_OCL_ICD
+ #  pragma GCC visibility push(default)
+ #  include <stdio.h>
+ #  include <stdlib.h>
+ #  pragma GCC visibility pop
+ extern int debug_ocl_icd_mask;
+-#  define debug(mask, fmt, ...) do {\
+-	if (((mask)==D_ALWAYS) || (debug_ocl_icd_mask & (mask))) {			\
+-		fprintf(stderr, "ocl-icd(%s:%i): %s: " fmt "\n", __FILE__, __LINE__, __func__, ##__VA_ARGS__); \
+-	} \
+-   } while(0)
+-#  define RETURN(val) do { \
+-	__typeof__(val) ret=(val); \
+-	debug(D_TRACE, "return: %ld/0x%lx", (long)ret, (long)ret);	\
+-	return ret; \
+-   } while(0)
+-#  define RETURN_STR(val) do { \
+-	char* _ret=(char*)(val);		\
+-	debug(D_TRACE, "return: %s", _ret);	\
+-	return _ret; \
+-   } while(0)
++#  define debug(mask, fmt, ...) do {					\
++    if (((mask)==D_ALWAYS) || (debug_ocl_icd_mask & (mask))) {		\
++      fprintf(stderr, "ocl-icd(%s:%i): %s: " fmt "\n", __FILE__, __LINE__, __func__, ##__VA_ARGS__); \
++    }									\
++  } while(0)
++#  define RETURN(val) do {					\
++    __typeof__(val) ret=(val);					\
++    debug(D_TRACE, "return: %ld/0x%lx", (long)ret, (long)ret);	\
++    return ret;							\
++  } while(0)
++#  define RETURN_STR(val) do {			\
++    char* _ret=(char*)(val);			\
++    debug(D_TRACE, "return: %s", _ret);		\
++    return _ret;				\
++  } while(0)
+ #  ifdef DEBUG_OCL_ICD_PROVIDE_DUMP_FIELD
+ #    pragma GCC diagnostic push
+ #      pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+@@ -85,8 +85,8 @@ static inline void debug_init(void) {
+   }
+ }
+ 
+-#  define dump_field(pid, f, name) \
+-    debug(D_ALWAYS, "%40s=%p [%p/%p]", #name, pid->dispatch->name, f(#name), ((long)(pid->dispatch->clGetExtensionFunctionAddressForPlatform)>10)?pid->dispatch->clGetExtensionFunctionAddressForPlatform(pid, #name):NULL)
++#  define dump_field(pid, f, name)					\
++  debug(D_ALWAYS, "%40s=%p [%p/%p]", #name, pid->dispatch->name, f(#name), ((long)(pid->dispatch->clGetExtensionFunctionAddressForPlatform)>10)?pid->dispatch->clGetExtensionFunctionAddressForPlatform(pid, #name):NULL)
+ 
+ #else
+ #  define debug(...) (void)0
+-- 
+2.14.3
+
