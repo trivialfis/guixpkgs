@@ -40,7 +40,7 @@
     (arguments
      `(#:tests? #f))
     ;; (native-inputs `(("boost" ,boost)))
-    (inputs `(("opencl-headers@2.2" ,opencl-headers-2.2)
+    (inputs `(("opencl-headers" ,opencl-headers)
 	      ("boost" ,boost)
 	      ("ocl-icd" ,ocl-icd)))
     (build-system cmake-build-system)

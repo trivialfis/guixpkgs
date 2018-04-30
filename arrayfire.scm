@@ -116,7 +116,7 @@ that use CUDA/OpenCL.")
 		      (("beignet" ,beignet) ; Only used for testing.
 		       ("boost-compute" ,boost-compute)
 		       ("opencl-clhpp" ,opencl-clhpp)
-		       ("opencl-headers@2.2" ,opencl-headers-2.2))))
+		       ("opencl-headers" ,opencl-headers))))
 	 (cl-inputs `(,cl?
 		      (("clBLAS" ,clBLAS)
 		       ("clFFT" ,clFFT)

@@ -44,7 +44,7 @@
   #:use-module (gnu packages xdisorg))
 
 
-(define (opencl-headers major-version subversion)
+(define (make-opencl-headers major-version subversion)
   (let ((commit "e986688daf750633898dfd3994e14a9e618f2aa5")
         (revision "0"))
     (package
@@ -82,17 +82,19 @@
       (license license:expat))))
 
 (define-public opencl-headers-2.2
-  (opencl-headers "2" "2"))
+  (make-opencl-headers "2" "2"))
 (define-public opencl-headers-2.1
-  (opencl-headers "2" "1"))
+  (make-opencl-headers "2" "1"))
 (define-public opencl-headers-2.0
-  (opencl-headers "2" "0"))
+  (make-opencl-headers "2" "0"))
 (define-public opencl-headers-1.2
-  (opencl-headers "1" "2"))
+  (make-opencl-headers "1" "2"))
 (define-public opencl-headers-1.1
-  (opencl-headers "1" "1"))
+  (make-opencl-headers "1" "1"))
 (define-public opencl-headers-1.0
-  (opencl-headers "1" "0"))
+  (make-opencl-headers "1" "0"))
+
+(define-public opencl-headers opencl-headers-2.2)
 
 (define-public opencl-clhpp
   (package
@@ -109,7 +111,7 @@
     (native-inputs
      `(("python" ,python-wrapper)))
     (propagated-inputs
-     `(("opencl-headers@2.2" ,opencl-headers-2.2)))
+     `(("opencl-headers" ,opencl-headers)))
     (arguments
      `(#:configure-flags
        (let ((out (assoc-ref %outputs "out")))
@@ -141,7 +143,7 @@
                (base32
                 "0v7cy01irwdgns6lzaprkmm0502pp5a24zhhffydxz1sgfjj2w7p"))))
     (build-system gnu-build-system)
-    (native-inputs `(("opencl-headers@2.2" ,opencl-headers-2.2)))
+    (native-inputs `(("opencl-headers" ,opencl-headers)))
     (inputs
      `(("ocl-icd" ,ocl-icd)))
     (arguments
@@ -194,7 +196,7 @@ the system.")
               ;; (patches (search-patches "ocl-icd-Full-debug.patch"))
               ))
     (inputs `(("ruby" ,ruby)
-              ("opencl-headers@2.2" ,opencl-headers-2.2)
+              ("opencl-headers" ,opencl-headers)
               ("libgcrypt" ,libgcrypt)))
     (build-system gnu-build-system)
     ;; FIXME: enable database
@@ -245,7 +247,7 @@ non free) ICD")
               ("libedit" ,libedit)
               ("xextproto" ,xextproto)
               ("python" ,python)
-              ("opencl-headers@2.2" ,opencl-headers-2.2)
+              ("opencl-headers" ,opencl-headers)
               ("glu" ,glu)
               ("zlib" ,zlib)
               ("libva" ,libva)
@@ -420,8 +422,8 @@ of OpenCL standard which can be easily adapted for new targets.")
       (arguments
        `(#:phases
 	 (modify-phases %standard-phases
-           (delete 'install))  ; No such a phase
-         #:tests? #f))                 ; Run automatically.
+           (delete 'install))		; No such a phase
+         #:tests? #f))			; Run automatically.
       (native-inputs `(("googletest" ,googletest)))
       (synopsis "Device specific buffer management for Intel(R) Graphics
 Compute Runtime")
