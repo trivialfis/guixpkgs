@@ -29,20 +29,20 @@
     (name "boost-compute")
     (version "1.66.0")
     (source (origin
-	      (method url-fetch)
-	      (uri (string-append
-		    "https://github.com/boostorg/compute/archive/boost-"
-		    version
-		    ".tar.gz"))
-	      (sha256
-	       (base32
-		"1a573qf7inph3xfb2cmsanylw40fpkb7rwdjvniyb1m37k9mz178"))))
+              (method url-fetch)
+              (uri (string-append
+                    "https://github.com/boostorg/compute/archive/boost-"
+                    version
+                    ".tar.gz"))
+              (sha256
+               (base32
+                "1a573qf7inph3xfb2cmsanylw40fpkb7rwdjvniyb1m37k9mz178"))))
     (arguments
      `(#:tests? #f))
     ;; (native-inputs `(("boost" ,boost)))
     (inputs `(("opencl-headers" ,opencl-headers)
-	      ("boost" ,boost)
-	      ("ocl-icd" ,ocl-icd)))
+              ("boost" ,boost)
+              ("ocl-icd" ,ocl-icd)))
     (build-system cmake-build-system)
     (home-page "https://github.com/boostorg/compute")
     (synopsis "A C++ GPU Computing Library for OpenCL")

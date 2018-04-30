@@ -41,23 +41,23 @@
 
 (define-public glbinding
   (package
-   (name "glbinding")
-   (version "2.1.4")
-   (source (origin
-	    (method url-fetch)
-	    (uri (string-append "https://github.com/cginternals/"
-				name "/archive/v" version ".tar.gz"))
-	    (sha256
-	     (base32 "1qlbixc26z0dsj0c4h8dxq98qazx0f43ccad62r1gln0hsq72nfb"))))
-   (build-system cmake-build-system)
-   (inputs `(("glfw" ,glfw)
-	     ("python" ,python)))
-   (home-page "http://www.glbinding.org")
-   (synopsis "A C++ binding for the OpenGL API, generated using the gl.xml
+    (name "glbinding")
+    (version "2.1.4")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://github.com/cginternals/"
+                                  name "/archive/v" version ".tar.gz"))
+              (sha256
+               (base32 "1qlbixc26z0dsj0c4h8dxq98qazx0f43ccad62r1gln0hsq72nfb"))))
+    (build-system cmake-build-system)
+    (inputs `(("glfw" ,glfw)
+              ("python" ,python)))
+    (home-page "http://www.glbinding.org")
+    (synopsis "A C++ binding for the OpenGL API, generated using the gl.xml
 specification")
-   (description "Glbinding leverages modern C++11 features like enum classes,
+    (description "Glbinding leverages modern C++11 features like enum classes,
 lambdas, and variadic templates, instead of relying on macros.")
-   (license license:non-copyleft)))
+    (license license:non-copyleft)))
 
 
 (define-public forge
@@ -65,31 +65,31 @@ lambdas, and variadic templates, instead of relying on macros.")
     (name "forge")
     (version "1.0.2")
     (source (origin
-	      (method url-fetch)
-	      (uri (string-append
-		    "https://github.com/arrayfire/forge/archive/v"
-		    version "-ft.tar.gz"))
-	      (sha256
-	       (base32
-		"0m0bc75a6gdq84gs3sh069f7q0idmgh1ikc6znjjm2hxc35pz7wd"))))
+              (method url-fetch)
+              (uri (string-append
+                    "https://github.com/arrayfire/forge/archive/v"
+                    version "-ft.tar.gz"))
+              (sha256
+               (base32
+                "0m0bc75a6gdq84gs3sh069f7q0idmgh1ikc6znjjm2hxc35pz7wd"))))
     (native-inputs `(("opencl-clhpp" ,opencl-clhpp)
-		     ("glm" ,glm)))
+                     ("glm" ,glm)))
     (inputs `(("freeimage" ,freeimage)
-	      ("freetype" ,freetype)
-	      ("fontconfig" ,fontconfig)
-	      ("glfw" ,glfw)
-	      ("glu" ,glu)
-	      ("boost" ,boost)
-	      ("glbinding" ,glbinding)))
+              ("freetype" ,freetype)
+              ("fontconfig" ,fontconfig)
+              ("glfw" ,glfw)
+              ("glu" ,glu)
+              ("boost" ,boost)
+              ("glbinding" ,glbinding)))
     (build-system cmake-build-system)
     (arguments
      `(#:configure-flags '("-DUSE_SYSTEM_CL2HPP=ON"
-			   "-DUSE_SYSTEM_GLBINDING=ON"
-			   "-DUSE_SYSTEM_FREETYPE=ON"
-			   "-DUSE_SYSTEM_GLM=ON"
-			   "-DBUILD_DOCUMENTATION=OFF"
-			   "-DBUILD_EXAMPLES=OFF")
-			 #:tests? #f))
+                           "-DUSE_SYSTEM_GLBINDING=ON"
+                           "-DUSE_SYSTEM_FREETYPE=ON"
+                           "-DUSE_SYSTEM_GLM=ON"
+                           "-DBUILD_DOCUMENTATION=OFF"
+                           "-DBUILD_EXAMPLES=OFF")
+                         #:tests? #f))
     (home-page "https://github.com/arrayfire/forge")
     (synopsis "High Performance Visualization")
     (description "An OpenGL interop library that can be used with ArrayFire or
@@ -101,65 +101,65 @@ that use CUDA/OpenCL.")
 
 (define* (make-arrayfire cl? cuda? name #:optional (cpu? #t))
   (let* ((cpu-native `(,cpu? (("googletest" ,googletest)
-			      ("pkg-config" ,pkg-config))))
-	 (cpu-inputs `(,cpu? (("freeimage" ,freeimage)
-			      ("openblas" ,openblas)
-			      ("glbinding" ,glbinding)
-			      ("forge" ,forge)
-			      ("glew" ,glew)
-			      ("fftw" ,fftw)
-			      ("fftwf" ,fftwf)
-			      ("fftw-avx" ,fftw-avx)
-			      ("lapack" ,lapack)
-			      ("boost" ,boost))))
-	 (cl-native `(,cl?
-		      (("beignet" ,beignet) ; Only used for testing.
-		       ("boost-compute" ,boost-compute)
-		       ("opencl-clhpp" ,opencl-clhpp)
-		       ("opencl-headers" ,opencl-headers))))
-	 (cl-inputs `(,cl?
-		      (("clBLAS" ,clBLAS)
-		       ("clFFT" ,clFFT)
-		       ("ocl-icd" ,ocl-icd))))
-	 (cuda-native `(,cuda? ()))
-	 (cuda-inputs `(,cuda?
-			(("cuda" ,cuda))))
-	 (native-inputs `(,cpu-native ,cl-native ,cuda-native))
-	 (inputs `(,cpu-inputs ,cl-inputs ,cuda-inputs))
-	 (switchs (lambda (s) (if s "ON" "OFF")))
-	 (flags `(list
-		  (string-append "-DBUILD_CUDA=" (if ,cuda? "ON" "OFF"))
-		  (string-append "-DBUILD_OPENCL=" (if ,cl? "ON" "OFF"))
-		  "-DUSE_SYSTEM_CLBLAS=ON"
-		  "-DUSE_SYSTEM_CLFFT=ON"
-		  "-DUSE_SYSTEM_CL2HPP=ON"
-		  "-DBUILD_GRAPHICS=OFF"
-		  "-DUSE_SYSTEM_FORGE=ON"
-		  "-DUSE_SYSTEM_GLBINDING=ON"
-		  "-DUSE_SYSTEM_BOOST_COMPUTE=ON"
-		  "-DBUILD_TEST=ON")))
+                              ("pkg-config" ,pkg-config))))
+         (cpu-inputs `(,cpu? (("freeimage" ,freeimage)
+                              ("openblas" ,openblas)
+                              ("glbinding" ,glbinding)
+                              ("forge" ,forge)
+                              ("glew" ,glew)
+                              ("fftw" ,fftw)
+                              ("fftwf" ,fftwf)
+                              ("fftw-avx" ,fftw-avx)
+                              ("lapack" ,lapack)
+                              ("boost" ,boost))))
+         (cl-native `(,cl?
+                      (("beignet" ,beignet) ; Only used for testing.
+                       ("boost-compute" ,boost-compute)
+                       ("opencl-clhpp" ,opencl-clhpp)
+                       ("opencl-headers" ,opencl-headers))))
+         (cl-inputs `(,cl?
+                      (("clBLAS" ,clBLAS)
+                       ("clFFT" ,clFFT)
+                       ("ocl-icd" ,ocl-icd))))
+         (cuda-native `(,cuda? ()))
+         (cuda-inputs `(,cuda?
+                        (("cuda" ,cuda))))
+         (native-inputs `(,cpu-native ,cl-native ,cuda-native))
+         (inputs `(,cpu-inputs ,cl-inputs ,cuda-inputs))
+         (switchs (lambda (s) (if s "ON" "OFF")))
+         (flags `(list
+                  (string-append "-DBUILD_CUDA=" (if ,cuda? "ON" "OFF"))
+                  (string-append "-DBUILD_OPENCL=" (if ,cl? "ON" "OFF"))
+                  "-DUSE_SYSTEM_CLBLAS=ON"
+                  "-DUSE_SYSTEM_CLFFT=ON"
+                  "-DUSE_SYSTEM_CL2HPP=ON"
+                  "-DBUILD_GRAPHICS=OFF"
+                  "-DUSE_SYSTEM_FORGE=ON"
+                  "-DUSE_SYSTEM_GLBINDING=ON"
+                  "-DUSE_SYSTEM_BOOST_COMPUTE=ON"
+                  "-DBUILD_TEST=ON")))
     (define (make-inputs inputs-list)
       (if (equal? inputs-list '())
-	  '()
-	  (let ((first (car inputs-list))
-		(rest (cdr inputs-list)))
-	    (if (equal? (car first) #t)
-		(append (cadr first) (make-inputs rest))
-		(make-inputs rest)))))
+          '()
+          (let ((first (car inputs-list))
+                (rest (cdr inputs-list)))
+            (if (equal? (car first) #t)
+                (append (cadr first) (make-inputs rest))
+                (make-inputs rest)))))
     (package
       (name name)
       (version "3.5.1")
       (source (origin
-		(method url-fetch)
-		(uri (string-append
-		      "http://arrayfire.com/arrayfire_source/arrayfire-full-"
-		      version ".tar.bz2"))
-		(file-name (string-append name "-full-" version ".tar.bz2"))
-		;; (patches (search-patches
-		;; 	      "Restore-USE_SYSTEM_CLBLAS-and-USE_SYSTEM_CLFFT.patch"))
-		(sha256
-		 (base32
-		  "1w11kfw20nqhvw8fnrab6n4cs8a7az3fq7xygrnq4kcx4zy2zzxn"))))
+                (method url-fetch)
+                (uri (string-append
+                      "http://arrayfire.com/arrayfire_source/arrayfire-full-"
+                      version ".tar.bz2"))
+                (file-name (string-append name "-full-" version ".tar.bz2"))
+                ;; (patches (search-patches
+                ;;            "Restore-USE_SYSTEM_CLBLAS-and-USE_SYSTEM_CLFFT.patch"))
+                (sha256
+                 (base32
+                  "1w11kfw20nqhvw8fnrab6n4cs8a7az3fq7xygrnq4kcx4zy2zzxn"))))
       (native-inputs (make-inputs native-inputs))
       (inputs (make-inputs inputs))
       (build-system cmake-build-system)
@@ -187,27 +187,27 @@ architectures including CPUs, GPUs, and other hardware acceleration devices.")
 
 (define-public glm
   (package
-   (name "glm")
-   (version "0.9.8.5")
-   (source (origin
-	    (method url-fetch)
-	    (uri (string-append "https://github.com/g-truc/glm/archive/"
-				version
-				".tar.gz"))
-	    (sha256
-	     (base32
-	      "08691x1xmh0n18ff62wk080jf4blx3yi9sj5vzw08mbfy1c9kkw0"))))
-   (build-system cmake-build-system)
-   (arguments
-    `(#:configure-flags '("-DGLM_TEST_ENABLE=ON"
-			  "-DGLM_TEST_ENABLE_CXX_11=ON"
-			  "-DGLM_TEST_FORCE_PURE=ON")))
-   (home-page "http://glm.g-truc.net")
-   (synopsis "OpenGL Mathematics library")
-   (description "OpenGL Mathematics (GLM) is a header-only C++ mathematics
+    (name "glm")
+    (version "0.9.8.5")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://github.com/g-truc/glm/archive/"
+                                  version
+                                  ".tar.gz"))
+              (sha256
+               (base32
+                "08691x1xmh0n18ff62wk080jf4blx3yi9sj5vzw08mbfy1c9kkw0"))))
+    (build-system cmake-build-system)
+    (arguments
+     `(#:configure-flags '("-DGLM_TEST_ENABLE=ON"
+                           "-DGLM_TEST_ENABLE_CXX_11=ON"
+                           "-DGLM_TEST_FORCE_PURE=ON")))
+    (home-page "http://glm.g-truc.net")
+    (synopsis "OpenGL Mathematics library")
+    (description "OpenGL Mathematics (GLM) is a header-only C++ mathematics
 library for graphics software based on the OpenGL Shading Language (GLSL)
 specifications.")
-   (license license:expat)))
+    (license license:expat)))
 
 (define-public arrayfire-minimum
   (package

@@ -39,21 +39,21 @@
                       (commit commit)))
                 (sha256
                  (base32
-		  "189sv2xb0mwnjawa9z7mrgdglc1miaq93pnck26r28fi1jdwg0z4"))
+                  "189sv2xb0mwnjawa9z7mrgdglc1miaq93pnck26r28fi1jdwg0z4"))
                 (file-name (git-file-name name version))))
       (version version)
       (build-system python-build-system)
       (native-inputs
        `(("python-nose" ,python-nose)
-	 ("python-pytest" ,python-pytest)))
+         ("python-pytest" ,python-pytest)))
       (propagated-inputs
        `(("python-future" ,python-future)
          ("python-numpy" ,python-numpy)))
       (arguments
        `(#:phases (modify-phases %standard-phases
-		    (replace 'check
-		      (lambda _
-			(invoke "py.test" "-v"))))))
+                    (replace 'check
+                      (lambda _
+                        (invoke "py.test" "-v"))))))
       (synopsis "Efficiently computes derivatives of numpy code")
       (description "Autograd can automatically differentiate native Python and
 Numpy code. It can handle a large subset of Python's features, including loops,
@@ -70,8 +70,8 @@ is gradient-based optimization.")
 
 (define-public dmlc-core
   (let* ((commit "d26d9e7982b233d4aa105ae084fbecc500d254ff")
-	 (revision "0")
-	 (version (git-version "0.0.0" revision commit)))
+         (revision "0")
+         (version (git-version "0.0.0" revision commit)))
     (package
       (name "dmlc-core")
       (version version)
@@ -83,7 +83,7 @@ is gradient-based optimization.")
                       (commit commit)))
                 (sha256
                  (base32
-		  "0lf8my5b9p458q5y45q2hav07i8q7qnlvqi6145zzb9nrzkjdkgp"))
+                  "0lf8my5b9p458q5y45q2hav07i8q7qnlvqi6145zzb9nrzkjdkgp"))
                 (file-name (git-file-name name version))))
       (build-system cmake-build-system)
       (synopsis "Distributed machine learning common codebase")
@@ -94,31 +94,31 @@ xmachine learning libraries.")
 
 (define-public rabit
   (let* ((commit "7bc46b8c75a6d530b2ad4efcf407b6aeab71e44f")
-	 (revision "0")
-	 (version (git-version "0.0.0" revision commit)))
+         (revision "0")
+         (version (git-version "0.0.0" revision commit)))
     (package
-     (name "rabit")
-     (home-page "https://github.com/dmlc/rabit")
-     (version version)
-     (source (origin (method git-fetch)
-		     (uri (git-reference
-                      (url home-page)
-                      (commit commit)))
-		     (sha256
-                      (base32
-		       "1zybls07a7kwafn0m97cvwcrvnmch95y0mw0ir1485mdlix7qwac"))
-                     (file-name (git-file-name name version))))
-     (build-system cmake-build-system)
-     (arguments
-      `(#:configure-flags
-	'("-DCMAKE_CXX_FLAGS=-std=gnu++11")
-	#:tests? #f))			; use test.mk, not cmake
-     (synopsis "Reliable Allreduce and Broadcast Interface")
-     (description "Rabit is a light weight library that provides a fault
+      (name "rabit")
+      (home-page "https://github.com/dmlc/rabit")
+      (version version)
+      (source (origin (method git-fetch)
+                      (uri (git-reference
+                            (url home-page)
+                            (commit commit)))
+                      (sha256
+                       (base32
+                        "1zybls07a7kwafn0m97cvwcrvnmch95y0mw0ir1485mdlix7qwac"))
+                      (file-name (git-file-name name version))))
+      (build-system cmake-build-system)
+      (arguments
+       `(#:configure-flags
+         '("-DCMAKE_CXX_FLAGS=-std=gnu++11")
+         #:tests? #f))                  ; use test.mk, not cmake
+      (synopsis "Reliable Allreduce and Broadcast Interface")
+      (description "Rabit is a light weight library that provides a fault
 tolerant interface of Allreduce and Broadcast. It is designed to support easy
 implementations of distributed machine learning programs, many of which fall
 naturally under the Allreduce abstraction.")
-     (license license:asl2.0))))
+      (license license:asl2.0))))
 
 (define-public xgboost
   ;; Not working yet.
@@ -126,13 +126,13 @@ naturally under the Allreduce abstraction.")
     (name "xgboost")
     (version "0.71")
     (source (origin
-	      (method url-fetch)
-	      (uri (string-append "https://github.com/dmlc/xgboost/archive/v"
-				  version ".tar.gz"))
-	      (sha256
-	       (base32
-		"0csvwmanqfqm1cy0gmz3yjpk9088iyk0770qc02zwxm0wazkkb8q"))
-	      (file-name (git-file-name name version))))
+              (method url-fetch)
+              (uri (string-append "https://github.com/dmlc/xgboost/archive/v"
+                                  version ".tar.gz"))
+              (sha256
+               (base32
+                "0csvwmanqfqm1cy0gmz3yjpk9088iyk0770qc02zwxm0wazkkb8q"))
+              (file-name (git-file-name name version))))
     (build-system cmake-build-system)
     (home-page "https://xgboost.readthedocs.io/en/latest/")
     (synopsis "Scalable and flexible gradient boosting")

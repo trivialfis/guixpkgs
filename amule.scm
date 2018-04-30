@@ -43,15 +43,15 @@
               (sha256
                (base32
                 "1wvcj0n9xz03xz5c2xwp6dwfp7sqjhhwbki3m0lwikskpn9lkzk2"))
-	      ;; Patch for adopting crypto++ >= 6.0
-	      (patches (search-patches "Amule_Crypto-6.patch"))))
+              ;; Patch for adopting crypto++ >= 6.0
+              (patches (search-patches "Amule_Crypto-6.patch"))))
     (build-system gnu-build-system)
     (arguments
      `(#:phases
        (modify-phases %standard-phases
          (add-after 'patch-source-shebangs 'autogen
            (lambda _
-	     (invoke "sh" "autogen.sh"))))
+             (invoke "sh" "autogen.sh"))))
        #:configure-flags
        '("--disable-rpath"
          "--enable-wxcas"
