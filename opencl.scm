@@ -345,8 +345,13 @@ non free) ICD")
                (let ((status (system "./utest_run")))
                  (unless (zero? status)
                    (error (format #f "Tests exit with non-zero code" status)))
-                 (zero? status))))))
-       ))
+                 (zero? status)))))
+
+	 (add-after 'check 'remove-headers
+	     (lambda* (#:key outputs #:allow-other-keys)
+	       (let ((out (assoc-ref outputs "out")))
+		 (delete-file-recursively
+		  (string-append out "/include"))))))))
     (home-page "https://wiki.freedesktop.org/www/Software/Beignet/")
     (synopsis "Intel's OpenCL framework")
     (description "Intel's OpenCL framework that works with Intel IvyBridge GPUs
@@ -382,6 +387,13 @@ and above.")
        '("-DENABLE_ICD=ON"
          "-DENABLE_TESTSUITES=all"
          "-DENABLE_CONFORMANCE=ON")
+       #:phases
+       (modify-phases %standard-phases
+	 (add-after 'install 'remove-headers
+	     (lambda* (#:key outputs #:allow-other-keys)
+	       (let ((out (assoc-ref outputs "out")))
+		 (delete-file-recursively
+		  (string-append out "/include"))))))
        #:tests? #f))                    ; failed
     (home-page "http://portablecl.org/")
     (synopsis "Portable Computing Language (pocl)")
@@ -406,9 +418,10 @@ of OpenCL standard which can be easily adapted for new targets.")
                   "0d6w7bfp1my3jb8m5wa8ighjr8msq993m0flhfb0d34sackyn7s6"))))
       (build-system cmake-build-system)
       (arguments
-       `(#:phases (modify-phases %standard-phases
-                    (delete 'install))  ; No such a phase
-                  #:tests? #f))                 ; Run automatically.
+       `(#:phases
+	 (modify-phases %standard-phases
+           (delete 'install))  ; No such a phase
+         #:tests? #f))                 ; Run automatically.
       (native-inputs `(("googletest" ,googletest)))
       (synopsis "Device specific buffer management for Intel(R) Graphics
 Compute Runtime")
