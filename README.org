@@ -1,40 +1,65 @@
 This repository hosts some guix package definitions that yet to be upstreamed
 or simply can not be upstreamed.
 
-If any of the package is upstreamed, it will be removed here.
+If any of the package is upstreamed, I will try to removed it here. But 
+sometimes it's more convenient for me to keep some of them local, so that I can
+work with it any time I want. :)
 
 Some definitions are ported from:
 https://gitlab.com/genenetwork/guix-bioinformatics.
 Copyright notice is included.
 
 * Status
+
 ** Cuda
-   Doesn't work yet, at least not in real pure environment. It seems that some
-   dynamic load path are messed up in the binaries. If I omit testing in
-   wrap-program, cuda builds alright, and /nvcc/ *can* be used on *host system*.
+
+   Is not fully work yet, at least not in real pure environment. It seems that
+   some dynamic load path are messed up in the binaries. If I omit testing in
+   wrap-program, cuda builds alright, and *nvcc* *CAN* be used on *host system*.
    However, it can not be invoked inside the store environment, which means you
-   *can't* package other software having cuda as dependency, but you *can* use
+   *CAN'T* package other software having cuda as dependency, but you *CAN* use
    it with `guix environment` during development process.
+
    The failure is weird, no error message is emitted, nvcc just failed with
-   non-zero return code. I am still trying to get all those dynamic load path
-   right. How come the definition from nix looks so innocently simple anyway?
+   non-zero return code.
+   One possible explanation might be the /dev file is invisible inside store
+   environment, as mentioned in the link at following OpenCL section.
+
+   Other than that, I am still trying to get all those dynamic load path right.
+
+   How come the definition from nix looks so innocently simple anyway?
 
 ** OpenCL
-   + OpenCL headers.
+
+   Currently *clinfo* can recognize *pocl* and display information about it.
+   Anything other than that might not be working.
+
+   I tried to call OpenCL functions in `guix environment --pure`, but getting
+   cl device info results in segmentation fault. Please note that *clinfo* does
+   the same thing but it didn't get into any trouble.
+
+   Testing for OpenCL implementation might not be doable inside the store
+   environment, as mentioned in:
+   https://lists.gnu.org/archive/html/guix-devel/2018-04/msg00293.html
+
+   + Various OpenCL headers.
    + ocl-icd
+   + clinfo
    + ClMath: clBLAS, clFFT
    + boost_compute
-*** Tests failed:
+
+*** Implementations, WIP:
+
    + beignet
    + pocl
 
 ** Arrayfire
+
    The old cpu version is working. I can't get any further due to broken cuda.
 
 ** Others
    + amule
-   + python-autograd
-     
+
 Many libraries are packaged as dependencies, just grep "define-public".
 
 
@@ -42,5 +67,8 @@ Many libraries are packaged as dependencies, just grep "define-public".
    + bear
    + unittest-cpp
    + qBittorrent
+   + python-autograd
 
-#  LocalWords:  upstreamed LocalWords
+#  LocalWords:  upstreamed LocalWords nvcc OpenCL Cuda cuda dev pocl
+#  LocalWords:  clinfo guix icd clFFT beignet qBittorrent cpp WIP
+#  LocalWords:  autograd Arrayfire
