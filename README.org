@@ -1,7 +1,7 @@
 This repository hosts some guix package definitions that yet to be upstreamed
 or simply can not be upstreamed.
 
-If any of the package is upstreamed, I will try to removed it here. But 
+If any of the package is upstreamed, I will try to removed it here. But
 sometimes it's more convenient for me to keep some of them local, so that I can
 work with it any time I want. :)
 
@@ -31,7 +31,7 @@ Copyright notice is included.
 
 ** OpenCL
 
-   Currently *clinfo* can recognize *pocl* and display information about it.
+   Currently *clinfo* can display information about *pocl* and *beignet*.
    Anything other than that might not be working.
 
    I tried to call OpenCL functions in `guix environment --pure`, but getting
