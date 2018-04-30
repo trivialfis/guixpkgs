@@ -53,8 +53,10 @@
    (inputs `(("glfw" ,glfw)
 	     ("python" ,python)))
    (home-page "http://www.glbinding.org")
-   (synopsis "A C++ binding for the OpenGL API, generated using the gl.xml specification")
-   (description "Glbinding leverages modern C++11 features like enum classes, lambdas, and variadic templates, instead of relying on macros.")
+   (synopsis "A C++ binding for the OpenGL API, generated using the gl.xml
+specification")
+   (description "Glbinding leverages modern C++11 features like enum classes,
+lambdas, and variadic templates, instead of relying on macros.")
    (license license:non-copyleft)))
 
 
@@ -68,7 +70,8 @@
 		    "https://github.com/arrayfire/forge/archive/v"
 		    version "-ft.tar.gz"))
 	      (sha256
-	       (base32 "0m0bc75a6gdq84gs3sh069f7q0idmgh1ikc6znjjm2hxc35pz7wd"))))
+	       (base32
+		"0m0bc75a6gdq84gs3sh069f7q0idmgh1ikc6znjjm2hxc35pz7wd"))))
     (native-inputs `(("opencl-clhpp" ,opencl-clhpp)
 		     ("glm" ,glm)))
     (inputs `(("freeimage" ,freeimage)
@@ -88,11 +91,11 @@
 			   "-DBUILD_EXAMPLES=OFF")
 			 #:tests? #f))
     (home-page "https://github.com/arrayfire/forge")
-    (synopsis "High Performance Visualization.")
+    (synopsis "High Performance Visualization")
     (description "An OpenGL interop library that can be used with ArrayFire or
-any other application using CUDA or OpenCL compute backend. The goal of Forge
+any other application using CUDA or OpenCL compute backend.  The goal of Forge
 is to provide high performance OpenGL visualizations for C/C++ applications
-that use CUDA/OpenCL. ")
+that use CUDA/OpenCL.")
     (license license:bsd-3)))
 
 
