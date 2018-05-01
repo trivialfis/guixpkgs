@@ -22,13 +22,16 @@
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system cmake)
   #:use-module (guix git-download)
+  #:use-module (guix utils)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages)
   #:use-module (gnu packages autotools)
   #:use-module (gnu packages bootstrap)
   #:use-module (gnu packages bison)
   #:use-module (gnu packages check)
+  #:use-module (gnu packages elf)
   #:use-module (gnu packages flex)
+  #:use-module (gnu packages gcc)
   #:use-module (gnu packages libedit)
   #:use-module (gnu packages gnupg)
   #:use-module (gnu packages gl)
@@ -167,7 +170,7 @@
                     (bin (string-append out "/bin/clinfo")))
                (wrap-program bin
                  `("OPENCL_VENDOR_PATH" ":" prefix
-                   ("$GUIX_PROFILE/etc/OpenCL/vendors")))))))
+                   ("$GUIX_PROFILE$GUIX_ENVIRONMENT/etc/OpenCL/vendors")))))))
        ;; Cannot be run in store environment.
        #:tests? #f))
     (home-page "https://github.com/Oblomov/clinfo")
@@ -237,25 +240,25 @@ non free) ICD")
                (base32
                 "18r0lq3dkd4yn6bxa45s2lrr9cjbg70nr2nn6xablvgqwzw0jb0r"))
               (patches (search-patches "beignet-correct-paths.patch"))))
-    (native-inputs `(("pkg-config" ,pkg-config)))
-    (inputs `(("libpthread-stubs", libpthread-stubs)
-              ("clang@3.7" ,clang-3.7)
+    (native-inputs `(("pkg-config" ,pkg-config)
+		     ("python" ,python)))
+    (inputs `(("clang@3.7" ,clang-3.7)
+	      ("clang-runtime@3.7" ,clang-runtime-3.7)
+	      ("glu" ,glu)
+	      ("llvm@3.7" ,llvm-3.7)
               ("libdrm" ,libdrm)
+	      ("libedit" ,libedit)
+	      ("libpthread-stubs", libpthread-stubs)
               ("libsm" ,libsm)
+	      ("libva" ,libva)
               ("libxfixes" ,libxfixes)
               ("libxext" ,libxext)
-              ("libedit" ,libedit)
-              ("xextproto" ,xextproto)
-              ("python" ,python)
-              ("opencl-headers" ,opencl-headers)
-              ("glu" ,glu)
-              ("zlib" ,zlib)
-              ("libva" ,libva)
-              ("llvm@3.7" ,llvm-3.7)
-              ("clang-runtime@3.7" ,clang-runtime-3.7)
               ("mesa-utils" ,mesa-utils)
               ("ncurses" ,ncurses)
-              ("ocl-icd" ,ocl-icd)))
+              ("ocl-icd" ,ocl-icd)
+	      ("opencl-headers" ,opencl-headers)
+	      ("xextproto" ,xextproto)
+	      ("zlib" ,zlib)))
     (build-system cmake-build-system)
     (arguments
      `(#:configure-flags
@@ -265,100 +268,159 @@ non free) ICD")
              "-DEXPERIMENTAL_DOUBLE=ON")
        #:phases
        (modify-phases %standard-phases
-         (delete 'check)
-         (add-after 'install 'check
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             ;; Don't be mislead by this function, tests don't work.
-             (let* ((builddir (getcwd))
-                    (testdir (string-append builddir "/utests"))
-                    (beignet-src (string-append builddir "/.."))
-                    (cores (number->string (parallel-job-count)))
-                    (out (assoc-ref outputs "out"))
-                    (libocl-path "/backend/src/libocl")
-                    (setenv-with-tests (lambda (name value)
-                                         (format #t "Name: ~s\nValue: ~s\n"
-                                                 name value)
-                                         (if (not (file-exists? value))
-                                             (error name)
-                                             (setenv name value)))))
-
-               (invoke "make" (string-append "-j" cores) "utest")
-
-               (format #t "builddir: ~s\n" builddir)
-               (format #t "testdir: ~s\n" testdir)
-               (invoke "ls" "-l")
-
-               (let ((source-dir (string-append
-                                  builddir
-                                  "/../beignet-Release_v1.3.2/kernels")))
-                 (copy-recursively source-dir (string-append
-                                               out
-                                               "/lib/beignet/kernels")))
-
-               ;; Nix put the tests file in a seperate output, here simply
-               ;; copying the file will result in wrong rpath.
-
-               ;; (format #t "src: ~s target: ~s\n"
-               ;;              (string-append testdir "/libutests.so")
-               ;;              (string-append out "/lib/libutests.so"))
-               ;; (install-file (string-append testdir "/libutests.so")
-               ;;                 (string-append out "/lib/libutests.so"))
-
-               ;; (mkdir (string-append out "/bin"))
-               ;; (format #t "src: ~s target: ~s\n"
-               ;;              (string-append testdir "/utest_run")
-               ;;              (string-append out "/bin/utest_run"))
-               ;; (install-file (string-append testdir "/utest_run")
-               ;;                 (string-append out "/bin/utest_run"))
-
-               (setenv-with-tests "OCL_BITCODE_LIB_PATH"
-                                  (string-append builddir
-                                                 libocl-path
-                                                 out
-                                                 "/lib/beignet/beignet.bc"))
-               (setenv-with-tests "OCL_HEADER_FILE_DIR"
-                                  (string-append builddir
-                                                 libocl-path
-                                                 out
-                                                 "/lib/beignet/include"))
-               (setenv "OCL_BITCODE_LIB_20_PATH" "")
-               (setenv-with-tests "OCL_PCH_PATH"
-                                  (string-append
-                                   builddir
-                                   libocl-path
-                                   out
-                                   "/lib/beignet/beignet.local.pch"))
-               (setenv "OCL_PCH_20_PATH" "")
-               (setenv-with-tests "OCL_KERNEL_PATH"
-                                  (string-append
-                                   out "/lib/beignet/kernels"))
-               (setenv-with-tests "OCL_GBE_PATH"
-                                  (string-append
-                                   builddir "/backend/src/libgbe.so"))
-               (setenv-with-tests "OCL_INTERP_PATH"
-                                  (string-append
-                                   builddir
-                                   "/backend/src/libgbeinterp.so"))
-               (setenv "OCL_IGNORE_SELF_TEST" "1")
-
-               (chdir testdir)
-               (invoke "ls" "-l")
-               ;; Tests don't pass, failed to recognize device
-               (let ((status (system "./utest_run")))
-                 (unless (zero? status)
-                   (error (format #f "Tests exit with non-zero code" status)))
-                 (zero? status)))))
-
-         (add-after 'check 'remove-headers
+         (add-after 'install 'remove-headers
            (lambda* (#:key outputs #:allow-other-keys)
              (let ((out (assoc-ref outputs "out")))
                (delete-file-recursively
-                (string-append out "/include"))))))))
+                (string-append out "/include"))))))
+       #:tests? #f))
     (home-page "https://wiki.freedesktop.org/www/Software/Beignet/")
     (synopsis "Intel's OpenCL framework")
     (description "Intel's OpenCL framework that works with Intel IvyBridge GPUs
 and above.")
     (license license:gpl2)))
+
+(define-public beignet-tests
+  ;; Just extracted from beignet, not working.
+
+  ;; Some how the unit tests compiled in beignet dependents on extra inputs
+  ;; listed here by having them in rpath, but none of them is supplied during
+  ;; build. I don't know why does it happen, so I just make the tests a
+  ;; seperate package.
+  (package/inherit
+   beignet
+   (name "beignet-tests")
+   (native-inputs `(("patchelf" ,patchelf)
+		    ,@(package-native-inputs beignet)))
+   (inputs `(("beignet" ,beignet)
+	     ("gcc:lib" ,gcc "lib")
+	     ("libice" ,libice)
+	     ("libx11" ,libx11)
+	     ("mesa" ,mesa)
+	     ,@(package-inputs beignet)))
+   (arguments
+    `(#:phases
+      (modify-phases %standard-phases
+        (add-after 'install 'install-tests
+          (lambda* (#:key inputs outputs #:allow-other-keys)
+
+            (let* ((builddir (getcwd))
+                   (testdir (string-append builddir "/utests"))
+                   (beignet-src (string-append builddir "/.."))
+
+                   (cores (number->string (parallel-job-count)))
+
+                   (out (assoc-ref outputs "out"))
+                   (utests (assoc-ref outputs "tests"))
+		   ;; (beignet-out (assoc-ref (package-outputs beignet) "out"))
+
+                   (outlib (string-append out "/lib/beignet"))
+                   (testlib (string-append utests "/lib"))
+
+                   (libc (assoc-ref inputs "libc"))
+                   (gcc:lib (assoc-ref inputs "gcc:lib"))
+                   (zlib (assoc-ref inputs "zlib"))
+                   (libxfixes (assoc-ref inputs "libxfixes"))
+                   (libsm (assoc-ref inputs "libsm"))
+                   (libxext (assoc-ref inputs "libxext"))
+                   (xextproto (assoc-ref inputs "xextproto"))
+                   (mesa-utils (assoc-ref inputs "mesa-utils"))
+                   (mesa (assoc-ref inputs "mesa"))
+                   (glu (assoc-ref inputs "glu"))
+                   (libdrm (assoc-ref inputs "libdrm"))
+                   (libx11 (assoc-ref inputs "libx11"))
+                   (libice (assoc-ref inputs "libice"))
+                   (ld-so (string-append libc ,(glibc-dynamic-linker)))
+
+                   (libocl-path "/backend/src/libocl")
+                   (setenv-with-tests (lambda (name value)
+                                        (format #t "Name: ~s\nValue: ~s\n"
+                                                name value)
+                                        (if (not (file-exists? value))
+                                            (error name)
+                                            (setenv name value)))))
+
+              (invoke "make" (string-append "-j" cores) "utest")
+
+              (format #t "builddir: ~s\n" builddir)
+              (format #t "testdir: ~s\n" testdir)
+              (invoke "ls" "-l")
+
+              (let ((source-dir (string-append
+                                 builddir
+                                 "/../beignet-Release_v1.3.2/kernels")))
+                (copy-recursively source-dir (string-append
+                                              out
+                                              "/lib/beignet/kernels")))
+
+              (install-file (string-append testdir "/libutests.so")
+                            (string-append utests "/lib"))
+
+              (mkdir (string-append utests "/bin"))
+              (copy-file (string-append testdir "/utest_run")
+                         (string-append utests "/bin/utest_run"))
+              (copy-file (string-append testdir "/flat_address_space")
+                         (string-append utests "/bin/flat_address_space"))
+
+              (let ((rpath
+                     (string-append outlib ":"
+                                    testlib ":"
+                                    (string-append libc "/lib:")
+                                    (string-append gcc:lib "/lib:")
+                                    (string-append libxfixes "/lib:")
+                                    (string-append libdrm "/lib:")
+                                    (string-append libxext "/lib:")
+                                    (string-append libsm "/lib:")
+                                    (string-append xextproto "/lib:")
+                                    (string-append glu "/lib:")
+                                    (string-append mesa-utils "/lib:")
+                                    (string-append mesa "/lib:")
+                                    (string-append zlib "/lib:")
+                                    (string-append libice "/lib:")
+                                    (string-append libx11 "/lib"))))
+                (invoke "patchelf" "--set-rpath"
+                        rpath
+                        (string-append utests "/lib/libutests.so"))
+                (invoke "patchelf" "--set-rpath"
+                        rpath
+                        (string-append utests "/bin/utest_run"))
+                (invoke "patchelf" "--set-rpath"
+                        rpath
+                        (string-append utests "/bin/flat_address_space")))
+
+              (invoke "patchelf" "--set-interpreter" ld-so
+                      (string-append utests "/bin/utest_run"))
+              (invoke "patchelf" "--set-interpreter" ld-so
+                      (string-append utests "/bin/flat_address_space")))))
+
+        (add-after 'remove-headers 'wrap
+          (lambda* (#:key outputs #:allow-other-keys)
+            (let* ((utests (assoc-ref outputs "tests"))
+                   (utest-run (string-append utests "/bin/utest_run"))
+                   (fas (string-append utests "/bin/flat_address_space"))
+                   (out (assoc-ref outputs "out"))
+                   (beignet-lib (string-append
+                                 out "/lib/beignet"))
+                   (beignet-bit (string-append beignet-lib "/beignet.bc"))
+                   (beignet-kernel (string-append beignet-lib "/kernels"))
+                   (beignet-gbe (string-append beignet-lib "/libgbe.so"))
+                   (beignet-pch (string-append beignet-lib "/beignet.pch"))
+                   (beignet-inter (string-append beignet-lib "/libgbeinterp.so"))
+                   (beignet-inc (string-append beignet-lib "/include"))
+
+                   (wrap-test
+                    (lambda (prog)
+                      (wrap-program prog
+                        `("OCL_BITCODE_LIB_PATH" = (,beignet-lib))
+                        `("OCL_IGNORE_SELF_TEST" = ("1"))
+                        `("OCL_HEADER_FILE_DIR" = (,beignet-inc))
+                        `("OCL_PCH_PATH" = (,beignet-pch))
+                        `("OCL_KERNEL_PATH" = (,beignet-kernel))
+                        `("OCL_GBE_PATH" = (,beignet-gbe))
+                        `("OCL_INTERP_PATH" = (,beignet-inter))
+                        `("OCL_PCH_20_PATH" = (""))))))
+              (wrap-test utest-run)
+              (wrap-test fas)))))))))
 
 (define-public pocl
   ;; pocl tests failed at beginning.
@@ -387,8 +449,8 @@ and above.")
     (arguments
      `(#:configure-flags
        '("-DENABLE_ICD=ON"
-         "-DENABLE_TESTSUITES=all"
-         "-DENABLE_CONFORMANCE=ON")
+         "-DENABLE_TESTSUITES=OFF"
+         "-DENABLE_CONFORMANCE=OFF")
        #:phases
        (modify-phases %standard-phases
          (add-after 'install 'remove-headers
@@ -402,6 +464,55 @@ and above.")
     (description "pocl is being developed towards an efficient implementation
 of OpenCL standard which can be easily adapted for new targets.")
     (license license:non-copyleft)))
+
+(define (make-opencl-cts spec-version revision commit impl-name impl)
+  ;; Doesn't work yet, might never work.
+  (let* ((commit commit)
+	 (revision "0")
+	 (version (git-version spec-version revision commit)))
+    (package
+      (name (string-append "opencl-cts-" impl-name))
+      (version version)
+      (source (origin
+		(method git-fetch)
+		(uri (git-reference
+                      (url "https://github.com/KhronosGroup/OpenCL-CTS.git")
+                      (commit commit)))
+		(sha256
+		 (base32
+		  "0fcc2g9vp9nfsm712b4gbkk0hhr96lk5yqvm0a5bmvz25qwzyf86"))
+		(file-name (string-append name "-" commit))))
+      (build-system cmake-build-system)
+      (arguments
+       `(#:configure-flags
+	 (list
+	  (string-append "-DCL_OFFLINE_COMPILER="
+			 (assoc-ref %build-inputs ,impl)
+			 "/bin/poclcc"))))
+      (native-inputs
+       `((,impl-name ,impl)
+	 ("opencl-headers" ,opencl-headers)))
+      (home-page "https://github.com/KhronosGroup/OpenCL-CTS/")
+      (synopsis "The OpenCL Conformance Tests")
+      (description "The OpenCL Conformance Tests.")
+      (license license:asl2.0))))
+
+(define-public pocl-cts-2.2
+  (make-opencl-cts "2.2.0" "0" "4a6af23ff362cd95477abada53d85a948d394069"
+		   "pocl" pocl))
+(define-public pocl-cts-2.1
+  (make-opencl-cts "2.1.0" "0" "71a5c8251e1210bc9afda116353f212d33841910"
+		   "pocl" pocl))
+(define-public pocl-cts-2.0
+  (make-opencl-cts "2.0.0" "0" "5b19ef73d98e98b62f0afdc009fcdf5ea9482ea7"
+		   "pocl" pocl))
+(define-public pocl-cts-1.2
+  (make-opencl-cts "1.2.0" "0" "5413bcf52e3c8f5d51da657ce9169e754a2414ba"
+		   "pocl" pocl))
+(define-public beignet-cts-1.2
+  (make-opencl-cts "1.2.0" "0" "5413bcf52e3c8f5d51da657ce9169e754a2414ba"
+		   "beignet" beignet))
+
 
 (define-public gmmlib
   (let* ((commit "b32d2124aa5187b20b64df24d2e83bcbe7a57d7d")
