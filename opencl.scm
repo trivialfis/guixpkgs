@@ -487,7 +487,7 @@ of OpenCL standard which can be easily adapted for new targets.")
        `(#:configure-flags
 	 (list
 	  (string-append "-DCL_OFFLINE_COMPILER="
-			 (assoc-ref %build-inputs ,impl)
+			 (assoc-ref %build-inputs ,impl-name)
 			 "/bin/poclcc"))))
       (native-inputs
        `((,impl-name ,impl)
