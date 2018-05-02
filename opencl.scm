@@ -272,7 +272,17 @@ non free) ICD")
            (lambda* (#:key outputs #:allow-other-keys)
              (let ((out (assoc-ref outputs "out")))
                (delete-file-recursively
-                (string-append out "/include"))))))
+                (string-append out "/include")))))
+	 (add-after 'remove-headers 'install-kernels
+	   (lambda* (#:key outputs #:allow-other-keys)
+	     (let* ((out (assoc-ref outputs "out"))
+		    (builddir (getcwd))
+		    (source-dir (string-append
+				 builddir
+				 "/../beignet-Release_v1.3.2/kernels")))
+	       (copy-recursively source-dir (string-append
+					     out
+					     "/lib/beignet/kernels"))))))
        #:tests? #f))
     (home-page "https://wiki.freedesktop.org/www/Software/Beignet/")
     (synopsis "Intel's OpenCL framework")
@@ -280,8 +290,129 @@ non free) ICD")
 and above.")
     (license license:gpl2)))
 
+(define-public pocl
+  ;; pocl tests failed at beginning.
+  ;; ocl-icd loads libpocl.so correctly, I don't know why the tests fail.
+  (package
+    (name "pocl")
+    (version "1.1")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "https://github.com/pocl/pocl/archive/v"
+                    version ".tar.gz"))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0lrw3hlb0w53xzmrf2hvbda406l70ar4gyadflvlkj4879lx138y"))))
+    (build-system cmake-build-system)
+    (native-inputs
+     `(("pkg-config" ,pkg-config)
+       ("libltdl" ,libltdl)))
+    (inputs
+     `(("llvm" ,llvm)
+       ("hwloc" ,hwloc "lib")
+       ("clang" ,clang)
+       ("ocl-icd" ,ocl-icd)))
+    (arguments
+     `(#:configure-flags
+       '("-DENABLE_ICD=ON"
+         "-DENABLE_TESTSUITES=OFF"
+         "-DENABLE_CONFORMANCE=OFF")
+       #:phases
+       (modify-phases %standard-phases
+         (add-after 'install 'remove-headers
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let ((out (assoc-ref outputs "out")))
+               (delete-file-recursively
+                (string-append out "/include"))))))
+       #:tests? #f))                    ; failed
+    (home-page "http://portablecl.org/")
+    (synopsis "Portable Computing Language (pocl)")
+    (description "pocl is being developed towards an efficient implementation
+of OpenCL standard which can be easily adapted for new targets.")
+    (license license:non-copyleft)))
+
+(define (make-opencl-cts spec-version revision commit impl-name impl)
+  ;; Doesn't work yet, might never work.
+  (let* ((commit commit)
+	 (revision "0")
+	 (version (git-version spec-version revision commit)))
+    (package
+      (name (string-append "opencl-cts-" impl-name))
+      (version version)
+      (source (origin
+		(method git-fetch)
+		(uri (git-reference
+                      (url "https://github.com/KhronosGroup/OpenCL-CTS.git")
+                      (commit commit)))
+		(sha256
+		 (base32
+		  "0fcc2g9vp9nfsm712b4gbkk0hhr96lk5yqvm0a5bmvz25qwzyf86"))
+		(file-name (string-append name "-" commit))))
+      (build-system cmake-build-system)
+      (arguments
+       `(#:configure-flags
+	 (list
+	  (string-append "-DCL_OFFLINE_COMPILER="
+			 (assoc-ref %build-inputs ,impl-name)
+			 "/bin/poclcc"))))
+      (native-inputs
+       `((,impl-name ,impl)
+	 ("opencl-headers" ,opencl-headers)))
+      (home-page "https://github.com/KhronosGroup/OpenCL-CTS/")
+      (synopsis "The OpenCL Conformance Tests")
+      (description "The OpenCL Conformance Tests.")
+      (license license:asl2.0))))
+
+(define-public pocl-cts-2.2
+  (make-opencl-cts "2.2.0" "0" "4a6af23ff362cd95477abada53d85a948d394069"
+		   "pocl" pocl))
+(define-public pocl-cts-2.1
+  (make-opencl-cts "2.1.0" "0" "71a5c8251e1210bc9afda116353f212d33841910"
+		   "pocl" pocl))
+(define-public pocl-cts-2.0
+  (make-opencl-cts "2.0.0" "0" "5b19ef73d98e98b62f0afdc009fcdf5ea9482ea7"
+		   "pocl" pocl))
+(define-public pocl-cts-1.2
+  (make-opencl-cts "1.2.0" "0" "5413bcf52e3c8f5d51da657ce9169e754a2414ba"
+		   "pocl" pocl))
+(define-public beignet-cts-1.2
+  (make-opencl-cts "1.2.0" "0" "5413bcf52e3c8f5d51da657ce9169e754a2414ba"
+		   "beignet" beignet))
+
+
+(define-public gmmlib
+  (let* ((commit "b32d2124aa5187b20b64df24d2e83bcbe7a57d7d")
+         (revision "1")
+         (version (git-version "0.0.0" revision commit)))
+    (package
+      (name "gmmlib")
+      (version version)
+      (home-page "https://github.com/intel/gmmlib")
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference (url home-page)
+                                    (commit commit)))
+                (sha256
+                 (base32
+                  "0d6w7bfp1my3jb8m5wa8ighjr8msq993m0flhfb0d34sackyn7s6"))))
+      (build-system cmake-build-system)
+      (arguments
+       `(#:phases
+         (modify-phases %standard-phases
+           (delete 'install))           ; No such a phase
+         #:tests? #f))                  ; Run automatically.
+      (native-inputs `(("googletest" ,googletest)))
+      (synopsis "Device specific buffer management for Intel(R) Graphics
+Compute Runtime")
+      (description "The Intel(R) Graphics Memory Management Library provides
+device specific and buffer management for the Intel(R) Graphics Compute Runtime
+for OpenCL(TM) and the Intel(R) Media Driver for VAAPI.")
+      (license license:non-copyleft))))
+
 (define-public beignet-tests
-  ;; Just extracted from beignet, not working.
+  ;; Just extracted from beignet, complete garbage, not working.
 
   ;; Some how the unit tests compiled in beignet dependents on extra inputs
   ;; listed here by having them in rpath, but none of them is supplied during
@@ -421,124 +552,3 @@ and above.")
                         `("OCL_PCH_20_PATH" = (""))))))
               (wrap-test utest-run)
               (wrap-test fas)))))))))
-
-(define-public pocl
-  ;; pocl tests failed at beginning.
-  ;; ocl-icd loads libpocl.so correctly, I don't know why the tests fail.
-  (package
-    (name "pocl")
-    (version "1.1")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append
-                    "https://github.com/pocl/pocl/archive/v"
-                    version ".tar.gz"))
-              (file-name (string-append name "-" version ".tar.gz"))
-              (sha256
-               (base32
-                "0lrw3hlb0w53xzmrf2hvbda406l70ar4gyadflvlkj4879lx138y"))))
-    (build-system cmake-build-system)
-    (native-inputs
-     `(("pkg-config" ,pkg-config)
-       ("libltdl" ,libltdl)))
-    (inputs
-     `(("llvm" ,llvm)
-       ("hwloc" ,hwloc "lib")
-       ("clang" ,clang)
-       ("ocl-icd" ,ocl-icd)))
-    (arguments
-     `(#:configure-flags
-       '("-DENABLE_ICD=ON"
-         "-DENABLE_TESTSUITES=OFF"
-         "-DENABLE_CONFORMANCE=OFF")
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'install 'remove-headers
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out")))
-               (delete-file-recursively
-                (string-append out "/include"))))))
-       #:tests? #f))                    ; failed
-    (home-page "http://portablecl.org/")
-    (synopsis "Portable Computing Language (pocl)")
-    (description "pocl is being developed towards an efficient implementation
-of OpenCL standard which can be easily adapted for new targets.")
-    (license license:non-copyleft)))
-
-(define (make-opencl-cts spec-version revision commit impl-name impl)
-  ;; Doesn't work yet, might never work.
-  (let* ((commit commit)
-	 (revision "0")
-	 (version (git-version spec-version revision commit)))
-    (package
-      (name (string-append "opencl-cts-" impl-name))
-      (version version)
-      (source (origin
-		(method git-fetch)
-		(uri (git-reference
-                      (url "https://github.com/KhronosGroup/OpenCL-CTS.git")
-                      (commit commit)))
-		(sha256
-		 (base32
-		  "0fcc2g9vp9nfsm712b4gbkk0hhr96lk5yqvm0a5bmvz25qwzyf86"))
-		(file-name (string-append name "-" commit))))
-      (build-system cmake-build-system)
-      (arguments
-       `(#:configure-flags
-	 (list
-	  (string-append "-DCL_OFFLINE_COMPILER="
-			 (assoc-ref %build-inputs ,impl-name)
-			 "/bin/poclcc"))))
-      (native-inputs
-       `((,impl-name ,impl)
-	 ("opencl-headers" ,opencl-headers)))
-      (home-page "https://github.com/KhronosGroup/OpenCL-CTS/")
-      (synopsis "The OpenCL Conformance Tests")
-      (description "The OpenCL Conformance Tests.")
-      (license license:asl2.0))))
-
-(define-public pocl-cts-2.2
-  (make-opencl-cts "2.2.0" "0" "4a6af23ff362cd95477abada53d85a948d394069"
-		   "pocl" pocl))
-(define-public pocl-cts-2.1
-  (make-opencl-cts "2.1.0" "0" "71a5c8251e1210bc9afda116353f212d33841910"
-		   "pocl" pocl))
-(define-public pocl-cts-2.0
-  (make-opencl-cts "2.0.0" "0" "5b19ef73d98e98b62f0afdc009fcdf5ea9482ea7"
-		   "pocl" pocl))
-(define-public pocl-cts-1.2
-  (make-opencl-cts "1.2.0" "0" "5413bcf52e3c8f5d51da657ce9169e754a2414ba"
-		   "pocl" pocl))
-(define-public beignet-cts-1.2
-  (make-opencl-cts "1.2.0" "0" "5413bcf52e3c8f5d51da657ce9169e754a2414ba"
-		   "beignet" beignet))
-
-
-(define-public gmmlib
-  (let* ((commit "b32d2124aa5187b20b64df24d2e83bcbe7a57d7d")
-         (revision "1")
-         (version (git-version "0.0.0" revision commit)))
-    (package
-      (name "gmmlib")
-      (version version)
-      (home-page "https://github.com/intel/gmmlib")
-      (source (origin
-                (method git-fetch)
-                (uri (git-reference (url home-page)
-                                    (commit commit)))
-                (sha256
-                 (base32
-                  "0d6w7bfp1my3jb8m5wa8ighjr8msq993m0flhfb0d34sackyn7s6"))))
-      (build-system cmake-build-system)
-      (arguments
-       `(#:phases
-         (modify-phases %standard-phases
-           (delete 'install))           ; No such a phase
-         #:tests? #f))                  ; Run automatically.
-      (native-inputs `(("googletest" ,googletest)))
-      (synopsis "Device specific buffer management for Intel(R) Graphics
-Compute Runtime")
-      (description "The Intel(R) Graphics Memory Management Library provides
-device specific and buffer management for the Intel(R) Graphics Compute Runtime
-for OpenCL(TM) and the Intel(R) Media Driver for VAAPI.")
-      (license license:non-copyleft))))
