@@ -20,7 +20,9 @@
   #:use-module (guix packages)
   #:use-module (guix utils)
   #:use-module (guix download)
+  #:use-module (guix git-download)
   #:use-module (guix build-system cmake)
+  #:use-module (guix build-system gnu)
   #:use-module (gnu packages)
   #:use-module (gnu packages algebra)
   #:use-module (gnu packages boost)
@@ -32,6 +34,7 @@
   #:use-module (gnu packages graphics)
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages graphviz)
+  #:use-module (gnu packages guile)
   #:use-module (gnu packages image)
   #:use-module (gnu packages image-processing)
   #:use-module (gnu packages maths)
@@ -41,10 +44,70 @@
   #:use-module (gnu packages protobuf)
   #:use-module (gnu packages python)
   #:use-module (gnu packages serialization)
+  #:use-module (gnu packages tex)
   #:use-module (gnu packages xiph)
   #:use-module (gnu packages video)
   #:use-module (gnu packages xml)
   #:use-module (gnu packages xorg))
+
+(define-public vigra-c
+  (let* ((commit "a2ff675f42079e2623318d8ff8b4288dbe7a7f06")
+	 (revision "0")
+	 (version (string-append "0.0.0" revision commit)))
+    (package
+      (name "vigra-c")
+      (version version)
+      (home-page "https://github.com/BSeppke/vigra_c")
+      (source (origin
+		(method git-fetch)
+		(uri (git-reference
+		      (url home-page)
+		      (commit commit)))
+		(sha256
+		 (base32
+		  "1f1phmfbbz3dsq9330rd6bjmdg29hxskxi9l17cyx1f4mdqpgdgl"))
+		(file-name (git-file-name name version))))
+      (build-system cmake-build-system)
+      (arguments
+       `(#:tests? #f))			; No test target.
+      (native-inputs
+       `(("doxygen" ,doxygen)))
+      (inputs
+       `(("vigra" ,vigra)
+	 ("fftw" ,fftw)
+	 ("fftwf" ,fftwf)))
+      (synopsis "wraps (parts of) VIGRA's functionality into a C shared
+library")
+      (description "An easy understandable C-Wrapper to re-use functionality of
+the VIGRA computer vision library in other programming environments.")
+      (license license:expat))))
+
+(define-public guile-cv
+  ;; Doesn't work yet. Don't wanna pull in texlive for this packages.
+  (package
+   (name "guile-cv")
+   (version "0.1.9")
+   (source (origin
+	    (method url-fetch)
+	    (uri (string-append "http://ftp.gnu.org/gnu/guile-cv/guile-cv-"
+				version ".tar.gz"))
+	    (sha256
+	     (base32
+	      "1brvf4qq98nckjhs7wg4nwpi6qfpv4ngbj4f8m7xsflm5xm0vgrp"))
+	    (file-name (string-append name "-" version ".tar.gz"))))
+   (build-system gnu-build-system)
+   (native-inputs
+    `(("texlive" ,texlive)))
+   (inputs
+    `(("guile" ,guile-2.2)
+      ("vigra-c" ,vigra-c)))
+   (home-page "https://www.gnu.org/software/guile-cv/index.html")
+   (synopsis "Computer Vision functional programming library for the Guile
+Scheme language")
+   (description "Based on @code{Vigra}, Guile-CV comprises a direct binding to
+@code{Vigra C}, enriched with pure Guile scheme algorithms, all accessible
+through a nice, clean and easy to use high level API.")
+   (license license:gpl3+)))
 
 (define-public opencv
   ;; This package is grepped from the list, copyright is placed at first line
