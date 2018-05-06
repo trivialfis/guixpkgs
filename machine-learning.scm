@@ -202,7 +202,6 @@ learning algorithms under the Gradient Boosting framework.")
 	      (file-name (string-append name "-" version ".tar.gz"))))
     (native-inputs
      `(("python-pytest" ,python-pytest)
-       ("python-numpy" ,python-numpy)
        ("python-nose" ,python-nose)))
     (inputs
      `(("openmpi" ,openmpi)))
