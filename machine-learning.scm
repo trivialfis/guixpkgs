@@ -18,6 +18,7 @@
 (define-module  (machine-learning)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix build-system cmake)
+  #:use-module (guix build-system gnu)
   #:use-module (guix build-system python)
   #:use-module (guix download)
   #:use-module (guix packages)
@@ -127,7 +128,8 @@ naturally under the Allreduce abstraction.")
     (version "0.71")
     (source (origin
               (method url-fetch)
-              (uri (string-append "https://github.com/dmlc/xgboost/archive/v"
+              (uri (string-append
+		    "https://github.com/dmlc/xgboost/archive/v"
                                   version ".tar.gz"))
               (sha256
                (base32
@@ -140,3 +142,45 @@ naturally under the Allreduce abstraction.")
 designed to be highly efficient, flexible and portable. It implements machine
 learning algorithms under the Gradient Boosting framework.")
     (license license:asl2.0)))
+
+(define-public libffm
+  (package
+    (name "libffm")
+    (version "123")
+    (source (origin
+	      (method url-fetch)
+	      (uri (string-append
+		    "https://github.com/guestwalk/libffm/archive/v"
+		    version ".tar.gz"))
+	      (sha256
+               (base32
+		"1m8k9icg9k7dimfz81vnp8i5m08591hgqri49cb07plad8n50jy7"))
+	      (file-name (string-append name "-" version ".tar.gz"))))
+    (build-system gnu-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+	 (delete 'configure)
+	 (replace 'install
+	   (lambda* (#:key outputs #:allow-other-keys)
+	     (let* ((out (assoc-ref outputs "out"))
+		    (builddir (getcwd))
+		    (bin (string-append out "/bin"))
+		    (doc (string-append out "/doc")))
+	       (mkdir out)
+	       (mkdir bin)
+	       (mkdir doc)
+	       (copy-file (string-append builddir "/ffm-predict")
+			  (string-append bin "/ffm-predict"))
+	       (copy-file (string-append builddir "/ffm-train")
+			  (string-append bin "/ffm-train"))
+	       (copy-file (string-append builddir "/README")
+			  (string-append doc "/README"))
+	       (copy-file (string-append builddir "/COPYRIGHT")
+			  (string-append doc "/COPYRIGHT"))))))
+       #:tests? #f))
+    (home-page "https://github.com/guestwalk/libffm")
+    (synopsis "Library for Field-aware Factorization Machines")
+    (description "LIBFFM is a library for field-aware factorization machine
+(FFM).")
+    (license license:bsd-3)))
