@@ -1,4 +1,5 @@
 ;;; Copyright @ 2018 Björn Höfling
+;;; Copyright © 2018 Fis Trivial <ybbs.daans@hotmail.com>
 ;;;
 ;;; This file is NOT part of GNU Guix.
 ;;;
