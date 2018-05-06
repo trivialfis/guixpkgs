@@ -61,6 +61,7 @@ Copyright notice is included.
    + libffm
    + opencv (from guix devel list)
    + lightgbm
+   + vowpal-wabbit
 
 Many libraries are packaged as dependencies, just grep "define-public".
 
