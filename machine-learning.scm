@@ -23,7 +23,9 @@
   #:use-module (guix download)
   #:use-module (guix packages)
   #:use-module (guix git-download)
+  #:use-module (gnu packages boost)
   #:use-module (gnu packages check)
+  #:use-module (gnu packages compression)
   #:use-module (gnu packages machine-learning)
   #:use-module (gnu packages mpi)
   #:use-module (gnu packages python))
@@ -234,3 +236,45 @@ the following advantages:
 @item Capable of handling large-scale data
 @end itemize\n")
     (license license:expat)))
+
+(define-public vowpal-wabbit
+  ;; Language binding not included.
+  (package
+    (name "vowpal-wabbit")
+    (version "8.5.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+		    "https://github.com/JohnLangford/vowpal_wabbit/archive/"
+		    version ".tar.gz"))
+              (sha256
+               (base32
+		"0clp2kb7rk5sckhllxjr5a651awf4s8dgzg4659yh4hf5cqnf0gr"))
+	      (file-name (string-append name "-" version ".tar.gz"))))
+    ;; (native-inputs
+    ;;  `(("python" ,python)
+    ;;    ("python-setuptools" ,python-setuptools)))
+    (inputs
+     `(("boost" ,boost)
+       ("zlib" ,zlib)))
+    (arguments
+     `(#:configure-flags
+       (list (string-append "--with-boost="
+			    (assoc-ref %build-inputs "boost")))
+       ;; #:phases
+       ;; (modify-phases %standard-phases
+       ;; 	 (add-after 'install 'install-python
+       ;; 	   (lambda* (#:key inputs outputs #:allow-other-keys)
+       ;; 	     (chdir "python")
+       ;; 	     (invoke "python" "setup.py" "install"
+       ;; 		     "--prefix=" (assoc-ref outputs "out"))
+       ;; 	     (chdir ".."))))
+       ))
+    (build-system gnu-build-system)
+    (home-page "https://github.com/JohnLangford/vowpal_wabbit")
+    (synopsis "Machine learning system which pushes the frontier of machine
+learning")
+    (description "Vowpal Wabbit is a machine learning system which pushes the
+frontier of machine learning with techniques such as online, hashing, 
+allreduce, reductions, learning2search, active, and interactive learning. ")
+    (license license:bsd-3)))
