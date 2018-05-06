@@ -58,7 +58,8 @@ Copyright notice is included.
    The old cpu version is working. I can't get any further due to broken cuda.
 
 ** Others
-   + amule
+   + libffm
+   + opencv (from devel list)
 
 Many libraries are packaged as dependencies, just grep "define-public".
 
@@ -68,7 +69,8 @@ Many libraries are packaged as dependencies, just grep "define-public".
    + unittest-cpp
    + qBittorrent
    + python-autograd
+   + amule
 
 #  LocalWords:  upstreamed LocalWords nvcc OpenCL Cuda cuda dev pocl
 #  LocalWords:  clinfo guix icd clFFT beignet qBittorrent cpp WIP
-#  LocalWords:  autograd Arrayfire
+#  LocalWords:  autograd Arrayfire libffm opencv amule
