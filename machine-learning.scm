@@ -24,6 +24,8 @@
   #:use-module (guix packages)
   #:use-module (guix git-download)
   #:use-module (gnu packages check)
+  #:use-module (gnu packages machine-learning)
+  #:use-module (gnu packages mpi)
   #:use-module (gnu packages python))
 
 (define-public python-autograd
@@ -184,3 +186,52 @@ learning algorithms under the Gradient Boosting framework.")
     (description "LIBFFM is a library for field-aware factorization machine
 (FFM).")
     (license license:bsd-3)))
+
+(define-public lightgbm
+  (package
+    (name "lightgbm")
+    (version "2.0.12")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "https://github.com/Microsoft/LightGBM/archive/v"
+                    version ".tar.gz"))
+              (sha256
+               (base32
+                "132zf0yk0545mg72hyzxm102g3hpb6ixx9hnf8zd2k55gas6cjj1"))
+	      (file-name (string-append name "-" version ".tar.gz"))))
+    (native-inputs
+     `(("python-pytest" ,python-pytest)
+       ("python-numpy" ,python-numpy)
+       ("python-nose" ,python-nose)))
+    (inputs
+     `(("openmpi" ,openmpi)))
+    (propagated-inputs
+     `(("python-numpy" ,python-numpy)
+       ("python-scipy" ,python-scipy)))
+    (arguments
+     `(#:configure-flags
+       '("-DUSE_MPI=ON")
+       #:phases
+       (modify-phases %standard-phases
+	 (replace 'check
+	   (lambda* (#:key outputs #:allow-other-keys)
+	     (chdir "../LightGBM-2.0.12/")
+	     (invoke "pytest" "tests/c_api_test/test_.py")
+	     (chdir "../build"))))))
+    (build-system cmake-build-system)
+    (home-page "https://github.com/Microsoft/LightGBM")
+    (synopsis "Gradient boosting (GBDT, GBRT, GBM or MART) framework based on
+decision tree algorithms")
+    (description "LightGBM is a gradient boosting framework that uses tree
+based learning algorithms. It is designed to be distributed and efficient with
+the following advantages:
+
+@itemize
+@item Faster training speed and higher efficiency
+@item Lower memory usage
+@item Better accuracy
+@item Parallel and GPU learning supported
+@item Capable of handling large-scale data
+@end itemize\n")
+    (license license:expat)))
