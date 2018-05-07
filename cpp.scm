@@ -73,4 +73,32 @@
     (synopsis "C++ template library providing some basic tools")
     (description "xtl is a C++ header-only librar template providing basic
 tools (containers, algorithms) used by other quantstack packages")
-    (license license:expat)))
+    (license license:bsd-3)))
+
+(define-public xsimd
+  (package
+    (name "xsimd")
+    (version "4.1.2")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "https://github.com/QuantStack/xsimd/archive/"
+                    version ".tar.gz"))
+              (sha256
+               (base32
+                "0x05l4xpqr9b66sm6lkf48n6x7999ks921x6k2hzkkg6mh3gqd46"))
+              (file-name (string-append name "-" version ".tar.gz"))))
+    (home-page "https://github.com/QuantStack/xsimd")
+    (build-system cmake-build-system)
+    (arguments
+     `(#:test-target "xtest"))
+    (native-inputs
+     `(("googletest" ,googletest)))
+    (synopsis "C++ wrappers for SIMD intrinsics and parallelized, optimized
+math implementations ")
+    (description "SIMD (Single Instruction, Multiple Data) is a feature of
+microprocessors that has been available for many years. SIMD instructions
+perform a single operation on a batch of values at once, and thus provide a
+way to significantly accelerate code execution. However, these instructions 
+differ between microprocessor vendors and compilers")
+    (license license:bsd-3)))
