@@ -62,6 +62,7 @@ Copyright notice is included.
    + opencv (from guix devel list)
    + lightgbm
    + vowpal-wabbit
+   + xtensor
 
 Many libraries are packaged as dependencies, just grep "define-public".
 
