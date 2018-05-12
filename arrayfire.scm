@@ -113,8 +113,7 @@ that use CUDA/OpenCL.")
                               ("lapack" ,lapack)
                               ("boost" ,boost))))
          (cl-native `(,cl?
-                      (("beignet" ,beignet) ; Only used for testing.
-                       ("boost-compute" ,boost-compute)
+                      (("boost-compute" ,boost-compute)
                        ("opencl-clhpp" ,opencl-clhpp)
                        ("opencl-headers" ,opencl-headers))))
          (cl-inputs `(,cl?
