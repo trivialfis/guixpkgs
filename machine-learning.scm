@@ -23,6 +23,7 @@
   #:use-module (guix download)
   #:use-module (guix packages)
   #:use-module (guix git-download)
+  #:use-module (gnu packages)
   #:use-module (gnu packages boost)
   #:use-module (gnu packages check)
   #:use-module (gnu packages compression)
@@ -89,7 +90,10 @@ is gradient-based optimization.")
                 (sha256
                  (base32
                   "0lf8my5b9p458q5y45q2hav07i8q7qnlvqi6145zzb9nrzkjdkgp"))
+		(patches (search-patches "dmlc-build-shared-library.patch"))
                 (file-name (git-file-name name version))))
+      (native-inputs
+       `(("googletest" ,googletest)))
       (build-system cmake-build-system)
       (synopsis "Distributed machine learning common codebase")
       (description "DMLC-Core is the backbone library to support all DMLC
@@ -112,12 +116,18 @@ xmachine learning libraries.")
                       (sha256
                        (base32
                         "1zybls07a7kwafn0m97cvwcrvnmch95y0mw0ir1485mdlix7qwac"))
+		      (patches (search-patches "rabit-build-shared-library.patch"
+					       "rabit-link-mpi.patch"))
                       (file-name (git-file-name name version))))
       (build-system cmake-build-system)
+      (inputs
+       `(("openmpi" ,openmpi)))
       (arguments
        `(#:configure-flags
-         '("-DCMAKE_CXX_FLAGS=-std=gnu++11")
-         #:tests? #f))                  ; use test.mk, not cmake
+         '("-DRABIT_BUILD_TESTS=ON"
+	   "-DRABIT_BUILD_MPI=ON"
+	   "-DCMAKE_CXX_FLAGS=-std=gnu++11")
+	 #:tests? #f))			; Not available for cmake yet.
       (synopsis "Reliable Allreduce and Broadcast Interface")
       (description "Rabit is a light weight library that provides a fault
 tolerant interface of Allreduce and Broadcast. It is designed to support easy
@@ -126,19 +136,39 @@ naturally under the Allreduce abstraction.")
       (license license:asl2.0))))
 
 (define-public xgboost
-  ;; Not working yet.
   (package
     (name "xgboost")
     (version "0.71")
     (source (origin
               (method url-fetch)
               (uri (string-append
-		    "https://github.com/dmlc/xgboost/archive/v"
+                    "https://github.com/dmlc/xgboost/archive/v"
                                   version ".tar.gz"))
               (sha256
                (base32
                 "0csvwmanqfqm1cy0gmz3yjpk9088iyk0770qc02zwxm0wazkkb8q"))
-              (file-name (git-file-name name version))))
+              (patches (search-patches "xgboost-don-t-use-submodules.patch"
+                                       "xgboost-fix-test_param.patch"
+				       "xgboost-add-install.patch"))
+              (file-name (string-append name "-" version ".tar.gz"))))
+    (native-inputs
+     `(("googletest" ,googletest)))
+    (inputs
+     `(("dmlc-core" ,dmlc-core)
+       ("rabit" ,rabit)))
+    (arguments
+     `(#:configure-flags
+       '("-DGOOGLE_TEST=ON")
+       #:phases
+       (modify-phases %standard-phases
+	 (add-before 'configure 'remove-find-gtest
+	   (lambda* (#:key inputs #:allow-other-keys)
+	     (delete-file "cmake/modules/FindGTest.cmake")))
+         (replace 'check
+           (lambda* (#:key outputs #:allow-other-keys)
+             (chdir (string-append "../" ,name "-" ,version))
+             (invoke "./testxgboost")
+             (chdir "../build"))))))
     (build-system cmake-build-system)
     (home-page "https://xgboost.readthedocs.io/en/latest/")
     (synopsis "Scalable and flexible gradient boosting")
@@ -238,7 +268,7 @@ the following advantages:
     (license license:expat)))
 
 (define-public vowpal-wabbit
-  ;; Language binding not included.
+  ;; Language bindings not included.
   (package
     (name "vowpal-wabbit")
     (version "8.5.0")
@@ -251,25 +281,43 @@ the following advantages:
                (base32
 		"0clp2kb7rk5sckhllxjr5a651awf4s8dgzg4659yh4hf5cqnf0gr"))
 	      (file-name (string-append name "-" version ".tar.gz"))))
-    ;; (native-inputs
-    ;;  `(("python" ,python)
-    ;;    ("python-setuptools" ,python-setuptools)))
     (inputs
      `(("boost" ,boost)
        ("zlib" ,zlib)))
     (arguments
      `(#:configure-flags
        (list (string-append "--with-boost="
-			    (assoc-ref %build-inputs "boost")))
-       ;; #:phases
-       ;; (modify-phases %standard-phases
-       ;; 	 (add-after 'install 'install-python
-       ;; 	   (lambda* (#:key inputs outputs #:allow-other-keys)
-       ;; 	     (chdir "python")
-       ;; 	     (invoke "python" "setup.py" "install"
-       ;; 		     "--prefix=" (assoc-ref outputs "out"))
-       ;; 	     (chdir ".."))))
-       ))
+			    (assoc-ref %build-inputs "boost")))))
+    (build-system gnu-build-system)
+    (home-page "https://github.com/JohnLangford/vowpal_wabbit")
+    (synopsis "Machine learning system which pushes the frontier of machine
+learning")
+    (description "Vowpal Wabbit is a machine learning system which pushes the
+frontier of machine learning with techniques such as online, hashing, 
+allreduce, reductions, learning2search, active, and interactive learning. ")
+    (license license:bsd-3)))
+
+(define-public vowpal-wabbit
+  ;; Language bindings not included.
+  (package
+    (name "vowpal-wabbit")
+    (version "8.5.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+		    "https://github.com/JohnLangford/vowpal_wabbit/archive/"
+		    version ".tar.gz"))
+              (sha256
+               (base32
+		"0clp2kb7rk5sckhllxjr5a651awf4s8dgzg4659yh4hf5cqnf0gr"))
+	      (file-name (string-append name "-" version ".tar.gz"))))
+    (inputs
+     `(("boost" ,boost)
+       ("zlib" ,zlib)))
+    (arguments
+     `(#:configure-flags
+       (list (string-append "--with-boost="
+			    (assoc-ref %build-inputs "boost")))))
     (build-system gnu-build-system)
     (home-page "https://github.com/JohnLangford/vowpal_wabbit")
     (synopsis "Machine learning system which pushes the frontier of machine

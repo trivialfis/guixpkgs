@@ -1,0 +1,23 @@
+From 047e28fae06b78a76572b1d32b715c7acd11c252 Mon Sep 17 00:00:00 2001
+From: fis <ybbs.daans@hotmail.com>
+Date: Sun, 13 May 2018 06:07:45 +0800
+Subject: [PATCH] Fix test_param.
+
+---
+ tests/cpp/tree/test_param.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tests/cpp/tree/test_param.cc b/tests/cpp/tree/test_param.cc
+index f5d1a3ae..c94c980d 100644
+--- a/tests/cpp/tree/test_param.cc
++++ b/tests/cpp/tree/test_param.cc
+@@ -1,5 +1,5 @@
+ // Copyright by Contributors
+-#include "../../src/tree/param.h"
++#include "../../../src/tree/param.h"
+ 
+ #include "../helpers.h"
+ 
+-- 
+2.14.3
+

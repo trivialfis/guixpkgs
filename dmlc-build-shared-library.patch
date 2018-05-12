@@ -1,0 +1,25 @@
+From 2cb8f7bc46e87d8c8d800c91e75e93ce8493368c Mon Sep 17 00:00:00 2001
+From: fis <ybbs.daans@hotmail.com>
+Date: Sun, 13 May 2018 05:21:25 +0800
+Subject: [PATCH] Build shared library
+
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 183751b..f9a7bdd 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -144,7 +144,7 @@ if(USE_AZURE)
+   list(APPEND SOURCE "src/io/azure_filesys.cc")
+ endif()
+ 
+-add_library(dmlc ${SOURCE})
++add_library(dmlc SHARED ${SOURCE})
+ target_link_libraries(dmlc ${dmlccore_LINKER_LIBS})
+ 
+ # ---[ Install Includes
+-- 
+2.14.3
+
