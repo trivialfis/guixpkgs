@@ -25,8 +25,6 @@
 		  "1n2d0xsqlsj2z2spc5q651syjgsixc455g41x8vavv1ls58y0fkf"))
 		(file-name (git-file-name name version))))
       (build-system python-build-system)
-      ;; (arguments)
-      ;; (inputs)
       (native-inputs
        `(("python-glob2" ,python-glob2)
 	 ("python-blessings" ,python-blessings)

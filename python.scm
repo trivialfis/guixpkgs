@@ -143,8 +143,7 @@ by pycodestyle.")
               (file-name (string-append name "-" version ".tar.gz"))))
     (build-system python-build-system)
     (home-page "https://github.com/miracle2k/python-glob2/")
-    (synopsis "Version of the glob module that supports recursion via **, and
-can capture patterns.")
+    (synopsis "Extended Version of the python buildin glob module")
     (description "This is an extended version of Python's builtin glob module
 @url{http://docs.python.org/library/glob.html} which adds:
 
@@ -156,6 +155,9 @@ option of the bash shell.
 @item The ability to replace the filesystem functions used, in order to glob
 on virtual filesystems.
 @item Compatible with Python 2 and Python 3 (tested with 3.3).
-@end itemize\n
+@end itemize
 It's currently based on the glob code from Python 3.3.1.")
     (license license:bsd-2)))
+
+(define-public python2-glob2
+  (package-with-python2 python-glob2))

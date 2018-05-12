@@ -45,6 +45,14 @@
        '("-DBUILD_TESTS=ON")
        #:test-target "xtest"))
     (home-page "https://github.com/nlohmann/json")
-    (synopsis "JSON for Modern C++")
-    (description "JSON for Modern C++")
+    (synopsis "C++ tensors with broadcasting and lazy computing.")
+    (description "xtensor is a C++ library meant for numerical analysis with
+multi-dimensional array expressions.
+
+xtensor provides
+@itemize
+@item an extensible expression system enabling lazy broadcasting.
+@item an API following the idioms of the C++ standard library.
+@item tools to manipulate array expressions and build upon xtensor.
+@end itemize")
     (license license:bsd-3)))
