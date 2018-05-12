@@ -22,9 +22,9 @@
   #:use-module (guix build-system cmake)
   #:use-module (gnu packages check))
 
-(define-public cxx-json
+(define-public json-modern-cxx
   (package
-    (name "cxx-json")
+    (name "json-modern-cxx")
     (version "3.1.2")
     (source (origin
               (method url-fetch)
@@ -38,7 +38,8 @@
     (home-page "https://github.com/nlohmann/json")
     (build-system cmake-build-system)
     (synopsis "JSON for Modern C++")
-    (description "JSON for Modern C++")
+    (description "JSON for Modern C++ is a C++ json library that provides
+intutive syntax and trivial integration.")
     (license license:expat)))
 
 (define-public xtl
@@ -56,7 +57,7 @@
               (file-name (string-append name "-" version ".tar.gz"))))
     (native-inputs
      `(("googletest" ,googletest)
-       ("cxx-json" ,cxx-json)))
+       ("json-modern-cxx" ,json-modern-cxx)))
     (arguments
      `(#:configure-flags
        '("-DBUILD_TESTS=ON")
@@ -71,7 +72,7 @@
     (home-page "https://github.com/QuantStack/xtl")
     (build-system cmake-build-system)
     (synopsis "C++ template library providing some basic tools")
-    (description "xtl is a C++ header-only librar template providing basic
+    (description "xtl is a C++ header-only template library providing basic
 tools (containers, algorithms) used by other quantstack packages")
     (license license:bsd-3)))
 
@@ -95,10 +96,10 @@ tools (containers, algorithms) used by other quantstack packages")
     (native-inputs
      `(("googletest" ,googletest)))
     (synopsis "C++ wrappers for SIMD intrinsics and parallelized, optimized
-math implementations ")
-    (description "SIMD (Single Instruction, Multiple Data) is a feature of
-microprocessors that has been available for many years. SIMD instructions
-perform a single operation on a batch of values at once, and thus provide a
-way to significantly accelerate code execution. However, these instructions 
-differ between microprocessor vendors and compilers")
+math implementations")
+    (description "xsimd provides a unified means for using these features for
+library authors.  Namely, it enables manipulation of batches of numbers with
+the same arithmetic operators as for single values.  It also provides
+accelerated implementation of common mathematical functions operating on
+batches.")
     (license license:bsd-3)))
