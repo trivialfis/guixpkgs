@@ -118,8 +118,7 @@ xmachine learning libraries.")
                       (sha256
                        (base32
                         "1zybls07a7kwafn0m97cvwcrvnmch95y0mw0ir1485mdlix7qwac"))
-		      (patches (search-patches "rabit-build-shared-library.patch"
-					       "rabit-link-mpi.patch"))
+		      (patches (search-patches "rabit-fix-building-shared-library.patch"))
                       (file-name (git-file-name name version))))
       (build-system cmake-build-system)
       (inputs
@@ -127,6 +126,7 @@ xmachine learning libraries.")
       (arguments
        `(#:configure-flags
          '("-DRABIT_BUILD_TESTS=ON"
+	   "-DBUILD_SHARED_LIBS=ON"
 	   "-DRABIT_BUILD_MPI=ON"
 	   "-DCMAKE_CXX_FLAGS=-std=gnu++11")
 	 #:tests? #f))			; Not available for cmake yet.
