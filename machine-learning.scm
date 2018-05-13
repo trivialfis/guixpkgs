@@ -90,10 +90,12 @@ is gradient-based optimization.")
                 (sha256
                  (base32
                   "0lf8my5b9p458q5y45q2hav07i8q7qnlvqi6145zzb9nrzkjdkgp"))
-		(patches (search-patches "dmlc-build-shared-library.patch"))
                 (file-name (git-file-name name version))))
       (native-inputs
        `(("googletest" ,googletest)))
+      (arguments
+       `(#:configure-flags
+	 '("-DDBUILD_SHARED_LIBS=ON")))
       (build-system cmake-build-system)
       (synopsis "Distributed machine learning common codebase")
       (description "DMLC-Core is the backbone library to support all DMLC
@@ -293,7 +295,7 @@ the following advantages:
     (synopsis "Machine learning system which pushes the frontier of machine
 learning")
     (description "Vowpal Wabbit is a machine learning system which pushes the
-frontier of machine learning with techniques such as online, hashing, 
+frontier of machine learning with techniques such as online, hashing,
 allreduce, reductions, learning2search, active, and interactive learning. ")
     (license license:bsd-3)))
 
@@ -323,6 +325,6 @@ allreduce, reductions, learning2search, active, and interactive learning. ")
     (synopsis "Machine learning system which pushes the frontier of machine
 learning")
     (description "Vowpal Wabbit is a machine learning system which pushes the
-frontier of machine learning with techniques such as online, hashing, 
+frontier of machine learning with techniques such as online, hashing,
 allreduce, reductions, learning2search, active, and interactive learning. ")
     (license license:bsd-3)))
