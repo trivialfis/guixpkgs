@@ -75,8 +75,11 @@ Many libraries are packaged as dependencies, just grep "define-public".
    + qBittorrent
    + python-autograd
    + amule
+   + python-yapf
+   + python-parso
+   + python-glob2
 
 #  LocalWords:  upstreamed LocalWords nvcc OpenCL Cuda cuda dev pocl
 #  LocalWords:  clinfo guix icd clFFT beignet qBittorrent cpp WIP
-#  LocalWords:  autograd Arrayfire libffm opencv amule lightgbm
-#  LocalWords:  pybind
+#  LocalWords:  autograd Arrayfire libffm opencv amule lightgbm parso
+#  LocalWords:  pybind yapf
