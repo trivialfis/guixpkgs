@@ -411,6 +411,82 @@ device specific and buffer management for the Intel(R) Graphics Compute Runtime
 for OpenCL(TM) and the Intel(R) Media Driver for VAAPI.")
       (license license:non-copyleft))))
 
+(define-public clew
+  (let* ((commit "b9bb66beb5cb4bde16315424a57d32d01fda8868")
+         (revision "0")
+         (version (string-append "1.1.1" revision commit)))
+    (package
+      (name "clew")
+      (version version)
+      (home-page "https://github.com/hughperkins/clew.git")
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url home-page)
+                      (commit commit)))
+                (sha256
+                 (base32
+                  "0b7jg38g9cjyli79rmymbpkqwap2jp0wrrrlr2dgraxfbzg6rc28"))
+                (file-name (git-file-name name version))))
+      (build-system cmake-build-system)
+      ;; To test it works ok. You'll need at least one OpenCL-enabled device to
+      ;; do this bit:
+      ;;   open a cmd
+      ;;   change into the 'dist' directory you created
+      ;;   type 'clewTest' => should see something like 'num platforms: 1'
+      (arguments
+       `(#:configure-flags
+         '("-DBUILD_TESTS=OFF"
+           "-DBUILD_SHARED_LIBRARY=ON")
+         #:tests? #f))
+      ;; (inputs)
+      (synopsis "The OpenCL Extension Wrangler Library")
+      (description "This basically works like glew, but for OpenCL
+@itemize
+@item You can build opencl code without needing any opencl library or include
+files!
+@item At runtime, even if there is no opencl-enabled device present, your code
+will still run! Of course, you wont be able to do anything opencl-related, but
+you wont get any errors about missing dlls and stuff, no linker errors (at
+least, not until you try to use a non-existent opencl-enabled device of course)
+@end itemize")
+      (license license:expat))))		; Not sure, please check
+
+(define-public easycl
+  (let* ((commit "d4d47ff25fce4c761c8004ee15ebd12d90ca6f2a")
+         (revision "0")
+         (version (string-append "1.1.1" revision commit)))
+    (package
+      (name "easycl")
+      (version version)
+      (home-page "https://github.com/hughperkins/EasyCL")
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url home-page)
+                      (commit commit)))
+                (sha256
+                 (base32
+                  "0c3j4zmqxl5qm0i4i4gn7sahv0hgznk0c59gyhsd4g3268qmw506"))
+                (file-name (git-file-name name version))))
+      (build-system cmake-build-system)
+      ;; To test it, run ./gpuinfo inside build dir.
+      (arguments
+       `(#:configure-flags
+         '("-DUSE_SYSTEM_CLEW=ON")
+         #:tests? #f))
+      (inputs
+       `(("clew", clew)))
+      (synopsis "Easy to run kernels using OpenCL.")
+      (description "Easy to run kernels using OpenCL. (renamed from
+OpenCLHelper)
+@itemize
+@item makes it easy to pass input and output arguments
+@item handles much of the boilerplate
+@item uses clew to load opencl dynamically
+@end itemize")
+      (license license:mpl2.0))))
+
 (define-public beignet-tests
   ;; Just extracted from beignet, complete garbage, not working.
 
