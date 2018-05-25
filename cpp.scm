@@ -65,15 +65,14 @@ intutive syntax and trivial integration.")
        (modify-phases %standard-phases
          (replace 'check
            (lambda* _
-             (invoke "make" "test_xtl")
-             (chdir "test")
-             (invoke "./test_xtl")
-             (chdir ".."))))))
+	     (with-directory-excursion "test"
+	       (invoke "./test_xtl")
+	       #t))))))
     (home-page "https://github.com/QuantStack/xtl")
     (build-system cmake-build-system)
     (synopsis "C++ template library providing some basic tools")
     (description "xtl is a C++ header-only template library providing basic
-tools (containers, algorithms) used by other quantstack packages")
+tools (containers, algorithms) used by other QuantStack packages.")
     (license license:bsd-3)))
 
 (define-public xsimd

@@ -44,7 +44,7 @@
      `(#:configure-flags
        '("-DBUILD_TESTS=ON")
        #:test-target "xtest"))
-    (home-page "https://github.com/nlohmann/json")
+    (home-page "http://quantstack.net/xtensor")
     (synopsis "C++ tensors with broadcasting and lazy computing.")
     (description "xtensor is a C++ library meant for numerical analysis with
 multi-dimensional array expressions.
