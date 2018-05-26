@@ -54,15 +54,6 @@ and Python.")
     (build-system cmake-build-system)
     (inputs
      `(("python" ,python-wrapper)))
-    ;; (arguments
-    ;;  `(#:modules ((guix build utils)
-    ;; 		  (guix build cmake-build-system)
-    ;; 		  ((guix build gnu-build-system) #:prefix gnu:))
-    ;;    #:phases
-    ;;    (modify-phases %standard-phases
-    ;; 	 (add-before 'configure 'patch-python-scripts
-    ;; 		     (assoc-ref gnu:%standard-phases 'patch-source-shebangs)))
-    ;;    ))
     (home-page "https://github.com/rizsotto/Bear")
     (synopsis "Tool for generating a compilation database")
     (description "A JSON compilation database is used in the Clang project to
