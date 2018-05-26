@@ -49,7 +49,7 @@
     (description "xtensor is a C++ library meant for numerical analysis with
 multi-dimensional array expressions.
 
-xtensor provides
+xtensor provides:
 @itemize
 @item an extensible expression system enabling lazy broadcasting.
 @item an API following the idioms of the C++ standard library.

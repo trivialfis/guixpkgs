@@ -19,25 +19,51 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
   #:use-module (guix download)
+  #:use-module (guix git-download)
   #:use-module (guix build-system cmake)
-  #:use-module (gnu packages check))
+  #:use-module (gnu packages)
+  #:use-module (gnu packages check)
+  #:use-module (gnu packages llvm)
+  #:use-module (code)
+  #:use-module (check))
 
 (define-public json-modern-cxx
   (package
     (name "json-modern-cxx")
     (version "3.1.2")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append
-                    "https://github.com/nlohmann/json/archive/v"
-                    version ".tar.gz"))
-              (sha256
-               (base32
-                "0m5fhdpx2qll933db2nsi30nns3cifavzvijzz6mxhdkpmngmzz8"))
-              (file-name (string-append name "-" version ".tar.gz"))))
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append
+             "https://github.com/nlohmann/json/archive/v" version ".tar.gz"))
+       (sha256
+        (base32
+         "0m5fhdpx2qll933db2nsi30nns3cifavzvijzz6mxhdkpmngmzz8"))
+       (file-name (string-append name "-" version ".tar.gz"))
+       (modules '((guix build utils)))
+       (snippet
+        '(begin
+           (delete-file-recursively "./third_party")
+           (delete-file-recursively "./test/thirdparty")
+           (delete-file-recursively "./benchmarks/thirdparty")
+           ;; Splits catch and fifo_map
+           (with-directory-excursion "test/src"
+             (let ((files (find-files "." ".*\\.cpp")))
+               (substitute* files
+                 (("#include ?\"(catch.hpp)\"" all catch-hpp)
+                  (string-append "#include <catch/" catch-hpp ">")))
+               (substitute* files
+                 (("#include ?\"(fifo_map.hpp)\"" all fifo-map-hpp)
+                  (string-append
+                   "#include <fifo_map/" fifo-map-hpp ">")))))))))
+    (native-inputs
+     `(("amalgamate" ,amalgamate)
+       ("catch2" ,catch2)
+       ("clang-runtime" ,clang-runtime)
+       ("fifo-map" ,fifo-map)))
     (home-page "https://github.com/nlohmann/json")
     (build-system cmake-build-system)
-    (synopsis "JSON for Modern C++")
+    (synopsis "JSON parser and printer library for C++")
     (description "JSON for Modern C++ is a C++ json library that provides
 intutive syntax and trivial integration.")
     (license license:expat)))
@@ -65,9 +91,9 @@ intutive syntax and trivial integration.")
        (modify-phases %standard-phases
          (replace 'check
            (lambda* _
-	     (with-directory-excursion "test"
-	       (invoke "./test_xtl")
-	       #t))))))
+             (with-directory-excursion "test"
+               (invoke "./test_xtl")
+               #t))))))
     (home-page "https://github.com/QuantStack/xtl")
     (build-system cmake-build-system)
     (synopsis "C++ template library providing some basic tools")
@@ -102,3 +128,48 @@ the same arithmetic operators as for single values.  It also provides
 accelerated implementation of common mathematical functions operating on
 batches.")
     (license license:bsd-3)))
+
+(define-public fifo-map
+  (let* ((commit "0dfbf5dacbb15a32c43f912a7e66a54aae39d0f9")
+         (revision "0")
+         (version (string-append "1.1.1" revision commit)))
+    (package
+      (name "fifo-map")
+      (version version)
+      (home-page "https://github.com/nlohmann/fifo_map")
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url home-page)
+                      (commit commit)))
+                (sha256
+                 (base32
+                  "0pi77b75kp0l7z454ihcd14nzpi3nc5m4nyjbsgy5f9bw3676196"))
+                (patches (search-patches "fifo-map-remove-catch.hpp.patch"
+                                         "fifo-map-fix-flags-for-gcc.patch"))
+                (file-name (git-file-name name version))
+                (modules '((guix build utils)))
+                (snippet '(delete-file-recursively "./test/thirdparty"))))
+      (native-inputs
+       `(("catch2" ,catch2)))
+      (build-system cmake-build-system)
+      (arguments
+       `(#:phases
+         (modify-phases %standard-phases
+           (replace 'check
+             (lambda _
+               (invoke "./unit")))
+           (replace 'install
+             (lambda* (#:key outputs #:allow-other-keys)
+               (let* ((out (assoc-ref outputs "out"))
+                      (inc (string-append out "/include/fifo_map")))
+                 (mkdir-p inc)
+                 (with-directory-excursion
+                     (string-append "../" ,name "-" ,version "-checkout")
+                   (copy-file "src/fifo_map.hpp"
+                              (string-append inc "/fifo_map.hpp")))))))))
+      (synopsis "FIFO-ordered associative container for C++")
+      (description "Fifo_map is a C++ header only library for  associative
+container which uses the order in which keys were inserted to the container
+as ordering relation.")
+      (license license:expat))))
