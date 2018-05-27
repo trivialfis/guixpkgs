@@ -152,7 +152,14 @@ naturally under the Allreduce abstraction.")
               (patches (search-patches "xgboost-don-t-use-submodules.patch"
                                        "xgboost-fix-test_param.patch"
 				       "xgboost-add-install.patch"))
-              (file-name (string-append name "-" version ".tar.gz"))))
+              (file-name (string-append name "-" version ".tar.gz"))
+	      (modules '((guix build utils)))
+	      (snippet
+	       '(begin
+		  (delete-file-recursively "dmlc-core")
+		  (delete-file-recursively "cub")
+		  (delete-file-recursively "nccl")
+		  (delete-file-recursively "rabit")))))
     (native-inputs
      `(("googletest" ,googletest)))
     (inputs
@@ -174,6 +181,35 @@ naturally under the Allreduce abstraction.")
     (build-system cmake-build-system)
     (home-page "https://xgboost.readthedocs.io/en/latest/")
     (synopsis "Scalable and flexible gradient boosting")
+    (description "XGBoost is an optimized distributed gradient boosting library
+designed to be highly efficient, flexible and portable. It implements machine
+learning algorithms under the Gradient Boosting framework.")
+    (license license:asl2.0)))
+
+(define-public python-xgboost
+  (package
+    (name "python-xgboost")
+    (version "0.71")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "https://github.com/dmlc/xgboost/archive/v"
+                                  version ".tar.gz"))
+              (sha256
+               (base32
+                "0csvwmanqfqm1cy0gmz3yjpk9088iyk0770qc02zwxm0wazkkb8q"))
+              (file-name (string-append name "-" version ".tar.gz"))))
+    (inputs
+     `(("xgboost" ,xgboost)))
+    (build-system python-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+	 (add-before 'configure 'chdir-to-python
+	   (lambda _
+	     (chdir "python-package"))))))
+    (home-page "https://xgboost.readthedocs.io/en/latest/")
+    (synopsis "Scalable and flexible gradient boosting") ; FIXME
     (description "XGBoost is an optimized distributed gradient boosting library
 designed to be highly efficient, flexible and portable. It implements machine
 learning algorithms under the Gradient Boosting framework.")
