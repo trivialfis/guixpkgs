@@ -16,6 +16,7 @@
 ;;; along with This file.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module  (machine-learning)
+  #:use-module (ice-9 match)		; openmpi
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
@@ -27,9 +28,15 @@
   #:use-module (gnu packages boost)
   #:use-module (gnu packages check)
   #:use-module (gnu packages compression)
+  #:use-module (gnu packages gcc)	; openmpi
+  #:use-module (gnu packages linux)	; openmpi
   #:use-module (gnu packages machine-learning)
   #:use-module (gnu packages mpi)
-  #:use-module (gnu packages python))
+  #:use-module (gnu packages perl)	; openmpi
+  #:use-module (gnu packages python)
+  #:use-module (gnu packages pkg-config) ; openmpi
+  #:use-module (gnu packages valgrind)	 ; openmpi
+  #:use-module (guix utils))		 ; openmpi
 
 (define-public python-autograd
   (let* ((commit "442205dfefe407beffb33550846434baa90c4de7")
@@ -103,6 +110,89 @@ projects,  offers the bricks to build efficient and scalable distributed
 xmachine learning libraries.")
       (license license:asl2.0))))
 
+(define-public openmpi-1.10.7
+  (package
+    (name "openmpi")
+    (version "1.10.7")
+    (source
+     (origin
+      (method url-fetch)
+      (uri (string-append "https://www.open-mpi.org/software/ompi/v"
+                          (version-major+minor version)
+                          "/downloads/openmpi-" version ".tar.bz2"))
+      (sha256
+       (base32
+        "142s1vny9gllkq336yafxayjgcirj2jv0ddabj879jgya7hyr2d0"))))
+    (build-system gnu-build-system)
+    (inputs
+     `(("hwloc" ,hwloc "lib")
+       ("gfortran" ,gfortran)
+       ("libfabric" ,libfabric)
+       ,@(match (%current-system)
+                ((member (package-supported-systems psm))
+                 `(("psm" ,psm)))
+                (_ `()))
+       ("rdma-core" ,rdma-core)
+       ("valgrind" ,valgrind)))
+    (native-inputs
+     `(("pkg-config" ,pkg-config)
+       ("perl" ,perl)))
+    (outputs '("out" "debug"))
+    (arguments
+     `(#:configure-flags `("--enable-mpi-ext=affinity" ;cr doesn't work
+                           "--enable-memchecker"
+                           "--with-sge"
+
+                           ;; VampirTrace is obsoleted by scorep and disabling
+                           ;; it reduces the closure size considerably.
+                           "--disable-vt"
+
+                           ,(string-append "--with-valgrind="
+                                           (assoc-ref %build-inputs "valgrind"))
+                           ,(string-append "--with-hwloc="
+                                           (assoc-ref %build-inputs "hwloc")))
+       #:phases (modify-phases %standard-phases
+                  (add-before 'build 'remove-absolute
+                    (lambda _
+                      ;; Remove compiler absolute file names (OPAL_FC_ABSOLUTE
+                      ;; etc.) to reduce the closure size.  See
+                      ;; <https://lists.gnu.org/archive/html/guix-devel/2017-07/msg00388.html>
+                      ;; and
+                      ;; <https://www.mail-archive.com/users@lists.open-mpi.org//msg31397.html>.
+                      (substitute* '("orte/tools/orte-info/param.c"
+                                     "oshmem/tools/oshmem_info/param.c"
+                                     "ompi/tools/ompi_info/param.c")
+                        (("_ABSOLUTE") ""))
+                      ;; Avoid valgrind (which pulls in gdb etc.).
+                      (substitute*
+                          '("./ompi/mca/io/romio/src/io_romio_component.c")
+                        (("MCA_io_romio_COMPLETE_CONFIGURE_FLAGS")
+                         "\"[elided to reduce closure]\""))
+                      #t))
+                  (add-before 'build 'scrub-timestamps ;reproducibility
+                    (lambda _
+                      (substitute* '("ompi/tools/ompi_info/param.c"
+                                     "orte/tools/orte-info/param.c"
+                                     "oshmem/tools/oshmem_info/param.c")
+                        ((".*(Built|Configured) on.*") ""))
+                      #t))
+                  (add-after 'install 'remove-logs ;reproducibility
+                    (lambda* (#:key outputs #:allow-other-keys)
+                      (let ((out (assoc-ref outputs "out")))
+                        (for-each delete-file (find-files out "config.log"))
+                        #t))))))
+    (home-page "http://www.open-mpi.org")
+    (synopsis "MPI-3 implementation")
+    (description
+     "The Open MPI Project is an MPI-3 implementation that is developed and
+maintained by a consortium of academic, research, and industry partners.  Open
+MPI is therefore able to combine the expertise, technologies, and resources
+from all across the High Performance Computing community in order to build the
+best MPI library available.  Open MPI offers advantages for system and
+software vendors, application developers and computer science researchers.")
+    ;; See file://LICENSE
+    (license license:bsd-2)))
+
 (define-public rabit
   (let* ((commit "7bc46b8c75a6d530b2ad4efcf407b6aeab71e44f")
          (revision "0")
@@ -122,7 +212,7 @@ xmachine learning libraries.")
                       (file-name (git-file-name name version))))
       (build-system cmake-build-system)
       (inputs
-       `(("openmpi" ,openmpi)))
+       `(("openmpi" ,openmpi-1.10.7)))
       (arguments
        `(#:configure-flags
          '("-DRABIT_BUILD_TESTS=ON"
@@ -187,6 +277,7 @@ learning algorithms under the Gradient Boosting framework.")
     (license license:asl2.0)))
 
 (define-public python-xgboost
+  ;; Doesn't work yet. Can not find shared library.
   (package
     (name "python-xgboost")
     (version "0.71")
@@ -205,7 +296,7 @@ learning algorithms under the Gradient Boosting framework.")
     (arguments
      `(#:phases
        (modify-phases %standard-phases
-	 (add-before 'configure 'chdir-to-python
+	 (add-before 'build 'chdir-to-python
 	   (lambda _
 	     (chdir "python-package"))))))
     (home-page "https://xgboost.readthedocs.io/en/latest/")
