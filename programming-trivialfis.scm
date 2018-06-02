@@ -72,7 +72,8 @@
        ("python-yapf" ,python-yapf)
 
        ("basic-programming" ,trivialfis/basic)))
-    (native-search-paths (package-native-search-paths python))
+    (native-search-paths (append (package-native-search-paths python)
+				 (package-native-search-paths trivialfis/basic)))
     (home-page "None")
     (synopsis "Basic programming tools for python")
     (description "Basic programming tools for python.")
@@ -105,7 +106,8 @@
 
        ("basic-programming" ,trivialfis/basic)))
     (native-search-paths (append (package-native-search-paths gcc-toolchain)
-                                 (package-native-search-paths python)))
+                                 (package-native-search-paths python)
+				 (package-native-search-paths trivialfis/basic)))
     (home-page "None")
     (synopsis "Basic programming tools for c/c++")
     (description "Basic programming tools for c/c++.")
