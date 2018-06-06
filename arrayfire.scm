@@ -109,7 +109,6 @@ that use CUDA/OpenCL.")
                               ("glew" ,glew)
                               ("fftw" ,fftw)
                               ("fftwf" ,fftwf)
-                              ("fftw-avx" ,fftw-avx)
                               ("lapack" ,lapack)
                               ("boost" ,boost))))
          (cl-native `(,cl?
@@ -224,8 +223,7 @@ specifications.")
     ;; (native-inputs `(("googletest" ,googletest)))
     (inputs `(("openblas" ,openblas)
               ("fftw" ,fftw)
-              ("fftwf" ,fftwf)
-              ("fftw-avx" ,fftw-avx)))
+              ("fftwf" ,fftwf)))
     (build-system cmake-build-system)
     (arguments
      `(#:configure-flags
