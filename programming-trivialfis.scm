@@ -8,6 +8,7 @@
   #:use-module (gnu packages commencement)
   #:use-module (gnu packages cmake)
   #:use-module (gnu packages gcc)
+  #:use-module (gnu packages gdb)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages ninja)
@@ -103,6 +104,7 @@
        ("meson" ,meson)
        ("ninja" ,ninja)
        ("rtags" ,rtags)
+       ("gdb" ,gdb)
 
        ("basic-programming" ,trivialfis/basic)))
     (native-search-paths (append (package-native-search-paths gcc-toolchain)
