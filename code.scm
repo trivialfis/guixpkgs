@@ -81,6 +81,7 @@ source and header amalgamation in projects.")
       (arguments
        `(#:phases
          (modify-phases %standard-phases
+	   (delete 'bootstrap)
            (add-before 'configure 'auto-gen
              (lambda _
                (invoke "./autogen.sh")))
