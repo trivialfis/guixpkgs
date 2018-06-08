@@ -3,6 +3,7 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
   #:use-module (gnu packages base)
+  #:use-module (gnu packages bash)
   #:use-module (gnu packages build-tools)
   #:use-module (gnu packages code)
   #:use-module (gnu packages commencement)
@@ -10,10 +11,48 @@
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages gdb)
   #:use-module (gnu packages gnome)
+  #:use-module (gnu packages ncurses)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages ninja)
   #:use-module (gnu packages python)
   #:use-module (emacs))
+
+(define-public clean-screen
+  (package
+    (name "clean-screen")
+    (version "0.0.0")
+    (source #f)
+    (build-system trivial-build-system)
+    (arguments
+     `(#:modules
+       ((guix build utils))
+       #:builder
+       (begin
+         (use-modules (guix build utils))
+         (let* ([sh (string-append (assoc-ref %build-inputs "bash-minimal")
+                                   "/bin/sh")]
+		[clear (string-append (assoc-ref %build-inputs "ncurses") "/bin/clear")]
+                [out (assoc-ref %outputs "out")]
+                [bin (string-append out "/bin")]
+                [exe (string-append bin "/clean-screen")])
+           (mkdir-p bin)
+           (call-with-output-file exe
+             (lambda (port)
+               (format
+                port
+                "#!~a
+~a && printf '\\033[3J'"
+                sh clear)
+               (chmod exe #o555)))))))
+    (inputs
+     `(("bash-minimal" ,bash-minimal)
+       ("coreutils" ,coreutils)
+       ("ncurses" ,ncurses)))
+    (home-page "None")
+    (synopsis "Clean up terminal.")
+    (description "An bash alias for cleaning up the terminal, packaged here so
+that I don't have to define it in pure environment.")
+    (license license:gpl3+)))
 
 (define-public trivialfis/basic
   (package
@@ -32,7 +71,8 @@
                        (((names . directories) ...)
                         (union-build out directories)))))))
     (inputs
-     `(("coreutils" ,coreutils)
+     `(("clean-screen" ,clean-screen)
+       ("coreutils" ,coreutils)
        ("emacs-trivialfis" ,emacs-trivialfis)
        ("findutils" ,findutils)
        ("glibc-locales" ,glibc-locales)
