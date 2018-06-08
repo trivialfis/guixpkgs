@@ -439,7 +439,6 @@ for OpenCL(TM) and the Intel(R) Media Driver for VAAPI.")
          '("-DBUILD_TESTS=OFF"
            "-DBUILD_SHARED_LIBRARY=ON")
          #:tests? #f))
-      ;; (inputs)
       (synopsis "The OpenCL Extension Wrangler Library")
       (description "This basically works like glew, but for OpenCL
 @itemize

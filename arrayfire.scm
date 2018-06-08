@@ -26,7 +26,6 @@
   #:use-module (clmath)
   #:use-module (cuda)
   #:use-module (opencl)
-  ;; #:use-module (gnu packages)
   #:use-module (gnu packages algebra)
   #:use-module (gnu packages boost)
   #:use-module (gnu packages check)
