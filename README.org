@@ -64,7 +64,8 @@ Copyright notice is included.
    + vowpal-wabbit
    + xtensor
    + pybind11
-   + xgboost (Language binding not enabled yet.).
+   + xgboost
+   + python-xgboost
 
 Many libraries are packaged as dependencies, just grep "define-public".
 
