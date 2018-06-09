@@ -277,7 +277,6 @@ learning algorithms under the Gradient Boosting framework.")
     (license license:asl2.0)))
 
 (define-public python-xgboost
-  ;; Doesn't work yet. Can not find shared library.
   (package
     (name "python-xgboost")
     (version "0.71")
@@ -285,20 +284,36 @@ learning algorithms under the Gradient Boosting framework.")
               (method url-fetch)
               (uri (string-append
                     "https://github.com/dmlc/xgboost/archive/v"
-                                  version ".tar.gz"))
+                    version ".tar.gz"))
               (sha256
                (base32
                 "0csvwmanqfqm1cy0gmz3yjpk9088iyk0770qc02zwxm0wazkkb8q"))
-              (file-name (string-append name "-" version ".tar.gz"))))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (patches (search-patches "python-xgboost-find-library-in-sys-path.patch"))
+              (snippet
+               '(begin
+		  (delete-file "./python-package/xgboost/build-python.sh")
+		  (delete-file "./python-package/setup_pip.py")
+		  (delete-file "./python-package/prep_pip.sh")
+                  (delete-file "./python-package/xgboost/src")
+                  (delete-file "./python-package/xgboost/rabit")
+                  (delete-file "./python-package/xgboost/make")
+		  (delete-file "./python-package/xgboost/lib")
+                  (delete-file "./python-package/xgboost/include")
+                  (delete-file "./python-package/xgboost/dmlc-core")))))
     (inputs
      `(("xgboost" ,xgboost)))
+    (propagated-inputs
+     `(("python-numpy" ,python-numpy)
+       ("python-scipy" ,python-scipy)))
     (build-system python-build-system)
     (arguments
      `(#:phases
        (modify-phases %standard-phases
-	 (add-before 'build 'chdir-to-python
-	   (lambda _
-	     (chdir "python-package"))))))
+         (add-after 'unpack 'chdir-to-python
+           (lambda _
+             (chdir "python-package")
+	     #t)))))
     (home-page "https://xgboost.readthedocs.io/en/latest/")
     (synopsis "Scalable and flexible gradient boosting") ; FIXME
     (description "XGBoost is an optimized distributed gradient boosting library

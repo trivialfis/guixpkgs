@@ -1,18 +1,19 @@
-From 89afbdfab81f8547613d02f3efb22e430744c82f Mon Sep 17 00:00:00 2001
+From 768a2767cf1b6d0891e8f9f3fb81c2aaabf8a604 Mon Sep 17 00:00:00 2001
 From: fis <ybbs.daans@hotmail.com>
 Date: Tue, 29 May 2018 03:31:33 +0800
-Subject: [PATCH] Find library in sys.path
+Subject: [PATCH] Find library in sys.path.
 
 ---
- python-package/MANIFEST.in |  6 ------
- python-package/setup.py    | 30 ++++++++++++++++++++++++------
- 2 files changed, 24 insertions(+), 12 deletions(-)
+ python-package/MANIFEST.in        | 19 +++++--------------
+ python-package/setup.py           | 32 ++++++++++++++++++++++++++------
+ python-package/xgboost/libpath.py |  5 ++++-
+ 3 files changed, 35 insertions(+), 21 deletions(-)
 
 diff --git a/python-package/MANIFEST.in b/python-package/MANIFEST.in
-index 38b1a77a..bd180edf 100644
+index 38b1a77a..4b6e732c 100644
 --- a/python-package/MANIFEST.in
 +++ b/python-package/MANIFEST.in
-@@ -1,11 +1,5 @@
+@@ -1,16 +1,7 @@
  include *.md *.rst
  recursive-include xgboost *
 -recursive-include xgboost/include *
@@ -21,11 +22,21 @@ index 38b1a77a..bd180edf 100644
 -recursive-include xgboost/rabit *
 -recursive-include xgboost/lib *
 -recursive-include xgboost/dmlc-core *
- #exclude pre-compiled .o and .a file for less confusions
- #make sure .a files are all removed for forcing compiling
- #include the pre-compiled .so is needed as a placeholder
+-#exclude pre-compiled .o and .a file for less confusions
+-#make sure .a files are all removed for forcing compiling
+-#include the pre-compiled .so is needed as a placeholder
+-#since it will be copy after compiling on the fly
+-global-exclude *.o
+-global-exclude *.a
+-global-exclude *.pyo
+-global-exclude *.pyc
++# exclude pre-compiled .o and .a file for less confusions
++# make sure .a files are all removed for forcing compiling
++# include the pre-compiled .so is needed as a placeholder
++# since it will be copy after compiling on the fly
++
 diff --git a/python-package/setup.py b/python-package/setup.py
-index e6c3386f..5762ab51 100644
+index e6c3386f..60145424 100644
 --- a/python-package/setup.py
 +++ b/python-package/setup.py
 @@ -4,7 +4,6 @@ from __future__ import absolute_import
@@ -36,7 +47,7 @@ index e6c3386f..5762ab51 100644
  sys.path.insert(0, '.')
  
  CURRENT_DIR = os.path.dirname(__file__)
-@@ -12,14 +11,33 @@ CURRENT_DIR = os.path.dirname(__file__)
+@@ -12,14 +11,35 @@ CURRENT_DIR = os.path.dirname(__file__)
  # We can not import `xgboost.libpath` in setup.py directly since xgboost/__init__.py
  # import `xgboost.core` and finally will import `numpy` and `scipy` which are setup
  # `install_requires`. That's why we're using `exec` here.
@@ -66,7 +77,9 @@ index e6c3386f..5762ab51 100644
 +    for p in LIBRARY_PATH:
 +        result = _find('libxgboost.so', p)
 +        if result is not None:
-+            return [result]
++            with open('./xgboost/shared-object', 'w') as f:
++                f.write(result)
++            return [os.path.relpath(result)]
 +    raise ValueError('Library not found.')
 +
 +LIB_PATH = find_lib()
@@ -75,6 +88,25 @@ index e6c3386f..5762ab51 100644
  setup(name='xgboost',
        version=open(os.path.join(CURRENT_DIR, 'xgboost/VERSION')).read().strip(),
        description="XGBoost Python Package",
+diff --git a/python-package/xgboost/libpath.py b/python-package/xgboost/libpath.py
+index d87922c0..7e12959d 100644
+--- a/python-package/xgboost/libpath.py
++++ b/python-package/xgboost/libpath.py
+@@ -20,10 +20,13 @@ def find_lib_path():
+        List of all found library path to xgboost
+     """
+     curr_path = os.path.dirname(os.path.abspath(os.path.expanduser(__file__)))
++    with open(os.path.join(curr_path, 'shared-object'), 'r') as f:
++        shared_object_dir = os.path.dirname(f.read())
+     # make pythonpack hack: copy this directory one level upper for setup.py
+     dll_path = [curr_path, os.path.join(curr_path, '../../lib/'),
+                 os.path.join(curr_path, './lib/'),
+-                os.path.join(sys.prefix, 'xgboost')]
++                os.path.join(sys.prefix, 'xgboost'),
++                shared_object_dir]
+     if sys.platform == 'win32':
+         if platform.architecture()[0] == '64bit':
+             dll_path.append(os.path.join(curr_path, '../../windows/x64/Release/'))
 -- 
-2.14.3
+2.14.4
 
