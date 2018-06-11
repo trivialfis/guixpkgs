@@ -62,10 +62,9 @@ Copyright notice is included.
    + opencv (from guix devel list)
    + lightgbm
    + vowpal-wabbit
-   + xtensor
-   + pybind11
    + xgboost
    + python-xgboost
+   + shadowsocks
 
 Many libraries are packaged as dependencies, just grep "define-public".
 
@@ -79,6 +78,8 @@ Many libraries are packaged as dependencies, just grep "define-public".
    + python-yapf
    + python-parso
    + python-glob2
+   + xtensor
+   + pybind11
 
 #  LocalWords:  upstreamed LocalWords nvcc OpenCL Cuda cuda dev pocl
 #  LocalWords:  clinfo guix icd clFFT beignet qBittorrent cpp WIP
