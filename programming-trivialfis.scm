@@ -160,7 +160,7 @@ that I don't have to define it in pure environment.")
        ("global" ,global)
        ("meson" ,meson)
        ("ninja" ,ninja)
-       ("rtags" ,rtags)
+       ("rtags-next" ,rtags-next)
        ("gdb" ,gdb)
 
        ("basic-programming" ,trivialfis/basic)))

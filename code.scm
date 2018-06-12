@@ -16,14 +16,17 @@
 ;;; along with This file.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (code)
+  #:use-module (srfi srfi-1)
   #:use-module (guix build-system gnu)
-  #:use-module (guix packages)
   #:use-module (guix git-download)
+  #:use-module (guix packages)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages autotools)
+  #:use-module (gnu packages code)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
-  #:use-module (gnu packages python))
+  #:use-module (gnu packages python)
+  #:use-module (cpp))
 
 (define-public amalgamate
   (let* ((commit "c91f07eea1133aa184f652b8f1398eaf03586208")
@@ -114,3 +117,27 @@ development from what existed in the Sourceforge area.  The goal of the
 project is preparing and maintaining common/unified working space where people
 interested in making ctags better can work together.")
       (license license:gpl2+))))
+
+(define-public rtags-next
+  (let* ((commit "8bf22578d0e28d0534411fb681eb0cd1e392b6ee")
+         (revision "0")
+         (version (git-version (package-version rtags) revision commit)))
+    (package
+      (inherit rtags)
+      (name "rtags-next")
+      (version version)
+      (home-page "https://github.com/Andersbakken/rtags")
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url home-page)
+                      (commit commit)))
+                (sha256
+                 (base32
+                  "12mn2lkhzj0dphjq0a07ghh0780h1ffsrw939d2akdqjbm8vc5i7"))
+                (snippet (origin-snippet (package-source rtags)))
+                (modules (origin-modules (package-source rtags)))
+                (patches (origin-patches (package-source rtags)))))
+      (inputs
+       `(,@(alist-delete "rct" (package-inputs rtags))
+         ("rct-next" ,rct-next))))))

@@ -22,8 +22,12 @@
   #:use-module (guix git-download)
   #:use-module (guix build-system cmake)
   #:use-module (gnu packages)
+  #:use-module (gnu packages compression)
   #:use-module (gnu packages check)
+  #:use-module (gnu packages cpp)
   #:use-module (gnu packages llvm)
+  #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages tls)
   #:use-module (code)
   #:use-module (check))
 
@@ -173,3 +177,45 @@ batches.")
 container which uses the order in which keys were inserted to the container
 as ordering relation.")
       (license license:expat))))
+
+(define-public rct-next
+  (let* ((commit "60d28748efadabaec03ceca18565caa4bb5ef7b3")
+         (revision "2")
+         (version (git-version "0.0.0" revision commit)))
+    (package
+      (name "rct-next")
+      (version version)
+      (home-page "https://github.com/Andersbakken/rct")
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url home-page)
+                      (commit commit)))
+                (sha256
+                 (base32
+                  "08yy979dw0qnc854ikfwc284z8jl6l41y1x4dd75p8fm8kify27p"))
+                (patches (search-patches "rct-cmake-Add-missing-headers.patch"
+                                         "rct-build-test.patch"))
+                (file-name (git-file-name name version))))
+      (build-system cmake-build-system)
+      (arguments
+       '(#:configure-flags
+         '("-DWITH_TESTS=ON"            ; To run the test suite
+           "-DRCT_RTTI_ENABLED=ON")
+         #:phases
+         (modify-phases %standard-phases
+           (replace 'check
+             (lambda _
+               (with-directory-excursion "./tests"
+                 (invoke "./rct_tests")))))))
+      (native-inputs
+       `(("cppunit" ,cppunit)
+         ("pkg-config" ,pkg-config)))
+      (inputs
+       `(("openssl" ,openssl)
+         ("zlib" ,zlib)))
+      (synopsis "C++ library providing Qt-like APIs on top of the STL")
+      (description "Rct is a set of C++ tools that provide nicer (more Qt-like)
+ APIs on top of Standard Template Library (@dfn{STL}) classes.")
+      (license (list license:expat        ; cJSON
+                     license:bsd-4)))))

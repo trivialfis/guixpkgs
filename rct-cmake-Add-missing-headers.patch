@@ -1,0 +1,45 @@
+From b36432c8cecd35a1cf5689bf93fd37188693c363 Mon Sep 17 00:00:00 2001
+From: fis <ybbs.daans@hotmail.com>
+Date: Sat, 20 Jan 2018 07:42:38 +0800
+Subject: [PATCH] rct.cmake: Add missing headers.
+
+---
+ rct.cmake | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/rct.cmake b/rct.cmake
+index 76e5a31..b21f903 100644
+--- a/rct.cmake
++++ b/rct.cmake
+@@ -380,7 +380,28 @@ if (NOT RCT_NO_INSTALL)
+     rct/Timer.h
+     rct/Value.h
+     rct/WriteLocker.h
++    rct/CpuUsage.h
++    rct/DataFile.h
++    rct/Date.h
++    rct/EmbeddedLinkedList.h
++    rct/FinishMessage.h
++    rct/Flags.h
++    rct/Hash.h
++    rct/LinkedList.h
++    rct/Map.h
++    rct/MemoryMappedFile.h
++    rct/OnDestruction.h
++    rct/QuitMessage.h
++    rct/ResponseMessage.h
++    rct/ScriptEngine.h
++    rct/StackBuffer.h
++    rct/StringTokenizer.h
++    rct/WindowsUnicodeConversion.h
+     DESTINATION include/rct)
+ 
++  install(FILES
++    json/json.hpp
++    DESTINATION include/rct/json)
++
+   install(EXPORT "rct" DESTINATION lib/cmake)
+ endif ()
+-- 
+2.14.4
+
