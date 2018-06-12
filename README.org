@@ -84,4 +84,4 @@ Many libraries are packaged as dependencies, just grep "define-public".
 #  LocalWords:  upstreamed LocalWords nvcc OpenCL Cuda cuda dev pocl
 #  LocalWords:  clinfo guix icd clFFT beignet qBittorrent cpp WIP
 #  LocalWords:  autograd Arrayfire libffm opencv amule lightgbm parso
-#  LocalWords:  pybind yapf
+#  LocalWords:  pybind yapf shadowsocks
