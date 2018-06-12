@@ -76,8 +76,8 @@ source and header amalgamation in projects.")
       (license license:bsd-3))))
 
 (define-public universal-ctags
-  (let* ((commit "6f7654b98be0dd9a15c539882ab7ea3914ab7bf8")
-         (revision "0")
+  (let* ((commit "44a0e9791e57d243668005f524a7014f0ebfc2bd")
+         (revision "1")
          (version (string-append "1.1.1" revision commit)))
     (package
       (name "universal-ctags")
@@ -90,7 +90,7 @@ source and header amalgamation in projects.")
                       (commit commit)))
                 (sha256
                  (base32
-                  "0xghdvjadcwm9agzxzv9rvlmkyn2gjf860ffdp8s6y7m2frlsl3y"))
+		  "0iw4q437wwcjsb4pbvh1908h3ldl6v0hx6cpika616pf1sm0q0lf"))
                 (file-name (git-file-name name version))))
       (build-system gnu-build-system)
       (native-inputs
@@ -99,16 +99,18 @@ source and header amalgamation in projects.")
          ("perl" ,perl)
          ("pkg-config" ,pkg-config)))
       (arguments
-       `(#:phases
+       `(#:modules ((guix build gnu-build-system)
+                    (guix build utils))
+	 #:phases
          (modify-phases %standard-phases
-	   (delete 'bootstrap)
-           (add-before 'configure 'auto-gen
-             (lambda _
-               (invoke "./autogen.sh")))
-           (add-before 'auto-gen 'make-files-writable
+	   (add-before 'bootstrap 'patch-source-shebangs
+	     (assoc-ref %standard-phases 'patch-source-shebangs))
+           (add-before 'bootstrap 'make-files-writable
              (lambda _
                (with-directory-excursion "./optlib"
-                 (for-each (lambda (file) (chmod file #o644))
+                 (for-each (lambda (file)
+			     (format (current-output-port) "Changing ~s~%" file)
+			     (chmod file #o666))
                            (find-files "." "\\.c"))))))
          #:tests? #f))                  ; FIXME: Disable known bug tests.
       (synopsis "A maintained ctags implementation")
