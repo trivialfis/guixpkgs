@@ -34,6 +34,8 @@
   #:use-module (gnu packages python)
   #:use-module (emacs))
 
+(define fis-home-page "https://trivialfis.github.io")
+
 (define-public clean-screen
   (package
     (name "clean-screen")
@@ -68,7 +70,7 @@
     (home-page "None")
     (synopsis "Clean up terminal.")
     (description "An bash alias for cleaning up the terminal, packaged here so
-that I don't have to define it in pure environment.")
+that I don't have to define it when in pure environment.")
     (license license:gpl3+)))
 
 (define-public trivialfis/basic
@@ -101,9 +103,12 @@ that I don't have to define it in pure environment.")
     (native-search-paths (list (search-path-specification
                                 (variable "GUIX_LOCPATH")
                                 (files '("lib/locale")))))
-    (home-page "None")
-    (synopsis "None")
-    (description "None")
+    (home-page (string-append
+                fis-home-page
+                "/linux/2018/06/10/Using-guix-for-development.html"))
+    (synopsis "Basic collection for programming.")
+    (description "This package provides basic collection for programming,
+suitable for pure environment.")
     (license license:gpl3+)))
 
 (define-public trivialfis/python
@@ -130,11 +135,15 @@ that I don't have to define it in pure environment.")
        ("python-yapf" ,python-yapf)
 
        ("basic-programming" ,trivialfis/basic)))
-    (native-search-paths (append (package-native-search-paths python)
-				 (package-native-search-paths trivialfis/basic)))
-    (home-page "None")
+    (native-search-paths
+     (append (package-native-search-paths python)
+             (package-native-search-paths trivialfis/basic)))
+    (home-page (string-append
+                fis-home-page
+                "/linux/2018/06/10/Using-guix-for-development.html"))
     (synopsis "Basic programming tools for python")
-    (description "Basic programming tools for python.")
+    (description "This package provides helper tools collection for programming
+in Python.")
     (license license:gpl3+)))
 
 (define-public trivialfis/c++
@@ -164,10 +173,13 @@ that I don't have to define it in pure environment.")
        ("gdb" ,gdb)
 
        ("basic-programming" ,trivialfis/basic)))
-    (native-search-paths (append (package-native-search-paths gcc-toolchain)
-                                 (package-native-search-paths python)
-				 (package-native-search-paths trivialfis/basic)))
-    (home-page "None")
-    (synopsis "Basic programming tools for c/c++")
-    (description "Basic programming tools for c/c++.")
+    (native-search-paths
+     (append (package-native-search-paths gcc-toolchain)
+             (package-native-search-paths trivialfis/basic)))
+    (home-page (string-append
+                fis-home-page
+                "/linux/2018/06/10/Using-guix-for-development.html"))
+    (synopsis "Basic programming tools for C/C++")
+    (description "This package provides helper tools for programming tools for
+C/C++.")
     (license license:gpl3+)))
