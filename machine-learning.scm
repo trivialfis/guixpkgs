@@ -246,8 +246,8 @@ naturally under the Allreduce abstraction.")
 	      (modules '((guix build utils)))
 	      (snippet
 	       '(begin
-		  (delete-file-recursively "dmlc-core")
 		  (delete-file-recursively "cub")
+		  (delete-file-recursively "dmlc-core")
 		  (delete-file-recursively "nccl")
 		  (delete-file-recursively "rabit")))))
     (native-inputs
@@ -265,9 +265,8 @@ naturally under the Allreduce abstraction.")
 	     (delete-file "cmake/modules/FindGTest.cmake")))
          (replace 'check
            (lambda* (#:key outputs #:allow-other-keys)
-             (chdir (string-append "../" ,name "-" ,version))
-             (invoke "./testxgboost")
-             (chdir "../build"))))))
+	     (with-directory-excursion ,(string-append "../" name "-" version)
+	       (invoke "./testxgboost")))))))
     (build-system cmake-build-system)
     (home-page "https://xgboost.readthedocs.io/en/latest/")
     (synopsis "Scalable and flexible gradient boosting")
@@ -295,6 +294,7 @@ learning algorithms under the Gradient Boosting framework.")
 		  (delete-file "./python-package/xgboost/build-python.sh")
 		  (delete-file "./python-package/setup_pip.py")
 		  (delete-file "./python-package/prep_pip.sh")
+		  ;; Following are symlinks to main source tree
                   (delete-file "./python-package/xgboost/src")
                   (delete-file "./python-package/xgboost/rabit")
                   (delete-file "./python-package/xgboost/make")
@@ -315,7 +315,7 @@ learning algorithms under the Gradient Boosting framework.")
              (chdir "python-package")
 	     #t)))))
     (home-page "https://xgboost.readthedocs.io/en/latest/")
-    (synopsis "Scalable and flexible gradient boosting") ; FIXME
+    (synopsis "Python binding for xgboost")
     (description "XGBoost is an optimized distributed gradient boosting library
 designed to be highly efficient, flexible and portable. It implements machine
 learning algorithms under the Gradient Boosting framework.")
@@ -375,7 +375,7 @@ learning algorithms under the Gradient Boosting framework.")
               (sha256
                (base32
                 "132zf0yk0545mg72hyzxm102g3hpb6ixx9hnf8zd2k55gas6cjj1"))
-	      (file-name (string-append name "-" version ".tar.gz"))))
+              (file-name (string-append name "-" version ".tar.gz"))))
     (native-inputs
      `(("python-pytest" ,python-pytest)
        ("python-nose" ,python-nose)))
@@ -389,11 +389,10 @@ learning algorithms under the Gradient Boosting framework.")
        '("-DUSE_MPI=ON")
        #:phases
        (modify-phases %standard-phases
-	 (replace 'check
-	   (lambda* (#:key outputs #:allow-other-keys)
-	     (chdir "../LightGBM-2.0.12/")
-	     (invoke "pytest" "tests/c_api_test/test_.py")
-	     (chdir "../build"))))))
+         (replace 'check
+           (lambda* (#:key outputs #:allow-other-keys)
+             (with-directory-excursion ,(string-append "../LightGBM-" version)
+               (invoke "pytest" "tests/c_api_test/test_.py")))))))
     (build-system cmake-build-system)
     (home-page "https://github.com/Microsoft/LightGBM")
     (synopsis "Gradient boosting (GBDT, GBRT, GBM or MART) framework based on
@@ -419,24 +418,23 @@ the following advantages:
     (source (origin
               (method url-fetch)
               (uri (string-append
-		    "https://github.com/JohnLangford/vowpal_wabbit/archive/"
-		    version ".tar.gz"))
+                    "https://github.com/JohnLangford/vowpal_wabbit/archive/"
+                    version ".tar.gz"))
               (sha256
                (base32
-		"0clp2kb7rk5sckhllxjr5a651awf4s8dgzg4659yh4hf5cqnf0gr"))
-	      (file-name (string-append name "-" version ".tar.gz"))))
+                "0clp2kb7rk5sckhllxjr5a651awf4s8dgzg4659yh4hf5cqnf0gr"))
+              (file-name (string-append name "-" version ".tar.gz"))))
     (inputs
      `(("boost" ,boost)
        ("zlib" ,zlib)))
     (arguments
      `(#:configure-flags
        (list (string-append "--with-boost="
-			    (assoc-ref %build-inputs "boost")))))
+                            (assoc-ref %build-inputs "boost")))))
     (build-system gnu-build-system)
     (home-page "https://github.com/JohnLangford/vowpal_wabbit")
-    (synopsis "Machine learning system which pushes the frontier of machine
-learning")
-    (description "Vowpal Wabbit is a machine learning system which pushes the
-frontier of machine learning with techniques such as online, hashing,
-allreduce, reductions, learning2search, active, and interactive learning. ")
+    (synopsis "Fast machine learning library for online learning.")
+    (description "Vowpal Wabbit is a machine learning system with techniques
+such as online, hashing, allreduce, reductions, learning2search, active, and
+interactive learning.")
     (license license:bsd-3)))
