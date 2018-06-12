@@ -7,7 +7,7 @@
 (define-public shadowsocks
   (let* ((commit "e332ec93e9c90f1cbee676b022bf2c5d5b7b1239")
          (revision "0")
-         (version (string-append "0.0.0" revision commit)))
+         (version (git-version "2.8.2" revision commit)))
     (package
       (name "shadowsocks")
       (version version)
@@ -24,7 +24,7 @@
       (build-system python-build-system)
       (synopsis "Fast tunnel proxy that helps you bypass firewalls")
       (description "
-A fast tunnel proxy that helps you bypass firewalls.
+This package is a fast tunnel proxy that helps you bypass firewalls.
 
 Features:
 @itemize
