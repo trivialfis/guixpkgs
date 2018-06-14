@@ -32,7 +32,8 @@
   #:use-module (gnu packages linux)
   #:use-module (gnu packages ninja)
   #:use-module (gnu packages python)
-  #:use-module (emacs))
+  #:use-module (emacs)
+  #:use-module (code))
 
 (define fis-home-page "https://trivialfis.github.io")
 
