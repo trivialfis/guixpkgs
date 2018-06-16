@@ -112,7 +112,7 @@ xmachine learning libraries.")
 
 (define-public openmpi-1.10.7
   (package
-    (name "openmpi")
+    (name "openmpi-1.10.7")
     (version "1.10.7")
     (source
      (origin
@@ -212,7 +212,7 @@ software vendors, application developers and computer science researchers.")
                       (file-name (git-file-name name version))))
       (build-system cmake-build-system)
       (inputs
-       `(("openmpi" ,openmpi-1.10.7)))
+       `(("openmpi-1.10.7" ,openmpi-1.10.7)))
       (arguments
        `(#:configure-flags
          '("-DRABIT_BUILD_TESTS=ON"
