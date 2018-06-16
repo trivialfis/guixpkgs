@@ -78,7 +78,7 @@ source and header amalgamation in projects.")
 (define-public universal-ctags
   (let* ((commit "44a0e9791e57d243668005f524a7014f0ebfc2bd")
          (revision "1")
-         (version (string-append "1.1.1" revision commit)))
+         (version (git-version "1.1.1" revision commit)))
     (package
       (name "universal-ctags")
       (version version)
