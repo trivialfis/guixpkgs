@@ -34,6 +34,7 @@
   #:use-module (gnu packages gl)
   #:use-module (gnu packages image)
   #:use-module (gnu packages maths)
+  #:use-module (gnu packages opencl)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python)
   #:use-module (gnu packages version-control))
