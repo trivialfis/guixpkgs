@@ -24,7 +24,10 @@
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages)
+  #:use-module (gnu packages autotools)
   #:use-module (gnu packages check)
+  #:use-module (gnu packages mpi)
+  #:use-module (gnu packages opencl)
   #:use-module (gnu packages llvm)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python))
@@ -71,7 +74,7 @@
     (synopsis "Portable Computing Language (pocl)")
     (description "pocl is being developed towards an efficient implementation
 of OpenCL standard which can be easily adapted for new targets.")
-    (license license:non-copyleft)))
+    (license license:expat)))
 
 (define (make-opencl-cts spec-version revision commit impl-name impl)
   ;; Doesn't work yet, might never work.
