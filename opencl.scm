@@ -26,16 +26,14 @@
   #:use-module (gnu packages)
   #:use-module (gnu packages autotools)
   #:use-module (gnu packages check)
+  #:use-module (gnu packages gcc)
   #:use-module (gnu packages mpi)
   #:use-module (gnu packages opencl)
   #:use-module (gnu packages llvm)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python))
 
-
 (define-public pocl
-  ;; pocl tests failed at beginning.
-  ;; ocl-icd loads libpocl.so correctly, I don't know why the tests fail.
   (package
     (name "pocl")
     (version "1.1")
@@ -50,29 +48,35 @@
                 "0lrw3hlb0w53xzmrf2hvbda406l70ar4gyadflvlkj4879lx138y"))))
     (build-system cmake-build-system)
     (native-inputs
-     `(("pkg-config" ,pkg-config)
-       ("libltdl" ,libltdl)))
+     `(("libltdl" ,libltdl)
+       ("pkg-config" ,pkg-config)))
     (inputs
-     `(("llvm" ,llvm)
+     `(("clang" ,clang)
        ("hwloc" ,hwloc "lib")
-       ("clang" ,clang)
+       ("llvm" ,llvm)
        ("ocl-icd" ,ocl-icd)))
     (arguments
      `(#:configure-flags
-       '("-DENABLE_ICD=ON"
-         "-DENABLE_TESTSUITES=OFF"
-         "-DENABLE_CONFORMANCE=OFF")
+       (list "-DENABLE_ICD=ON"
+             "-DENABLE_TESTSUITES=ON"
+	     ;; We are not developers, don't run conformance tests.
+             "-DENABLE_CONFORMANCE=OFF"
+             (string-append "-DEXTRA_HOST_LD_FLAGS=-L"
+                            (assoc-ref %build-inputs "libc") "/lib"))
        #:phases
        (modify-phases %standard-phases
          (add-after 'install 'remove-headers
            (lambda* (#:key outputs #:allow-other-keys)
              (let ((out (assoc-ref outputs "out")))
                (delete-file-recursively
-                (string-append out "/include"))))))
-       #:tests? #f))                    ; failed
+                (string-append out "/include")))))
+         (add-before 'check 'set-HOME
+           (lambda _
+             (setenv "HOME" "/tmp")
+             #t)))))
     (home-page "http://portablecl.org/")
-    (synopsis "Portable Computing Language (pocl)")
-    (description "pocl is being developed towards an efficient implementation
+    (synopsis "Portable Computing Language (pocl), is an OpenCL implementation")
+    (description "Pocl is being developed towards an efficient implementation
 of OpenCL standard which can be easily adapted for new targets.")
     (license license:expat)))
 
