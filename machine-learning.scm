@@ -34,6 +34,7 @@
   #:use-module (gnu packages mpi)
   #:use-module (gnu packages perl)	; openmpi
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-web)
   #:use-module (gnu packages pkg-config) ; openmpi
   #:use-module (gnu packages valgrind)	 ; openmpi
   #:use-module (guix utils))		 ; openmpi
@@ -409,3 +410,56 @@ the following advantages:
 @item Capable of handling large-scale data
 @end itemize\n")
     (license license:expat)))
+
+(define-public python-twython
+  (let* ((commit "c9e8a462000898dcd91b9babf130b907986591ea")
+	 (revision "0")
+	 (version (git-version "3.4.0" revision commit)))
+    (package
+     (name "python-twython")
+     (version version)
+     (home-page "https://github.com/ryanmcgrath/twython")
+     (source (origin
+	      (method git-fetch)
+	      (uri (git-reference
+		    (url home-page)
+		    (commit commit)))
+	      (sha256
+	       (base32
+		"1fpi5nn9chgiljapqwv577w3rwl3k5r381s4hagw91gixdyy3xjd"))
+	      (file-name (git-file-name name version))))
+     (build-system python-build-system)
+     (propagated-inputs
+      `(("python-requests" ,python-requests)
+	("python-requests-oauthlib" ,python-requests-oauthlib)))
+     (native-inputs
+      `(("python-responses" ,python-responses)))
+     (synopsis "Python wrapper for the Twitter API")
+     (description "Twython is the premier Python library providing an easy
+(and up-to-date) way to access Twitter data. Actively maintained and featuring
+support for Python 2.6+ and Python 3.")
+     (license license:expat))))
+
+(define-public python-nltk
+  (package
+    (name "python-nltk")
+    (version "3.3")
+    (source (origin
+              (method url-fetch)
+	      (uri "https://github.com/nltk/nltk/archive/3.3.tar.gz")
+              (sha256
+               (base32
+		"0ax8a8bmv48gw2imy5655i017c2xgpjvyzz70dql34xlgq938bz5"))
+	      (file-name (string-append name "-" version ".tar.gz"))))
+    (propagated-inputs
+     `(("python-six" ,python-six)))
+    (arguments
+     `(#:tests? #f))
+    (build-system python-build-system)
+    (home-page "http://nltk.org/")
+    (synopsis "Natural Language Toolkit")
+    (description "It provides interfaces to over 50 corpora and lexical
+resources such as WordNet, along with a suite of text processing libraries
+for classification, tokenization, stemming, tagging, parsing, and semantic
+reasoning, wrappers for natural language processing libraries.")
+    (license license:asl2.0)))

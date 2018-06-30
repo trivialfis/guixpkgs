@@ -53,6 +53,7 @@ Copyright notice is included.
    + opencv (from guix devel list)
    + xgboost
    + python-xgboost
+   + python-twython
 
 Many libraries are packaged as dependencies, just grep "define-public".
 
