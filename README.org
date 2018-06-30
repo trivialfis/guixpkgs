@@ -35,14 +35,12 @@ Copyright notice is included.
    environment, as mentioned in:
    https://lists.gnu.org/archive/html/guix-devel/2018-04/msg00293.html
 
-   Currently, only beignet is upstreamed, POCL is possible but still a WIP.
-
    + ClMath: clBLAS, clFFT
    + boost_compute
 
-*** Implementations, WIP:
+*** Implementations:
 
-   + pocl
+   + pocl (To be upstreamed)
 
 ** Arrayfire
 
