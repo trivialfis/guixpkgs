@@ -30,7 +30,7 @@
   #:use-module (gnu packages maths)
   #:use-module (gnu packages mpi)
   #:use-module (gnu packages python)
-  #:use-module (opencl))
+  #:use-module (gnu packages opencl))
 
 (define-public clBLAS
   (let ((version "2.12"))
@@ -92,7 +92,7 @@ of writing, optimizing and maintaining kernel code themselves.")
                  #:tests? #f))          ; FIXME: Can't find boost.
     (native-inputs
      `(("googletest" ,googletest)
-       ("fftw-avx" ,fftw-avx)))
+       ("fftw" ,fftw)))
     (inputs
      `(("opencl-headers" ,opencl-headers)
        ("boost" ,boost)
