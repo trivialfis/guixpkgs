@@ -71,7 +71,7 @@ lambdas, and variadic templates, instead of relying on macros.")
                     version "-ft.tar.gz"))
               (sha256
                (base32
-                "0m0bc75a6gdq84gs3sh069f7q0idmgh1ikc6znjjm2hxc35pz7wd"))))
+		"0m0bc75a6gdq84gs3sh069f7q0idmgh1ikc6znjjm2hxc35pz7wd"))))
     (native-inputs `(("opencl-clhpp" ,opencl-clhpp)
                      ("glm" ,glm)))
     (inputs `(("freeimage" ,freeimage)
@@ -83,13 +83,14 @@ lambdas, and variadic templates, instead of relying on macros.")
               ("glbinding" ,glbinding)))
     (build-system cmake-build-system)
     (arguments
-     `(#:configure-flags '("-DUSE_SYSTEM_CL2HPP=ON"
-                           "-DUSE_SYSTEM_GLBINDING=ON"
-                           "-DUSE_SYSTEM_FREETYPE=ON"
-                           "-DUSE_SYSTEM_GLM=ON"
-                           "-DBUILD_DOCUMENTATION=OFF"
-                           "-DBUILD_EXAMPLES=OFF")
-                         #:tests? #f))
+     `(#:configure-flags
+       '("-DUSE_SYSTEM_CL2HPP=ON"
+         "-DUSE_SYSTEM_GLBINDING=ON"
+         "-DUSE_SYSTEM_FREETYPE=ON"
+         "-DUSE_SYSTEM_GLM=ON"
+         "-DBUILD_DOCUMENTATION=OFF"
+         "-DBUILD_EXAMPLES=OFF")
+       #:tests? #f))
     (home-page "https://github.com/arrayfire/forge")
     (synopsis "High Performance Visualization")
     (description "An OpenGL interop library that can be used with ArrayFire or
@@ -114,7 +115,8 @@ that use CUDA/OpenCL.")
          (cl-native `(,cl?
                       (("boost-compute" ,boost-compute)
                        ("opencl-clhpp" ,opencl-clhpp)
-                       ("opencl-headers" ,opencl-headers))))
+                       ("opencl-headers" ,opencl-headers)
+		       ("pocl" ,pocl)))) ; For tests
          (cl-inputs `(,cl?
                       (("clBLAS" ,clBLAS)
                        ("clFFT" ,clFFT)
