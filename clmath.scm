@@ -32,10 +32,10 @@
   #:use-module (gnu packages python)
   #:use-module (gnu packages opencl))
 
-(define-public clBLAS
+(define-public clblas
   (let ((version "2.12"))
     (package
-      (name "clBLAS")
+      (name "clblas")
       (version version)
       (source (origin
                 (method url-fetch)
@@ -71,9 +71,9 @@ generate and enqueue optimized OpenCL kernels, relieving the user from the task
 of writing, optimizing and maintaining kernel code themselves.")
       (license (list license:asl2.0)))))
 
-(define-public clFFT
+(define-public clfft
   (package
-    (name "clFFT")
+    (name "clfft")
     (version "2.12.2")
     (source (origin
               (method url-fetch)

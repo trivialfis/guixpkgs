@@ -118,8 +118,8 @@ that use CUDA/OpenCL.")
                        ("opencl-headers" ,opencl-headers)
 		       ("pocl" ,pocl)))) ; For tests
          (cl-inputs `(,cl?
-                      (("clBLAS" ,clBLAS)
-                       ("clFFT" ,clFFT)
+                      (("clblas" ,clblas)
+                       ("clfft" ,clfft)
                        ("ocl-icd" ,ocl-icd))))
          (cuda-native `(,cuda? ()))
          (cuda-inputs `(,cuda?
