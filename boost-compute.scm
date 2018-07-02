@@ -22,7 +22,8 @@
   #:use-module (gnu packages boost)
   #:use-module (gnu packages opencl)
   #:use-module (guix build-system cmake)
-  #:use-module ((guix licenses) #:prefix license:))
+  #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (opencl))
 
 (define-public boost-compute
   (package
@@ -37,12 +38,27 @@
               (sha256
                (base32
                 "1a573qf7inph3xfb2cmsanylw40fpkb7rwdjvniyb1m37k9mz178"))))
+    ;; Header-only library, native-inputs for running tests.
+    (native-inputs `(("boost" ,boost)
+		     ("opencl-headers" ,opencl-headers-1.2)
+		     ("pocl" ,pocl)))
+    ;; If ocl-icd is placed in native-inputs, boost-compute throws
+    ;; `CL_DEVICE_NOT_FOUND' during test.
+    (inputs
+     `(("ocl-icd" ,ocl-icd)))
     (arguments
-     `(#:tests? #f))
-    ;; (native-inputs `(("boost" ,boost)))
-    (inputs `(("opencl-headers" ,opencl-headers)
-              ("boost" ,boost)
-              ("ocl-icd" ,ocl-icd)))
+     `(#:configure-flags
+       '("-DBOOST_COMPUTE_BUILD_TESTS=ON"
+	 ;; As long as we don't use OpenCL-2.2, there will be deprecated
+	 ;; messages
+	 "-DCMAKE_CXX_FLAGS=-std=gnu++11 -Wno-deprecated")
+       #:phases
+       (modify-phases %standard-phases
+	 (add-before 'check 'set-envs
+	   (lambda _
+	     (setenv "HOME" "/tmp")
+	     (setenv "BOOST_TEST_LOG_LEVEL" "all")
+	     #t)))))
     (build-system cmake-build-system)
     (home-page "https://github.com/boostorg/compute")
     (synopsis "A C++ GPU Computing Library for OpenCL")

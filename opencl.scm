@@ -57,8 +57,7 @@
        ("ocl-icd" ,ocl-icd)))
     (arguments
      `(#:configure-flags
-       (list "-DENABLE_ICD=ON"
-             "-DENABLE_TESTSUITES=ON"
+       (list "-DENABLE_TESTSUITES=ON"
 	     ;; We are not developers, don't run conformance tests.
              "-DENABLE_CONFORMANCE=OFF"
              (string-append "-DEXTRA_HOST_LD_FLAGS=-L"
