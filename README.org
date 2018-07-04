@@ -40,7 +40,6 @@ Copyright notice is included.
 
 *** Implementations:
 
-   + pocl (To be upstreamed)
 
 ** Arrayfire
 
@@ -84,6 +83,7 @@ I will try to document the upstreamed packages here, so that if someone found a 
    + catch2
    + amalgamate
    + shadowsocks
+   + pocl
 
 #  LocalWords:  upstreamed LocalWords nvcc OpenCL Cuda cuda dev pocl
 #  LocalWords:  clinfo guix icd clFFT beignet qBittorrent cpp WIP

@@ -33,52 +33,6 @@
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python))
 
-(define-public pocl
-  (package
-    (name "pocl")
-    (version "1.1")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append
-                    "https://github.com/pocl/pocl/archive/v"
-                    version ".tar.gz"))
-              (file-name (string-append name "-" version ".tar.gz"))
-              (sha256
-               (base32
-                "0lrw3hlb0w53xzmrf2hvbda406l70ar4gyadflvlkj4879lx138y"))))
-    (build-system cmake-build-system)
-    (native-inputs
-     `(("libltdl" ,libltdl)
-       ("pkg-config" ,pkg-config)))
-    (inputs
-     `(("clang" ,clang)
-       ("hwloc" ,hwloc "lib")
-       ("llvm" ,llvm)
-       ("ocl-icd" ,ocl-icd)))
-    (arguments
-     `(#:configure-flags
-       (list "-DENABLE_TESTSUITES=ON"
-	     ;; We are not developers, don't run conformance tests.
-             "-DENABLE_CONFORMANCE=OFF"
-             (string-append "-DEXTRA_HOST_LD_FLAGS=-L"
-                            (assoc-ref %build-inputs "libc") "/lib"))
-       #:phases
-       (modify-phases %standard-phases
-         (add-after 'install 'remove-headers
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out")))
-               (delete-file-recursively
-                (string-append out "/include")))))
-         (add-before 'check 'set-HOME
-           (lambda _
-             (setenv "HOME" "/tmp")
-             #t)))))
-    (home-page "http://portablecl.org/")
-    (synopsis "Portable Computing Language (pocl), is an OpenCL implementation")
-    (description "Pocl is being developed towards an efficient implementation
-of OpenCL standard which can be easily adapted for new targets.")
-    (license license:expat)))
-
 (define (make-opencl-cts spec-version revision commit impl-name impl)
   ;; Doesn't work yet, might never work.
   (let* ((commit commit)

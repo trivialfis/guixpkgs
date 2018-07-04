@@ -49,17 +49,20 @@
       (build-system cmake-build-system)
       (arguments
        `(#:configure-flags
-         '(,(string-append "../clBLAS-" version "/src")
-           "-DBUILD_SHARED_LIBS=ON"
-           "-DCMAKE_BUILD_TYPE=Release"
-           "-DBUILD_TEST=OFF")
-         #:tests? #f))
-      (native-inputs `(("gfortran" ,gfortran)
-                       ("pkg-config" ,pkg-config)))
-      (inputs `(("boost" ,boost)
-                ("ocl-icd" ,ocl-icd)
-                ("opencl-headers" ,opencl-headers)
-                ("python" ,python)))
+	 (list
+	  (string-append "../clBLAS-" ,version "/src")
+	  "-DBUILD_SHARED_LIBS=ON"
+	  "-DUSE_SYSTEM_GTEST=ON"
+          "-DBUILD_TEST=OFF")
+	 ;; Many tests regarding to local variables failed. The kernel code is
+	 ;; generated, which is quite hard to patch.
+	 #:tests? #f))
+      (native-inputs `(("boost" ,boost)
+		       ("gfortran" ,gfortran)
+		       ("opencl-headers" ,opencl-headers-1.2)
+                       ("pkg-config" ,pkg-config)
+                       ("python" ,python-wrapper)))
+      (inputs `(("ocl-icd" ,ocl-icd)))
       (home-page "http://www.glfw.org/")
       (synopsis "Software library containing BLAS functions written in OpenCL")
       (description "The primary goal of clBLAS is to make it easier for
@@ -85,18 +88,45 @@ of writing, optimizing and maintaining kernel code themselves.")
               (file-name (string-append name "-release-" version ".tar.gz"))))
     (build-system cmake-build-system)
     (arguments `(#:configure-flags
-                 '(,(string-append "../clFFT-" version "/src")
-                   "-DBUILD_SHARED_LIBS=ON"
-                   "-DBUILD_TEST=ON"
-                   "-DUSE_SYSTEM_GTEST=ON")
-                 #:tests? #f))          ; FIXME: Can't find boost.
+                 (list
+		  (string-append "../clFFT-" ,version "/src")
+                  "-DBUILD_SHARED_LIBS=ON"
+                  "-DBUILD_TEST=ON"
+                  "-DUSE_SYSTEM_GTEST=ON"
+		  (string-append "-DBOOST_INCLUDEDIR="
+				 (assoc-ref %build-inputs "boost")
+				 "/include/")
+		  (string-append "-DBOOST_LIBRARYDIR="
+				 (assoc-ref %build-inputs "boost")
+				 "/lib/")
+		  (string-append "-DBoost_LIBRARIES="
+                            "-lboost_iostreams "
+                            "-lboost_filesystem "
+                            "-lboost_system "
+                            "-lboost_thread "
+                            "-lboost_timer "
+                            "-lboost_chrono "
+                            "-lboost_program_options")
+		  "-DBoost_FOUND=TRUE"
+		  "-DFIND_LIBRARY_USE_LIB64_PATHS=FALSE")
+		 #:phases
+		 (modify-phases %standard-phases
+		   (add-before 'check 'set-HOME
+		     (lambda _
+		       (setenv "HOME" "/tmp")
+		       #t))
+		   (replace 'check
+		     (lambda _
+		       (with-directory-excursion "staging"
+			 (invoke "test-short")))))))
     (native-inputs
-     `(("googletest" ,googletest)
-       ("fftw" ,fftw)))
+     `(("boost" ,boost)
+       ("googletest" ,googletest)
+       ("fftw" ,fftw)
+       ("opencl-headers" ,opencl-headers)
+       ("pocl" ,pocl)))
     (inputs
-     `(("opencl-headers" ,opencl-headers)
-       ("boost" ,boost)
-       ("ocl-icd" ,ocl-icd)))
+     `(("ocl-icd" ,ocl-icd)))
     (home-page "https://github.com/clMathLibraries/clFFT")
     (synopsis "Software library containing FFT functions written in OpenCL")
     (description "clFFT is a software library containing FFT functions written
