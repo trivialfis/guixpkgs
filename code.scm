@@ -96,3 +96,31 @@ interested in making ctags better can work together.")
       (inputs
        `(,@(alist-delete "rct" (package-inputs rtags))
          ("rct-next" ,rct-next))))))
+
+(define-public global-ctags
+  (package
+    (inherit global)
+    (name "global-ctags")
+    (inputs `(,@(package-inputs global)
+	      ("universal-ctags" ,universal-ctags)))
+    (arguments
+     `(#:configure-flags
+       (list (string-append "--with-ncurses="
+                            (assoc-ref %build-inputs "ncurses"))
+             (string-append "--with-sqlite3="
+                            (assoc-ref %build-inputs "sqlite"))
+	     (string-append "--with-exuberant-ctags="
+			    (assoc-ref %build-inputs "universal-ctags")
+			    "/bin/ctags"))
+
+       #:phases
+       (modify-phases %standard-phases
+        (add-after 'install 'post-install
+          (lambda* (#:key outputs #:allow-other-keys)
+            ;; Install the Emacs Lisp file in the right place.
+            (let* ((out  (assoc-ref outputs "out"))
+                   (data (string-append out "/share/gtags"))
+                   (lisp (string-append out "/share/emacs/site-lisp")))
+              (install-file (string-append data "/gtags.el") lisp)
+              (delete-file (string-append data "/gtags.el"))
+              #t))))))))

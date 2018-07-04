@@ -43,8 +43,9 @@
                 (sha256
                  (base32
                   "08yy979dw0qnc854ikfwc284z8jl6l41y1x4dd75p8fm8kify27p"))
-                (patches (search-patches "rct-cmake-Add-missing-headers.patch"
-                                         "rct-build-test.patch"))
+                (patches
+		 (search-patches "rct-cmake-Add-missing-headers.patch"
+                                 "rct-build-test.patch"))
                 (file-name (git-file-name name version))))
       (build-system cmake-build-system)
       (arguments
