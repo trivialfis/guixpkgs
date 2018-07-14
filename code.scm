@@ -51,7 +51,9 @@
          ("perl" ,perl)
          ("pkg-config" ,pkg-config)))
       (arguments
-       `(#:modules ((guix build gnu-build-system)
+       `(#:configure-flags
+	 '("--enable-tmpdir=/tmp")
+	 #:modules ((guix build gnu-build-system)
                     (guix build utils))
 	 #:phases
          (modify-phases %standard-phases
