@@ -22,7 +22,7 @@
      `(#:python
        ,python-2
        ;; Test after install, haven't figured out the how-to yet.
-       #:tests #f))
+       #:tests? #f))
     (home-page "https://www.mercurial-scm.org/")
     (synopsis "Decentralized version control system")
     (description
