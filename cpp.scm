@@ -19,6 +19,7 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
   #:use-module (guix git-download)
+  #:use-module (guix download)
   #:use-module (guix build-system cmake)
   #:use-module (gnu packages)
   #:use-module (gnu packages compression)
@@ -44,7 +45,7 @@
                  (base32
                   "08yy979dw0qnc854ikfwc284z8jl6l41y1x4dd75p8fm8kify27p"))
                 (patches
-		 (search-patches "rct-cmake-Add-missing-headers.patch"
+                 (search-patches "rct-cmake-Add-missing-headers.patch"
                                  "rct-build-test.patch"))
                 (file-name (git-file-name name version))))
       (build-system cmake-build-system)
@@ -69,3 +70,34 @@
  APIs on top of Standard Template Library (@dfn{STL}) classes.")
       (license (list license:expat        ; cJSON
                      license:bsd-4)))))
+
+(define-public reproc
+  (package
+    (name "reproc")
+    (version "1.0.0")
+    (home-page "https://github.com/DaanDeMeyer/reproc")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append home-page "/archive/"version".tar.gz"))
+       (sha256
+        (base32
+         "0gk4g9rcmbimn2w916gclm2j9qbzdhp4ls7dd9avk92dvknpz46v"))
+       (file-name (string-append name "-" version ".tar.gz"))))
+    (arguments
+     `(#:configure-flags
+       '("-DREPROC_BUILD_TESTS=ON"
+         "-DREPROC_INSTALL=ON")
+       #:phases
+       (modify-phases %standard-phases
+         (replace 'check
+           (lambda _
+             (invoke "./test/tests"))))))
+    (build-system cmake-build-system)
+    (license license:expat)
+    (synopsis "Cross-platform library that simplifies working with external CLI
+applications from C and C++.")
+    (description "Reproc (Redirected Process) is cross-platform library that
+ starts external processes from within a C or C++ application, reads/writes to
+ their stdin/stdout/stderr streams and waits for them to exit or forcefully
+stops them.")))
