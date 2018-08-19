@@ -170,7 +170,7 @@ in Python.")
        ("global" ,global)
        ("meson" ,meson)
        ("ninja" ,ninja)
-       ("rtags-next" ,rtags-next)
+       ("cquery" ,cquery)
        ("gdb" ,gdb)
 
        ("basic-programming" ,trivialfis/basic)))
