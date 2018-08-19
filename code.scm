@@ -18,6 +18,7 @@
 (define-module (code)
   #:use-module (srfi srfi-1)
   #:use-module (guix build-system gnu)
+  #:use-module (guix build-system cmake)
   #:use-module (guix git-download)
   #:use-module (guix packages)
   #:use-module ((guix licenses) #:prefix license:)
@@ -25,7 +26,8 @@
   #:use-module (gnu packages code)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
-  #:use-module (cpp))
+  #:use-module (cpp)
+  #:use-module (llvm))
 
 (define-public universal-ctags
   (let* ((commit "44a0e9791e57d243668005f524a7014f0ebfc2bd")
@@ -126,3 +128,28 @@ interested in making ctags better can work together.")
               (install-file (string-append data "/gtags.el") lisp)
               (delete-file (string-append data "/gtags.el"))
               #t))))))))
+
+;; It's a patched cquery, official cquery should just work.
+(define-public cquery
+  (let* ((commit "cd6f2f3c077aa88bca23557588da6ff3f43035a4")
+	 (revision "0")
+	 (version (git-version "2018.07.18" revision commit)))
+    (package
+      (name "cquery")
+      (version version)
+      (home-page "https://github.com/cquery-project/cquery")
+      (source "/home/fis/Workspace/cquery.tar.gz")
+      (build-system cmake-build-system)
+      (arguments
+       `(#:configure-flags
+	 '("-DSYSTEM_CLANG=ON")
+	 #:tests? #f))
+      (inputs
+       `(("clang" ,clang)))
+      (synopsis "C/C++ language server supporting multi-million line code base,
+powered by libclang.")
+      (description "cquery is a highly-scalable, low-latency language server for
+C/C++/Objective-C. It is tested and designed for large code bases like
+Chromium. cquery provides accurate and fast semantic analysis without
+interrupting workflow.")
+      (license license:expat))))
