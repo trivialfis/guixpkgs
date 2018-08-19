@@ -1,8 +1,8 @@
 (define-module (llvm)
   #:use-module (guix download)
-  #:use-module (guix svn-download)
-  #:use-module (guix git-download)
   #:use-module (guix packages)
+  #:use-module (guix utils)
+  #:use-module (guix git-download)
   #:use-module (guix build-system cmake)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages bootstrap)
@@ -11,12 +11,10 @@
   #:use-module (gnu packages compression)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages python)
-  #:use-module (gnu packages xml)
-  #:use-module (guix utils))
+  #:use-module (gnu packages xml))
 
-;; Next version of LLVM/Clang, Clang is not building yet. Source is simply zip
-;; from git repo.
-
+;; Next version of LLVM/Clang, Source is simply zip from git repo.
+;; actual commit 98aa61ba49b54902a7afc27c9aa6c562646be76f
 (define-public llvm
   (let* ((commit "2c9adfa4a6145410f512350f39eb4d15c6e87240")
          (revision "0")
@@ -89,7 +87,6 @@ compiler.  In LLVM this library is called \"compiler-rt\".")
     (supported-systems (delete "mips64el-linux" %supported-systems))))
 
 (define-public clang
-  ;; Not building yet.
   (package
     (name "clang")
     (version (package-version llvm))
