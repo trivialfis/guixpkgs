@@ -1,0 +1,26 @@
+From 35183eaf0c204bf9c657f7073891847f15f14593 Mon Sep 17 00:00:00 2001
+From: fis <ybbs.daans@hotmail.com>
+Date: Mon, 20 Aug 2018 02:46:02 +0800
+Subject: [PATCH] Fix unused ptr.
+
+---
+ test/loguru_test.cpp | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/test/loguru_test.cpp b/test/loguru_test.cpp
+index 9520442..35cdbc6 100644
+--- a/test/loguru_test.cpp
++++ b/test/loguru_test.cpp
+@@ -366,8 +366,7 @@ int main(int argc, char* argv[])
+ 		} else if (test == "ABORT_S") {
+ 			ABORT_S() << "ABORT_S stream message";
+ 		} else if (test == "assert") {
+-			const char* ptr = nullptr;
+-			assert(ptr && "Error that was unexpected");
++			assert(nullptr && "Error that was unexpected");
+ 		} else if (test == "LOG_F_FATAL") {
+ 			LOG_F(FATAL, "Fatal format message");
+ 		} else if (test == "LOG_S_FATAL") {
+-- 
+2.14.4
+
