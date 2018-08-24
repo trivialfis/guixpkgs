@@ -21,37 +21,114 @@
   #:use-module (guix download)
   #:use-module (guix build-system python)
   #:use-module (gnu packages check)
-  #:use-module (gnu packages python))
+  #:use-module (gnu packages python)
+  #:use-module (gnu packages databases))
 
-
-(define-public python-jedi
+(define-public python-nose-warnings-filters
   (package
-    (name "python-jedi")
-    (version "0.12.0")
+   (name "python-nose-warnings-filters")
+   (version "0.1.5")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (pypi-uri "nose_warnings_filters" version))
+     (sha256
+      (base32
+       "17dvfqfy2fm7a5cmiffw2dc3064kpx72fn5mlw01skm2rhn5nv25"))))
+   (build-system python-build-system)
+   (propagated-inputs
+    `(("python-nose" ,python-nose)))
+   (home-page "https://github.com/Carreau/nose_warnings_filters")
+   (synopsis
+    "Allow to inject warning filters during ``nosetest``.")
+   (description
+    "Allow to inject warning filters during ``nosetest``.")
+   (license license:expat)))
+
+(define-public python-backcall
+  (package
+    (name "python-backcall")
+    (version "0.1.0")
     (source
      (origin
        (method url-fetch)
-       (uri (pypi-uri "jedi" version))
+       (uri (pypi-uri "backcall" version))
        (sha256
         (base32
-         "1bcr7csx4xil1iwmk03d79jis0bkmgi9k0kir3xa4rmwqsagcwhr"))))
+         "1r01dqch3f8fdj3n6fviw8hxqrs6w5v0qw4izmvqzry1w9dxiv1q"))))
     (build-system python-build-system)
-    (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (replace 'check (lambda _
-                           (invoke "py.test" "-vv"))))))
-    (native-inputs
-     `(("python-pytest" ,python-pytest)
-       ("python-parso" ,python-parso)
-       ("python-docopt" ,python-docopt)))
-    (home-page "https://github.com/davidhalter/jedi")
+    (home-page
+     "https://github.com/takluyver/backcall")
     (synopsis
-     "Autocompletion for Python that can be used for text editors")
+     "Specifications for callback functions passed in to an API")
     (description
-     "Jedi is an autocompletion tool for Python that can be used for text
- editors.")
-    (license license:expat)))
+     "Specifications for callback functions passed in to an API")
+    (license license:bsd-3)))
 
-(define-public python2-jedi
-  (package-with-python2 python-jedi))
+(define-public python-ipython
+  (package
+    (name "python-ipython")
+    (version "6.5.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "ipython" version))
+       (sha256
+        (base32
+         "196m8y4wjll0bwk29zahbh1l1j1m9zg6s2z17vv8x9m4mngfzwmh"))))
+    (build-system python-build-system)
+    (native-inputs
+     `(("python-parso" ,python-parso)
+       ("python-pytest" ,python-pytest)))
+    (propagated-inputs
+     `(("python-pexpect", python-pexpect)
+       ("python-jedi", python-jedi)
+       ("python-prompt-toolkit", python-prompt-toolkit)
+       ("python-decorator", python-decorator)
+       ("python-simplegeneric", python-simplegeneric)
+       ("python-pygments" ,python-pygments)
+       ("python-backcall" ,python-backcall)
+       ("python-pickleshare" ,python-pickleshare)
+       ("python-traitlets" ,python-traitlets)))
+    (arguments
+     `(#:tests? #f))
+    ;; pytest --cov ipykernel --durations 10 -v ipykernel
+    ;; matplotlib
+    (home-page "https://ipython.org")
+    (synopsis
+     "IPython: Productive Interactive Computing")
+    (description
+     "IPython: Productive Interactive Computing")
+    (license license:bsd-3)))
+
+(define-public python-ipykernel
+  (package
+    (name "python-ipykernel")
+    (version "4.8.2")
+    (source
+     (origin
+      (method url-fetch)
+      (uri (string-append
+	    "https://github.com/ipython/ipykernel/archive/"
+	    version ".tar.gz"))
+      (sha256
+       (base32
+	"1cyd7629whjy74yszi0y8nag0xx4f1bwlib4ddza80y3c42kwq4d"))))
+    (build-system python-build-system)
+    (native-inputs
+     `(("python-nose" ,python-nose)
+       ("python-nose-warnings-filters" ,python-nose-warnings-filters)))
+    (propagated-inputs
+     `(("python-ipython" ,python-ipython)))
+    ;; The tests load a submodule of IPython.  However, IPython itself depends
+    ;; on ipykernel.
+    (arguments
+     `(#:tests? #f))
+    (propagated-inputs
+     ;; imported at runtime during connect
+     `(("python-jupyter-client" ,python-jupyter-client)))
+    (home-page "https://ipython.org")
+    (synopsis "IPython Kernel for Jupyter")
+    (description
+     "This package provides the IPython kernel for Jupyter.")
+    (license license:bsd-3)))
