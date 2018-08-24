@@ -164,7 +164,7 @@ in Python.")
                        (((names . directories) ...)
                         (union-build out directories)))))))
     (inputs
-     `(("gcc-toolchain" ,gcc-toolchain)
+     `(("gcc-toolchain" ,gcc-toolchain-7)
        ("cmake" ,cmake)
        ("make" ,gnu-make)
        ("global" ,global)
