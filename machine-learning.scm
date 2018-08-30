@@ -364,53 +364,6 @@ learning algorithms under the Gradient Boosting framework.")
 (FFM).")
     (license license:bsd-3)))
 
-(define-public lightgbm
-  (package
-    (name "lightgbm")
-    (version "2.0.12")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append
-                    "https://github.com/Microsoft/LightGBM/archive/v"
-                    version ".tar.gz"))
-              (sha256
-               (base32
-                "132zf0yk0545mg72hyzxm102g3hpb6ixx9hnf8zd2k55gas6cjj1"))
-              (file-name (string-append name "-" version ".tar.gz"))))
-    (native-inputs
-     `(("python-pytest" ,python-pytest)
-       ("python-nose" ,python-nose)))
-    (inputs
-     `(("openmpi" ,openmpi)))
-    (propagated-inputs
-     `(("python-numpy" ,python-numpy)
-       ("python-scipy" ,python-scipy)))
-    (arguments
-     `(#:configure-flags
-       '("-DUSE_MPI=ON")
-       #:phases
-       (modify-phases %standard-phases
-         (replace 'check
-           (lambda* (#:key outputs #:allow-other-keys)
-             (with-directory-excursion ,(string-append "../LightGBM-" version)
-               (invoke "pytest" "tests/c_api_test/test_.py")))))))
-    (build-system cmake-build-system)
-    (home-page "https://github.com/Microsoft/LightGBM")
-    (synopsis "Gradient boosting (GBDT, GBRT, GBM or MART) framework based on
-decision tree algorithms")
-    (description "LightGBM is a gradient boosting framework that uses tree
-based learning algorithms. It is designed to be distributed and efficient with
-the following advantages:
-
-@itemize
-@item Faster training speed and higher efficiency
-@item Lower memory usage
-@item Better accuracy
-@item Parallel and GPU learning supported
-@item Capable of handling large-scale data
-@end itemize\n")
-    (license license:expat)))
-
 (define-public python-twython
   (let* ((commit "c9e8a462000898dcd91b9babf130b907986591ea")
 	 (revision "0")
@@ -439,27 +392,3 @@ the following advantages:
 (and up-to-date) way to access Twitter data. Actively maintained and featuring
 support for Python 2.6+ and Python 3.")
      (license license:expat))))
-
-(define-public python-nltk
-  (package
-    (name "python-nltk")
-    (version "3.3")
-    (source (origin
-              (method url-fetch)
-	      (uri "https://github.com/nltk/nltk/archive/3.3.tar.gz")
-              (sha256
-               (base32
-		"0ax8a8bmv48gw2imy5655i017c2xgpjvyzz70dql34xlgq938bz5"))
-	      (file-name (string-append name "-" version ".tar.gz"))))
-    (propagated-inputs
-     `(("python-six" ,python-six)))
-    (arguments
-     `(#:tests? #f))
-    (build-system python-build-system)
-    (home-page "http://nltk.org/")
-    (synopsis "Natural Language Toolkit")
-    (description "It provides interfaces to over 50 corpora and lexical
-resources such as WordNet, along with a suite of text processing libraries
-for classification, tokenization, stemming, tagging, parsing, and semantic
-reasoning, wrappers for natural language processing libraries.")
-    (license license:asl2.0)))
