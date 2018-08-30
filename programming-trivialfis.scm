@@ -54,7 +54,7 @@
 		[clear (string-append (assoc-ref %build-inputs "ncurses") "/bin/clear")]
                 [out (assoc-ref %outputs "out")]
                 [bin (string-append out "/bin")]
-                [exe (string-append bin "/clean-screen")])
+                [exe (string-append bin "/cs")])
            (mkdir-p bin)
            (call-with-output-file exe
              (lambda (port)
