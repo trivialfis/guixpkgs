@@ -35,7 +35,7 @@
 			(origin-patches (package-source emacs))))))
     (inputs
      `(,@(package-inputs emacs)
-       ("wxwidgets" ,wxwidgets-3.1)
+       ;; ("wxwidgets" ,wxwidgets-3.1)
        ("webkitgtk" ,webkitgtk)
        ;; FIXME: configure script doesn't catch libxcomposite.
        ("libxcomposite" ,libxcomposite)))
@@ -43,7 +43,7 @@
      `(#:configure-flags
        '("--with-mailutils"
     	 "--with-xaw3d"			; FIXME: This one doesn't do anything.
-    	 "--with-xwidgets"
+    	 ;; "--with-xwidgets"
     	 "--with-x-toolkit=gtk3"
     	 "CFLAGS=-O3 -march=native")
        ,@(package-arguments emacs)))))
