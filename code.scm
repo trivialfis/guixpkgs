@@ -28,6 +28,7 @@
   #:use-module (gnu packages pkg-config)
   #:use-module (cpp)
   #:use-module (llvm))
+  ;; #:use-module (gnu packages llvm))
 
 (define-public universal-ctags
   (let* ((commit "44a0e9791e57d243668005f524a7014f0ebfc2bd")
