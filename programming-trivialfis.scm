@@ -93,14 +93,42 @@ that I don't have to define it when in pure environment.")
     (inputs
      `(("clean-screen" ,clean-screen)
        ("coreutils" ,coreutils)
-       ("emacs-trivialfis" ,emacs-trivialfis)
        ("findutils" ,findutils)
        ("glibc-locales" ,glibc-locales)
        ("grep" ,grep)
-       ("nautilus" ,nautilus)
        ("procps" ,procps)
        ("sed" ,sed)
        ("which" ,which)))
+    (native-search-paths (list (search-path-specification
+                                (variable "GUIX_LOCPATH")
+                                (files '("lib/locale")))))
+    (home-page (string-append
+                fis-home-page
+                "/linux/2018/06/10/Using-guix-for-development.html"))
+    (synopsis "Basic collection for programming.")
+    (description "This package provides basic collection for programming,
+suitable for pure environment.")
+    (license license:gpl3+)))
+
+(define-public trivialfis/basic-gui
+  (package
+    (name "basic-programming-gui")
+    (version "0.0.0")
+    (source #f)
+    (build-system trivial-build-system)
+    (arguments
+     '(#:modules
+       ((guix build union))
+       #:builder (begin
+                   (use-modules (ice-9 match)
+                                (guix build union))
+                   (let ((out (assoc-ref %outputs "out")))
+                     (match %build-inputs
+                       (((names . directories) ...)
+                        (union-build out directories)))))))
+    (inputs
+     `(("emacs-trivialfis" ,emacs-trivialfis)
+       ("nautilus" ,nautilus)))
     (native-search-paths (list (search-path-specification
                                 (variable "GUIX_LOCPATH")
                                 (files '("lib/locale")))))
