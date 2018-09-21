@@ -28,7 +28,6 @@
   #:use-module (gnu packages pkg-config)
   #:use-module (cpp)
   #:use-module (llvm))
-  ;; #:use-module (gnu packages llvm))
 
 (define-public universal-ctags
   (let* ((commit "44a0e9791e57d243668005f524a7014f0ebfc2bd")
@@ -76,31 +75,6 @@ development from what existed in the Sourceforge area.  The goal of the
 project is preparing and maintaining common/unified working space where people
 interested in making ctags better can work together.")
       (license license:gpl2+))))
-
-(define-public rtags-next
-  (let* ((commit "8bf22578d0e28d0534411fb681eb0cd1e392b6ee")
-         (revision "0")
-         (version (git-version (package-version rtags) revision commit)))
-    (package
-      (inherit rtags)
-      (name "rtags-next")
-      (version version)
-      (home-page "https://github.com/Andersbakken/rtags")
-      (source (origin
-                (method git-fetch)
-                (uri (git-reference
-                      (url home-page)
-                      (commit commit)))
-                (sha256
-                 (base32
-                  "12mn2lkhzj0dphjq0a07ghh0780h1ffsrw939d2akdqjbm8vc5i7"))
-                (snippet (origin-snippet (package-source rtags)))
-                (modules (origin-modules (package-source rtags)))
-                (patches (origin-patches (package-source rtags)))
-		(file-name (git-file-name name version))))
-      (inputs
-       `(,@(alist-delete "rct" (package-inputs rtags))
-         ("rct-next" ,rct-next))))))
 
 (define-public global-ctags
   (package
