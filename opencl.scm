@@ -33,51 +33,6 @@
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python))
 
-(define (make-opencl-cts spec-version revision commit impl-name impl)
-  ;; Doesn't work yet, might never work.
-  (let* ((commit commit)
-	 (revision "0")
-	 (version (git-version spec-version revision commit)))
-    (package
-      (name (string-append "opencl-cts-" impl-name))
-      (version version)
-      (source (origin
-		(method git-fetch)
-		(uri (git-reference
-                      (url "https://github.com/KhronosGroup/OpenCL-CTS.git")
-                      (commit commit)))
-		(sha256
-		 (base32
-		  "0fcc2g9vp9nfsm712b4gbkk0hhr96lk5yqvm0a5bmvz25qwzyf86"))
-		(file-name (string-append name "-" commit))))
-      (build-system cmake-build-system)
-      (arguments
-       `(#:configure-flags
-	 (list
-	  (string-append "-DCL_OFFLINE_COMPILER="
-			 (assoc-ref %build-inputs ,impl-name)
-			 "/bin/poclcc"))))
-      (native-inputs
-       `((,impl-name ,impl)
-	 ("opencl-headers" ,opencl-headers)))
-      (home-page "https://github.com/KhronosGroup/OpenCL-CTS/")
-      (synopsis "The OpenCL Conformance Tests")
-      (description "The OpenCL Conformance Tests.")
-      (license license:asl2.0))))
-
-(define-public pocl-cts-2.2
-  (make-opencl-cts "2.2.0" "0" "4a6af23ff362cd95477abada53d85a948d394069"
-		   "pocl" pocl))
-(define-public pocl-cts-2.1
-  (make-opencl-cts "2.1.0" "0" "71a5c8251e1210bc9afda116353f212d33841910"
-		   "pocl" pocl))
-(define-public pocl-cts-2.0
-  (make-opencl-cts "2.0.0" "0" "5b19ef73d98e98b62f0afdc009fcdf5ea9482ea7"
-		   "pocl" pocl))
-(define-public pocl-cts-1.2
-  (make-opencl-cts "1.2.0" "0" "5413bcf52e3c8f5d51da657ce9169e754a2414ba"
-		   "pocl" pocl))
-
 
 (define-public gmmlib
   (let* ((commit "b32d2124aa5187b20b64df24d2e83bcbe7a57d7d")
