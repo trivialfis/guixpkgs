@@ -1,7 +1,7 @@
-From 1589757db39e85fca24e1f7fb6593887a3a8105f Mon Sep 17 00:00:00 2001
+From 51d66c29a614c18499a73acca8e6385f3c13792d Mon Sep 17 00:00:00 2001
 From: fis <ybbs.daans@hotmail.com>
 Date: Wed, 30 May 2018 04:00:51 +0800
-Subject: [PATCH] Add atom-dark-theme.el
+Subject: [PATCH 1/2] Add atom-dark-theme.el
 
 Load atom-dark-theme.el.
 
@@ -11,7 +11,7 @@ Load atom-dark-theme.el.
  etc/themes/adwaita-theme.el    |   2 +-
  lisp/Makefile.in               |   2 +-
  lisp/loadup.el                 |   1 +
- lisp/themes/atom-dark-theme.el | 236 +++++++++++++++++++++++++++++++++++++++++
+ lisp/themes/atom-dark-theme.el | 236 +++++++++++++++++++++++++++++++++
  4 files changed, 239 insertions(+), 2 deletions(-)
  create mode 100644 lisp/themes/atom-dark-theme.el
 
@@ -294,5 +294,5 @@ index 0000000000..ac56bd1e2b
 +
 +;;; atom-dark-theme.el ends here
 -- 
-2.14.3
+2.19.0
 

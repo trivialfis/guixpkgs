@@ -1,0 +1,25 @@
+From 0e4f935b3fbbd6014c6282a6de25ff715dce08c7 Mon Sep 17 00:00:00 2001
+From: fis <ybbs.daans@hotmail.com>
+Date: Mon, 24 Sep 2018 10:11:31 +1200
+Subject: [PATCH 2/2] Suppress message for autoloads.
+
+---
+ src/lread.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/lread.c b/src/lread.c
+index 72523c057f..db4e707381 100644
+--- a/src/lread.c
++++ b/src/lread.c
+@@ -1402,7 +1402,7 @@ Return t if the file exists and loads successfully.  */)
+       if (!safe_p)
+ 	message_with_string ("Loading %s (compiled; note unsafe, not compiled in Emacs)...",
+ 		 file, 1);
+-      else if (!compiled)
++      else if (!compiled && !suffix_p(file, "autoloads.el"))
+ 	message_with_string ("Loading %s (source)...", file, 1);
+       else if (newer)
+ 	message_with_string ("Loading %s (compiled; note, source file is newer)...",
+-- 
+2.19.0
+

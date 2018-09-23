@@ -31,8 +31,10 @@
     (source (origin
 	      (inherit (package-source emacs))
 	      (patches (cons
-			(search-patch "emacs-add-atom-dark-theme.el.patch")
-			(origin-patches (package-source emacs))))))
+			(search-patch "emacs-suppress-message-for-autoloads.patch")
+			(cons
+			 (search-patch "emacs-add-atom-dark-theme.el.patch")
+			 (origin-patches (package-source emacs)))))))
     (inputs
      `(,@(package-inputs emacs)
        ;; ("wxwidgets" ,wxwidgets-3.1)
