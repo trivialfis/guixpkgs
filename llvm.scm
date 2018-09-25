@@ -114,6 +114,16 @@ compiler.  In LLVM this library is called \"compiler-rt\".")
     (inputs
      `(("libxml2" ,libxml2)
        ("gcc-lib" ,gcc "lib")
+       ("clang-extra-tools"
+	,(origin
+           (method url-fetch)
+           (uri
+	    (string-append "http://releases.llvm.org/"
+			   version "/clang-tools-extra-"
+			   version ".src.tar.xz"))
+           (file-name (string-append "clang-extra-tools-" version ".tar.xz"))
+           (sha256
+            (base32 "1glxl7bnr4k3j16s8xy8r9cl0llyg524f50591g1ig23ij65lz4k"))))
        ,@(package-inputs llvm)))
     (propagated-inputs
      `(("llvm" ,llvm)
@@ -121,33 +131,42 @@ compiler.  In LLVM this library is called \"compiler-rt\".")
     (arguments
      `(#:configure-flags
        (list "-DCLANG_INCLUDE_TESTS=True"
-
              ;; Find libgcc_s, crtbegin.o, and crtend.o.
              (string-append "-DGCC_INSTALL_PREFIX="
                             (assoc-ref %build-inputs "gcc-lib"))
-
              ;; Use a sane default include directory.
              (string-append "-DC_INCLUDE_DIRS="
                             (assoc-ref %build-inputs "libc")
                             "/include"))
-
        ;; Don't use '-g' during the build to save space.
        #:build-type "Release"
-
-       #:phases (modify-phases %standard-phases
-                  (add-after
-		      'unpack 'set-glibc-file-names
-                    (lambda* (#:key inputs #:allow-other-keys)
-		      (let ((compiler-rt (assoc-ref inputs "clang-runtime")))
-			(substitute* "lib/Driver/ToolChain.cpp"
-                          (("getDriver\\(\\)\\.ResourceDir")
-			   (string-append "\"" compiler-rt "\"")))
-			#t)))
-                  (add-before 'build 'set-env
-                    (lambda* (#:key inputs #:allow-other-keys)
-		      (let ((llvm-lib (string-append (assoc-ref inputs "llvm") "/lib")))
-                        (setenv "LD_LIBRARY_PATH" llvm-lib)
-                        #t))))))
+       #:phases
+       (modify-phases %standard-phases
+	 (add-after 'unpack 'unpack-extra-tools
+	   (lambda* (#:key inputs #:allow-other-keys)
+	     (let ((untar
+		    (lambda (tarball output)
+		      (with-directory-excursion output
+			(invoke "tar" "-xvf" (assoc-ref inputs tarball))))))
+	       (untar "clang-extra-tools" "tools/")
+	       (with-directory-excursion "tools/"
+		 (rename-file
+		  (string-append "clang-tools-extra-" ,version ".src")
+		  "extra"))
+	       #t)))
+         (add-after
+	     'unpack 'set-glibc-file-names
+           (lambda* (#:key inputs #:allow-other-keys)
+	     (let ((compiler-rt (assoc-ref inputs "clang-runtime")))
+	       (substitute* "lib/Driver/ToolChain.cpp"
+                 (("getDriver\\(\\)\\.ResourceDir")
+		  (string-append "\"" compiler-rt "\"")))
+	       #t)))
+         (add-before 'build 'set-env
+           (lambda* (#:key inputs #:allow-other-keys)
+	     (let ((llvm-lib (string-append (assoc-ref inputs "llvm") "/lib")))
+               (setenv "LD_LIBRARY_PATH" llvm-lib)
+               #t))))))
     ;; Clang supports the same environment variables as GCC.
     (native-search-paths
      (list (search-path-specification
