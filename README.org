@@ -47,10 +47,10 @@ Copyright notice is included.
 
 ** Others
    + libffm
-   + opencv (from guix devel list)
    + xgboost
    + python-xgboost
    + python-twython
+   + nextcloud-desktop
 
 Many libraries are packaged as dependencies, just grep "define-public".
 
