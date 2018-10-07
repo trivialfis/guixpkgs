@@ -104,16 +104,26 @@ interested in making ctags better can work together.")
               (delete-file (string-append data "/gtags.el"))
               #t))))))))
 
-;; It's a patched cquery, official cquery should just work.
 (define-public cquery
-  (let* ((commit "cd6f2f3c077aa88bca23557588da6ff3f43035a4")
-	 (revision "0")
+  (let* ((commit "0c5f55c06b26aef6b413d5a8370cdfb808de4f1b")
+	 (revision "1")
 	 (version (git-version "2018.07.18" revision commit)))
     (package
       (name "cquery")
       (version version)
       (home-page "https://github.com/cquery-project/cquery")
-      (source "/home/fis/Workspace/cquery.tar.gz")
+      (source (origin
+		(method git-fetch)
+		(uri (git-reference
+                      (url home-page)
+                      (commit commit)))
+		(sha256
+                 (base32
+		  "0iw4q437wwcjsb4pbvh1908h3ldl6v0hx6cpika616pf1sm0q0lf"))
+		(patches
+		 (search-patches "cquery-basic-cuda-file-extensions.patch"
+				 "cquery-add-CUDA-flags.patch"))
+		(file-name (git-file-name name version))))
       (build-system cmake-build-system)
       (arguments
        `(#:configure-flags

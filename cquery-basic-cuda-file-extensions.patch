@@ -1,0 +1,97 @@
+From eaaf28d82acf0c13b00530a3c7f711e2740ee521 Mon Sep 17 00:00:00 2001
+From: fis <ybbs.daans@hotmail.com>
+Date: Mon, 6 Aug 2018 17:30:35 +0800
+Subject: [PATCH 1/2] Basic cuda file extensions.
+
+---
+ .gitignore     | 2 ++
+ src/language.h | 2 +-
+ src/project.cc | 7 ++++++-
+ src/query.cc   | 2 ++
+ src/test.cc    | 2 +-
+ 5 files changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/.gitignore b/.gitignore
+index 5769446b..84ab95d9 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -25,3 +25,5 @@ waf2*
+ waf3*
+ x64
+ .ycm_extra_conf.py
++
++compile_commands.json
+\ No newline at end of file
+diff --git a/src/language.h b/src/language.h
+index febdb7df..3450ce2e 100644
+--- a/src/language.h
++++ b/src/language.h
+@@ -5,6 +5,6 @@
+ // Used to identify the language at a file level. The ordering is important, as
+ // a file previously identified as `C`, will be changed to `Cpp` if it
+ // encounters a c++ declaration.
+-enum class LanguageId { Unknown = 0, C = 1, Cpp = 2, ObjC = 3, ObjCpp = 4 };
++enum class LanguageId { Unknown = 0, C = 1, Cpp = 2, ObjC = 3, ObjCpp = 4, Cuda = 8 };
+ MAKE_REFLECT_TYPE_PROXY(LanguageId);
+ MAKE_ENUM_HASHABLE(LanguageId);
+diff --git a/src/project.cc b/src/project.cc
+index dba1fb38..5fb7a9c5 100644
+--- a/src/project.cc
++++ b/src/project.cc
+@@ -123,6 +123,8 @@ const std::vector<std::string>& GetSystemIncludes(
+     case LanguageId::ObjCpp:
+       language_string = "objective-c++";
+       break;
++    case LanguageId::Cuda:
++      language_string = "cuda";
+   }
+ 
+   // Capture these flags in |extra_flags|, since they may change system include
+@@ -235,6 +237,8 @@ LanguageId SourceFileLanguage(const std::string& path) {
+     return LanguageId::C;
+   else if (EndsWith(path, ".cpp") || EndsWith(path, ".cc"))
+     return LanguageId::Cpp;
++  else if (EndsWith(path, ".cu"))
++    return LanguageId::Cuda;
+   else if (EndsWith(path, ".mm"))
+     return LanguageId::ObjCpp;
+   else if (EndsWith(path, ".m"))
+@@ -274,7 +278,8 @@ Project::Entry GetCompilationEntryFromCompileCommandEntry(
+       if (lang == LanguageId::Cpp)
+         args.push_back(arg.substr(5));
+     } else if (arg == "%clang") {
+-      args.push_back(lang == LanguageId::Cpp ? "clang++" : "clang");
++      args.push_back(lang == LanguageId::Cpp || lang == LanguageId::Cuda ?
++                     "clang++" : "clang");
+     } else {
+       args.push_back(arg);
+     }
+diff --git a/src/query.cc b/src/query.cc
+index 621ffd4b..306fd47a 100644
+--- a/src/query.cc
++++ b/src/query.cc
+@@ -235,6 +235,8 @@ QueryFile::DefUpdate BuildFileDefUpdate(const IdMap& id_map,
+         return "objective-c";
+       case LanguageId::ObjCpp:
+         return "objective-cpp";
++      case LanguageId::Cuda:
++        return "cuda";
+       default:
+         return "";
+     }
+diff --git a/src/test.cc b/src/test.cc
+index 762801b1..a109999c 100644
+--- a/src/test.cc
++++ b/src/test.cc
+@@ -429,7 +429,7 @@ bool RunIndexTests(const std::string& filter_path, bool enable_update) {
+       expected.Parse(expected_output.c_str());
+ 
+       if (actual == expected) {
+-        // std::cout << "[PASSED] " << path << std::endl;
++        std::cout << "[PASSED] " << path << std::endl;
+       } else {
+         if (!is_fail_allowed)
+           success = false;
+-- 
+2.19.0
+
