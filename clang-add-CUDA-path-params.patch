@@ -1,4 +1,4 @@
-From f9ec783a10754e7a4050787c79a9f5c924f92d74 Mon Sep 17 00:00:00 2001
+From c6528c77cb517004fcb42fc7517745647ff4b477 Mon Sep 17 00:00:00 2001
 From: fis <ybbs.daans@hotmail.com>
 Date: Thu, 20 Sep 2018 14:45:59 +1200
 Subject: [PATCH] Add CUDA path params.
@@ -27,7 +27,7 @@ index 7da45d2774..950c5d9103 100644
    HelpText<"Ignore environment variables to detect CUDA installation">;
  def ptxas_path_EQ : Joined<["--"], "ptxas-path=">, Group<i_Group>,
 diff --git a/lib/Driver/ToolChains/Cuda.cpp b/lib/Driver/ToolChains/Cuda.cpp
-index 7fb4ae4ea9..56b8cac968 100644
+index 7fb4ae4ea9..d8957a6caa 100644
 --- a/lib/Driver/ToolChains/Cuda.cpp
 +++ b/lib/Driver/ToolChains/Cuda.cpp
 @@ -25,6 +25,8 @@
@@ -196,7 +196,7 @@ index 7fb4ae4ea9..56b8cac968 100644
    std::string LibDeviceFile = CudaInstallation.getLibDeviceFile(GpuArch);
  
    if (LibDeviceFile.empty()) {
-+    std::cout << "Empty LibDeviceFile" << std::endl;
++    std::cerr << "Empty LibDeviceFile" << std::endl;
      if (DeviceOffloadingKind == Action::OFK_OpenMP &&
          DriverArgs.hasArg(options::OPT_S))
        return;
