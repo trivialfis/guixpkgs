@@ -22,6 +22,7 @@
   #:use-module (guix git-download)
   #:use-module (guix packages)
   #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (gnu packages)
   #:use-module (gnu packages autotools)
   #:use-module (gnu packages code)
   #:use-module (gnu packages perl)
@@ -116,10 +117,11 @@ interested in making ctags better can work together.")
 		(method git-fetch)
 		(uri (git-reference
                       (url home-page)
-                      (commit commit)))
+                      (commit commit)
+		      (recursive? #t)))
 		(sha256
                  (base32
-		  "0iw4q437wwcjsb4pbvh1908h3ldl6v0hx6cpika616pf1sm0q0lf"))
+		  "1pivaxb77nqanyrv13s8pnyrym30pc6xqym8fln3v5wp4rzlsabg"))
 		(patches
 		 (search-patches "cquery-basic-cuda-file-extensions.patch"
 				 "cquery-add-CUDA-flags.patch"))
