@@ -9,6 +9,7 @@
   #:use-module (gnu packages bootstrap)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages libffi)
+  #:use-module (gnu packages linux)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages python)
@@ -114,6 +115,7 @@ compiler.  In LLVM this library is called \"compiler-rt\".")
     (inputs
      `(("libxml2" ,libxml2)
        ("gcc-lib" ,gcc "lib")
+       ("gcc" ,gcc)
        ("clang-extra-tools"
 	,(origin
            (method url-fetch)
@@ -124,6 +126,7 @@ compiler.  In LLVM this library is called \"compiler-rt\".")
            (file-name (string-append "clang-extra-tools-" version ".tar.xz"))
            (sha256
             (base32 "1glxl7bnr4k3j16s8xy8r9cl0llyg524f50591g1ig23ij65lz4k"))))
+       ("linux-libre-headers" ,linux-libre-headers)
        ,@(package-inputs llvm)))
     (propagated-inputs
      `(("llvm" ,llvm)
@@ -131,13 +134,21 @@ compiler.  In LLVM this library is called \"compiler-rt\".")
     (arguments
      `(#:configure-flags
        (list "-DCLANG_INCLUDE_TESTS=True"
+	     "-DCLANG_DEFAULT_CXX_STDLIB=libstdc++"
+	     "-DCLANG_DEFAULT_RTLIB=libgcc"
              ;; Find libgcc_s, crtbegin.o, and crtend.o.
              (string-append "-DGCC_INSTALL_PREFIX="
                             (assoc-ref %build-inputs "gcc-lib"))
              ;; Use a sane default include directory.
              (string-append "-DC_INCLUDE_DIRS="
                             (assoc-ref %build-inputs "libc")
-                            "/include"))
+                            "/include" ":"
+			    (assoc-ref %build-inputs "gcc")
+			    "/include/c++" ":"
+			    (assoc-ref %build-inputs "gcc")
+			    "/include/c++/x86_64-unknown-linux-gnu/" ":"
+			    (assoc-ref %build-inputs "linux-libre-headers")
+			    "/include"))
        ;; Don't use '-g' during the build to save space.
        #:build-type "Release"
        #:phases
@@ -161,12 +172,7 @@ compiler.  In LLVM this library is called \"compiler-rt\".")
 	       (substitute* "lib/Driver/ToolChain.cpp"
                  (("getDriver\\(\\)\\.ResourceDir")
 		  (string-append "\"" compiler-rt "\"")))
-	       #t)))
-         (add-before 'build 'set-env
-           (lambda* (#:key inputs #:allow-other-keys)
-	     (let ((llvm-lib (string-append (assoc-ref inputs "llvm") "/lib")))
-               (setenv "LD_LIBRARY_PATH" llvm-lib)
-               #t))))))
+	       #t))))))
     ;; Clang supports the same environment variables as GCC.
     (native-search-paths
      (list (search-path-specification
