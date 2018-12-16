@@ -15,7 +15,7 @@
   #:use-module (gnu packages python)
   #:use-module (gnu packages xml))
 
-(define-public llvm
+(define-public llvm-7.0
   (package
     (name "llvm")
     (version "7.0.0")
@@ -44,16 +44,17 @@
 
        ;; Don't use '-g' during the build, to save space.
        #:build-type "Release"
-       #:phases (modify-phases %standard-phases
-                  (add-before 'build 'shared-lib-workaround
-                    ;; Even with CMAKE_SKIP_BUILD_RPATH=FALSE, llvm-tblgen
-                    ;; doesn't seem to get the correct rpath to be able to run
-                    ;; from the build directory.  Set LD_LIBRARY_PATH as a
-                    ;; workaround.
-                    (lambda _
-                      (setenv "LD_LIBRARY_PATH"
-                              (string-append (getcwd) "/lib"))
-                      #t)))))
+       ;; #:phases (modify-phases %standard-phases
+       ;;            (add-before 'build 'shared-lib-workaround
+       ;;              ;; Even with CMAKE_SKIP_BUILD_RPATH=FALSE, llvm-tblgen
+       ;;              ;; doesn't seem to get the correct rpath to be able to run
+       ;;              ;; from the build directory.  Set LD_LIBRARY_PATH as a
+       ;;              ;; workaround.
+       ;;              (lambda _
+       ;;                (setenv "LD_LIBRARY_PATH"
+       ;;                        (string-append (getcwd) "/lib"))
+       ;;                #t)))
+       ))
     (home-page "https://www.llvm.org")
     (synopsis "Optimizing compiler infrastructure")
     (description
@@ -65,10 +66,10 @@ languages is in development.  The compiler infrastructure includes mirror sets
 of programming tools as well as libraries with equivalent functionality.")
     (license license:ncsa)))
 
-(define-public clang-runtime
+(define-public clang-runtime-7.0
   (package
     (name "clang-runtime")
-    (version (package-version llvm))
+    (version (package-version llvm-7.0))
     (source (origin
 	      (method url-fetch)
 	      (uri (string-append
@@ -79,13 +80,13 @@ of programming tools as well as libraries with equivalent functionality.")
 		"1mkhqvs8cxbfmprkzwyq7lmnzr1sv45znzf0arbgb19crzipzv5x"))
 	      (file-name (string-append name "-" version ".tar.gz"))))
     (build-system cmake-build-system)
-    (native-inputs (package-native-inputs llvm))
+    (native-inputs (package-native-inputs llvm-7.0))
     (inputs
-     `(("llvm" ,llvm)))
+     `(("llvm" ,llvm-7.0)))
     (arguments
      `(;; Don't use '-g' during the build to save space.
        #:build-type "Release"
-		    #:tests? #f))                    ; Tests require gtest
+       #:tests? #f))                    ; Tests require gtest
     (home-page "https://compiler-rt.llvm.org")
     (synopsis "Runtime library for Clang/LLVM")
     (description
@@ -97,10 +98,10 @@ compiler.  In LLVM this library is called \"compiler-rt\".")
     ;; <https://compiler-rt.llvm.org/> doesn't list MIPS as supported.
     (supported-systems (delete "mips64el-linux" %supported-systems))))
 
-(define-public clang
+(define-public clang-7.0
   (package
     (name "clang")
-    (version (package-version llvm))
+    (version (package-version llvm-7.0))
     (source
      (origin (method url-fetch)
 	     (uri (string-append "http://releases.llvm.org/"
@@ -111,7 +112,7 @@ compiler.  In LLVM this library is called \"compiler-rt\".")
 	     (patches (search-patches "clang-add-CUDA-path-params.patch"))
 	     (file-name (string-append name "-" version ".tar.gz"))))
     (build-system cmake-build-system)
-    (native-inputs (package-native-inputs llvm))
+    (native-inputs (package-native-inputs llvm-7.0))
     (inputs
      `(("libxml2" ,libxml2)
        ("gcc-lib" ,gcc "lib")
@@ -127,10 +128,10 @@ compiler.  In LLVM this library is called \"compiler-rt\".")
            (sha256
             (base32 "1glxl7bnr4k3j16s8xy8r9cl0llyg524f50591g1ig23ij65lz4k"))))
        ("linux-libre-headers" ,linux-libre-headers)
-       ,@(package-inputs llvm)))
+       ,@(package-inputs llvm-7.0)))
     (propagated-inputs
-     `(("llvm" ,llvm)
-       ("clang-runtime" ,clang-runtime)))
+     `(("llvm" ,llvm-7.0)
+       ("clang-runtime" ,clang-runtime-7.0)))
     (arguments
      `(#:configure-flags
        (list

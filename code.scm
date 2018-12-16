@@ -25,8 +25,12 @@
   #:use-module (gnu packages)
   #:use-module (gnu packages autotools)
   #:use-module (gnu packages code)
+  #:use-module (gnu packages commencement)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages web)
+  #:use-module (gnu packages ncurses)
+  #:use-module (gnu packages gcc)
   #:use-module (cpp)
   #:use-module (llvm))
 
@@ -132,7 +136,47 @@ interested in making ctags better can work together.")
 	 '("-DSYSTEM_CLANG=ON")
 	 #:tests? #f))
       (inputs
-       `(("clang" ,clang)))
+       `(("clang" ,clang-7.0)))
+      (synopsis "C/C++ language server supporting multi-million line code base,
+powered by libclang.")
+      (description "cquery is a highly-scalable, low-latency language server for
+C/C++/Objective-C. It is tested and designed for large code bases like
+Chromium. cquery provides accurate and fast semantic analysis without
+interrupting workflow.")
+      (license license:expat))))
+
+(define-public ccls
+  (let* ((commit "6aa2479e8c1b9cf0e9b8d975b8cd55acd80677c0")
+	 (revision "0")
+	 (version (git-version "1111" revision commit)))
+    (package
+      (name "ccls")
+      (version version)
+      (home-page "https://github.com/MaskRay/ccls")
+      (source (origin
+		(method git-fetch)
+		(uri (git-reference
+                      (url home-page)
+                      (commit commit)))
+		(sha256
+                 (base32
+		  "07qnnsfyyjvp4p24as1cyalyj2yz04i5g5jzck9y4gi3378b7sxy"))
+		(file-name (git-file-name name version))))
+      (build-system cmake-build-system)
+      (arguments
+       `(#:configure-flags
+	 (list "-DSYSTEM_CLANG=ON"
+	       "-DCMAKE_CXX_STANDARD=gnu++17"
+	       (string-append "-DCMAKE_CXX_FLAGS='-isystem "
+			      (assoc-ref %build-inputs "gcc-toolchain")
+			      "/include/c++'"))
+	 #:tests? #f))
+      (native-inputs
+       `(("rapidjson" ,rapidjson)
+	 ("gcc-toolchain" ,gcc-toolchain-7)))
+      (inputs
+       `(("clang" ,clang-7.0)
+	 ("ncurses" ,ncurses)))
       (synopsis "C/C++ language server supporting multi-million line code base,
 powered by libclang.")
       (description "cquery is a highly-scalable, low-latency language server for
