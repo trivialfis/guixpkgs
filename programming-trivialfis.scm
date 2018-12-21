@@ -32,6 +32,7 @@
   #:use-module (gnu packages linux)
   #:use-module (gnu packages ninja)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages less)
   #:use-module (emacs)
   #:use-module (code))
 
@@ -192,7 +193,7 @@ in Python.")
                        (((names . directories) ...)
                         (union-build out directories)))))))
     (inputs
-     `(("gcc-toolchain" ,gcc-toolchain-7)
+     `(("gcc-toolchain" ,gcc-toolchain-8)
        ("cmake" ,cmake)
        ("make" ,gnu-make)
        ("global" ,global)
@@ -200,6 +201,7 @@ in Python.")
        ("ninja" ,ninja)
        ("cquery" ,cquery)
        ("gdb" ,gdb)
+       ("less" ,less)
 
        ("basic-programming" ,trivialfis/basic)))
     (native-search-paths
