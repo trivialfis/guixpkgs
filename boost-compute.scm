@@ -28,7 +28,7 @@
 (define-public boost-compute
   (package
     (name "boost-compute")
-    (version "1.66.0")
+    (version "1.69.0")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -37,7 +37,7 @@
                     ".tar.gz"))
               (sha256
                (base32
-                "1a573qf7inph3xfb2cmsanylw40fpkb7rwdjvniyb1m37k9mz178"))))
+		"1aks58zkkfi4rbc8w35jca9ndvs75sl9pj93nm7347w63z6g2hr0"))))
     ;; Header-only library, native-inputs for running tests.
     (native-inputs `(("boost" ,boost)
 		     ("opencl-headers" ,opencl-headers-1.2)
