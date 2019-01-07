@@ -12,52 +12,13 @@
   #:use-module (gnu packages compression)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages python)
-  #:use-module (gnu packages xml))
+  #:use-module (gnu packages xml)
+  #:use-module (gnu packages llvm))
 
-(define-public llvm-7.0
-  (package
-    (name "llvm")
-    (version "7.0.0")
-    (source (origin
-	      (method url-fetch)
-	      (uri (string-append
-		    "http://releases.llvm.org/"
-		    version "/llvm-" version ".src.tar.xz"))
-	      (sha256
-	       (base32
-		"08p27wv1pr9ql2zc3f3qkkymci46q7myvh8r5ijippnbwr2gihcb"))))
-    (build-system cmake-build-system)
-    (native-inputs
-     `(("python" ,python-2) ;bytes->str conversion in clang>=3.7 needs python-2
-       ("perl"   ,perl)))
-    (inputs
-     `(("libffi" ,libffi)))
-    (propagated-inputs
-     `(("zlib" ,zlib)))                 ;to use output from llvm-config
-    (arguments
-     `(#:configure-flags '("-DCMAKE_SKIP_BUILD_RPATH=FALSE"
-                           "-DCMAKE_BUILD_WITH_INSTALL_RPATH=FALSE"
-                           "-DBUILD_SHARED_LIBS:BOOL=TRUE"
-                           "-DLLVM_ENABLE_FFI:BOOL=TRUE"
-                           "-DLLVM_INSTALL_UTILS=ON") ; Needed for rustc.
-
-       ;; Don't use '-g' during the build, to save space.
-       #:build-type "Release"))
-    (home-page "https://www.llvm.org")
-    (synopsis "Optimizing compiler infrastructure")
-    (description
-     "LLVM is a compiler infrastructure designed for compile-time, link-time,
-runtime, and idle-time optimization of programs from arbitrary programming
-languages.  It currently supports compilation of C and C++ programs, using
-front-ends derived from GCC 4.0.1.  A new front-end for the C family of
-languages is in development.  The compiler infrastructure includes mirror sets
-of programming tools as well as libraries with equivalent functionality.")
-    (license license:ncsa)))
-
-(define-public clang-runtime-7.0
+(define-public clang-runtime-7.0.1
   (package
     (name "clang-runtime")
-    (version (package-version llvm-7.0))
+    (version (package-version llvm-7.0.1))
     (source (origin
 	      (method url-fetch)
 	      (uri (string-append
@@ -65,16 +26,17 @@ of programming tools as well as libraries with equivalent functionality.")
 		    version "/compiler-rt-" version ".src.tar.xz"))
 	      (sha256
 	       (base32
-		"1mkhqvs8cxbfmprkzwyq7lmnzr1sv45znzf0arbgb19crzipzv5x"))
+		"065ybd8fsc4h2hikbdyricj6pyv4r7r7kpcikhb2y5zf370xybkq"))
 	      (file-name (string-append name "-" version ".tar.gz"))))
     (build-system cmake-build-system)
-    (native-inputs (package-native-inputs llvm-7.0))
+    (native-inputs
+     (package-native-inputs llvm-7.0.1))
     (inputs
-     `(("llvm" ,llvm-7.0)))
+     `(("llvm" ,llvm-7.0.1)))
     (arguments
      `(;; Don't use '-g' during the build to save space.
        #:build-type "Release"
-       #:tests? #f))                    ; Tests require gtest
+       #:tests? #f))
     (home-page "https://compiler-rt.llvm.org")
     (synopsis "Runtime library for Clang/LLVM")
     (description
@@ -86,21 +48,21 @@ compiler.  In LLVM this library is called \"compiler-rt\".")
     ;; <https://compiler-rt.llvm.org/> doesn't list MIPS as supported.
     (supported-systems (delete "mips64el-linux" %supported-systems))))
 
-(define-public clang-7.0
+(define-public clang-7.0.1
   (package
     (name "clang")
-    (version (package-version llvm-7.0))
+    (version (package-version llvm-7.0.1))
     (source
      (origin (method url-fetch)
 	     (uri (string-append "http://releases.llvm.org/"
 				 version "/cfe-" version ".src.tar.xz"))
 	     (sha256
 	      (base32
-	       "0mdsbgj3p7mayhzm8hclzl3i46r2lwa8fr1cz399f9km3iqi40jm"))
+	       "067lwggnbg0w1dfrps790r5l6k8n5zwhlsw7zb6zvmfpwpfn4nx4"))
 	     (patches (search-patches "clang-add-CUDA-path-params.patch"))
 	     (file-name (string-append name "-" version ".tar.gz"))))
     (build-system cmake-build-system)
-    (native-inputs (package-native-inputs llvm-7.0))
+    (native-inputs (package-native-inputs llvm-7.0.1))
     (inputs
      `(("libxml2" ,libxml2)
        ("gcc-lib" ,gcc "lib")
@@ -114,12 +76,13 @@ compiler.  In LLVM this library is called \"compiler-rt\".")
 			   version ".src.tar.xz"))
            (file-name (string-append "clang-extra-tools-" version ".tar.xz"))
            (sha256
-            (base32 "1glxl7bnr4k3j16s8xy8r9cl0llyg524f50591g1ig23ij65lz4k"))))
+            (base32
+	     "1v9vc7id1761qm7mywlknsp810232iwyz8rd4y5km4h7pg9cg4sc"))))
        ("linux-libre-headers" ,linux-libre-headers)
-       ,@(package-inputs llvm-7.0)))
+       ,@(package-inputs llvm-7.0.1)))
     (propagated-inputs
-     `(("llvm" ,llvm-7.0)
-       ("clang-runtime" ,clang-runtime-7.0)))
+     `(("llvm" ,llvm-7.0.1)
+       ("clang-runtime" ,clang-runtime-7.0.1)))
     (arguments
      `(#:configure-flags
        (list

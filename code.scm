@@ -19,6 +19,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system cmake)
+  #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix packages)
   #:use-module ((guix licenses) #:prefix license:)
@@ -31,6 +32,7 @@
   #:use-module (gnu packages web)
   #:use-module (gnu packages ncurses)
   #:use-module (gnu packages gcc)
+  #:use-module (gnu packages llvm)
   #:use-module (cpp)
   #:use-module (llvm))
 
@@ -110,8 +112,8 @@ interested in making ctags better can work together.")
               #t))))))))
 
 (define-public cquery
-  (let* ((commit "0c5f55c06b26aef6b413d5a8370cdfb808de4f1b")
-	 (revision "1")
+  (let* ((commit "70c755b2e390d3edfb594a84a7531beb26b2bc07")
+	 (revision "2")
 	 (version (git-version "2018.07.18" revision commit)))
     (package
       (name "cquery")
@@ -125,10 +127,7 @@ interested in making ctags better can work together.")
 		      (recursive? #t)))
 		(sha256
                  (base32
-		  "1pivaxb77nqanyrv13s8pnyrym30pc6xqym8fln3v5wp4rzlsabg"))
-		(patches
-		 (search-patches "cquery-basic-cuda-file-extensions.patch"
-				 "cquery-add-CUDA-flags.patch"))
+		  "15hndagk8szyxd34fp3z753i4vqb37p2b835a1k7pjff0hgdmg75"))
 		(file-name (git-file-name name version))))
       (build-system cmake-build-system)
       (arguments
@@ -136,7 +135,7 @@ interested in making ctags better can work together.")
 	 '("-DSYSTEM_CLANG=ON")
 	 #:tests? #f))
       (inputs
-       `(("clang" ,clang-7.0)))
+       `(("clang" ,clang-7.0.1)))
       (synopsis "C/C++ language server supporting multi-million line code base,
 powered by libclang.")
       (description "cquery is a highly-scalable, low-latency language server for
@@ -146,27 +145,23 @@ interrupting workflow.")
       (license license:expat))))
 
 (define-public ccls
-  (let* ((commit "6aa2479e8c1b9cf0e9b8d975b8cd55acd80677c0")
-	 (revision "0")
-	 (version (git-version "1111" revision commit)))
-    (package
+  (package
       (name "ccls")
-      (version version)
+      (version "0.20181225.3")
       (home-page "https://github.com/MaskRay/ccls")
       (source (origin
-		(method git-fetch)
-		(uri (git-reference
-                      (url home-page)
-                      (commit commit)))
+		(method url-fetch)
+		(uri (string-append
+		      "https://github.com/MaskRay/ccls/archive/"
+		      version ".tar.gz"))
 		(sha256
                  (base32
-		  "07qnnsfyyjvp4p24as1cyalyj2yz04i5g5jzck9y4gi3378b7sxy"))
-		(file-name (git-file-name name version))))
+		  "1vvc4n891mnda8yrrp6l6519xv4xy31a8j9g85y93s177m2yphyp"))
+		(file-name (string-append name "-" version ".tar.gz"))))
       (build-system cmake-build-system)
       (arguments
        `(#:configure-flags
 	 (list "-DSYSTEM_CLANG=ON"
-	       "-DCMAKE_CXX_STANDARD=gnu++17"
 	       (string-append "-DCMAKE_CXX_FLAGS='-isystem "
 			      (assoc-ref %build-inputs "gcc-toolchain")
 			      "/include/c++'"))
@@ -175,12 +170,8 @@ interrupting workflow.")
        `(("rapidjson" ,rapidjson)
 	 ("gcc-toolchain" ,gcc-toolchain-7)))
       (inputs
-       `(("clang" ,clang-7.0)
+       `(("clang" ,clang-7.0.1)
 	 ("ncurses" ,ncurses)))
-      (synopsis "C/C++ language server supporting multi-million line code base,
-powered by libclang.")
-      (description "cquery is a highly-scalable, low-latency language server for
-C/C++/Objective-C. It is tested and designed for large code bases like
-Chromium. cquery provides accurate and fast semantic analysis without
-interrupting workflow.")
-      (license license:expat))))
+      (synopsis "C/C++/ObjC language server.")
+      (description "C/C++/ObjC language server.")
+      (license license:expat)))
