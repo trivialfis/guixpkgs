@@ -22,6 +22,7 @@
   #:use-module (guix build-system python)
   #:use-module (gnu packages check)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages databases))
 
 (define-public python-nose-warnings-filters
@@ -349,43 +350,6 @@ connection to each user.")
      "IPython: Productive Interactive Computing")
     (license license:bsd-3)))
 
-(define-public python-ipykernel-bootstrap
-  ;; build_ext runs tests automatically
-  (package
-    (name "python-ipykernel-bootstrap")
-    (version "4.8.2")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (string-append
-	     "https://github.com/ipython/ipykernel/archive/"
-	     version ".tar.gz"))
-       (sha256
-	(base32
-	 "1cyd7629whjy74yszi0y8nag0xx4f1bwlib4ddza80y3c42kwq4d"))))
-    (build-system python-build-system)
-    ;; (native-inputs
-    ;;  `(("python-nose" ,python-nose)
-    ;;    ("python-nose-warnings-filters" ,python-nose-warnings-filters)))
-    ;; (propagated-inputs
-    ;;  `(("python-ipython-bootstrap" ,python-ipython-bootstrap)))
-    ;; The tests load a submodule of IPython.  However, IPython itself depends
-    ;; on ipykernel.
-    (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-	 (delete 'check))))
-    (native-inputs
-     `(("python" ,python-wrapper)))
-    (propagated-inputs
-     `(("python-ipython-bootstrap" ,python-ipython-bootstrap)
-       ("python-jupyter-client" ,python-jupyter-client)))
-    (home-page "https://ipython.org")
-    (synopsis "IPython Kernel for Jupyter")
-    (description
-     "This package provides the IPython kernel for Jupyter.")
-    (license license:bsd-3)))
-
 (define-public python-jupyter-client
   (package
     (name "python-jupyter-client")
@@ -401,12 +365,12 @@ connection to each user.")
     ;; Tests fail because of missing native python kernel which I assume is
     ;; provided by the ipython package, which we cannot use because it would
     ;; cause a dependency cycle.
-    ;; (arguments `(#:tests? #f))
-    (native-inputs
-     `(("python-pytest" ,python-pytest)
-       ("python-msgpack" ,python-msgpack)
-       ("python-ipython-bootstrap" ,python-ipython-bootstrap)
-       ))
+    (arguments `(#:tests? #f))
+    ;; (native-inputs
+    ;;  `(("python-pytest" ,python-pytest)
+    ;;    ("python-msgpack" ,python-msgpack)
+    ;;    ("python-ipython-bootstrap" ,python-ipython-bootstrap)
+    ;;    ))
     (propagated-inputs
      `(("python-pyzmq" ,python-pyzmq)
        ("python-traitlets" ,python-traitlets)
@@ -420,6 +384,36 @@ connection to each user.")
 of the Jupyter protocol.  It also provides client and kernel management APIs
 for working with kernels, and the @code{jupyter kernelspec} entrypoint for
 installing @code{kernelspec}s for use with Jupyter frontends.")
+    (license license:bsd-3)))
+
+(define-public python-ipykernel-bootstrap
+  ;; build_ext runs tests automatically
+  (package
+    (name "python-ipykernel-bootstrap")
+    (version "4.8.2")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append
+	     "https://github.com/ipython/ipykernel/archive/"
+	     version ".tar.gz"))
+       (sha256
+	(base32
+	 "1cyd7629whjy74yszi0y8nag0xx4f1bwlib4ddza80y3c42kwq4d"))))
+    (build-system python-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+	 (delete 'check))))
+    (native-inputs
+     `(("python" ,python-wrapper)))
+    (propagated-inputs
+     `(("python-ipython-bootstrap" ,python-ipython-bootstrap)
+       ("python-jupyter-client" ,python-jupyter-client)))
+    (home-page "https://ipython.org")
+    (synopsis "IPython Kernel for Jupyter")
+    (description
+     "This package provides the IPython kernel for Jupyter.")
     (license license:bsd-3)))
 
 (define-public python-ipython
