@@ -8,7 +8,8 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages python)
   #:use-module (gnu packages terminals)
-  #:use-module (python))
+  #:use-module (python)
+  #:use-module (gnu packages python-xyz))
 
 (define-public ronin
   (let* ((commit "588643cc9d18ef951778c53e96b116483ca5c9c0")

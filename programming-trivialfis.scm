@@ -32,6 +32,7 @@
   #:use-module (gnu packages linux)
   #:use-module (gnu packages ninja)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages less)
   #:use-module (emacs)
   #:use-module (code))
