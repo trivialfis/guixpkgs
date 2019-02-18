@@ -18,7 +18,7 @@
 (define-public clang-runtime-7.0.1
   (package
     (name "clang-runtime")
-    (version (package-version llvm-7.0.1))
+    (version (package-version llvm))
     (source (origin
 	      (method url-fetch)
 	      (uri (string-append
@@ -30,9 +30,9 @@
 	      (file-name (string-append name "-" version ".tar.gz"))))
     (build-system cmake-build-system)
     (native-inputs
-     (package-native-inputs llvm-7.0.1))
+     (package-native-inputs llvm))
     (inputs
-     `(("llvm" ,llvm-7.0.1)))
+     `(("llvm" ,llvm)))
     (arguments
      `(;; Don't use '-g' during the build to save space.
        #:build-type "Release"
@@ -51,7 +51,7 @@ compiler.  In LLVM this library is called \"compiler-rt\".")
 (define-public clang-7.0.1
   (package
     (name "clang")
-    (version (package-version llvm-7.0.1))
+    (version (package-version llvm))
     (source
      (origin (method url-fetch)
 	     (uri (string-append "http://releases.llvm.org/"
@@ -62,7 +62,7 @@ compiler.  In LLVM this library is called \"compiler-rt\".")
 	     (patches (search-patches "clang-add-CUDA-path-params.patch"))
 	     (file-name (string-append name "-" version ".tar.gz"))))
     (build-system cmake-build-system)
-    (native-inputs (package-native-inputs llvm-7.0.1))
+    (native-inputs (package-native-inputs llvm))
     (inputs
      `(("libxml2" ,libxml2)
        ("gcc-lib" ,gcc "lib")
@@ -79,9 +79,9 @@ compiler.  In LLVM this library is called \"compiler-rt\".")
             (base32
 	     "1v9vc7id1761qm7mywlknsp810232iwyz8rd4y5km4h7pg9cg4sc"))))
        ("linux-libre-headers" ,linux-libre-headers)
-       ,@(package-inputs llvm-7.0.1)))
+       ,@(package-inputs llvm)))
     (propagated-inputs
-     `(("llvm" ,llvm-7.0.1)
+     `(("llvm" ,llvm)
        ("clang-runtime" ,clang-runtime-7.0.1)))
     (arguments
      `(#:configure-flags
