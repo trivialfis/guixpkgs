@@ -1,0 +1,31 @@
+From 8c8ff5d9e1fc67e61d1d01d70dd281da8c2804fa Mon Sep 17 00:00:00 2001
+From: fis <jm.yuan@outlook.com>
+Date: Mon, 25 Feb 2019 00:08:31 +0800
+Subject: [PATCH] Use CC.
+
+---
+ Makefile | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index cc1587e..d08f1d6 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,4 +1,5 @@
+ -include make.conf
++CC = gcc
+ OBJS := parser.o main.o redsocks.o log.o http-connect.o socks4.o socks5.o http-relay.o base.o base64.o md5.o http-auth.o utils.o redudp.o dnstc.o gen/version.o
+ ifeq ($(DBG_BUILD),1)
+ OBJS += debug.o
+@@ -66,7 +67,7 @@ gen/.build:
+ base.c: $(CONF)
+ 
+ $(DEPS): $(SRCS)
+-	gcc -MM $(SRCS) 2>/dev/null >$(DEPS) || \
++	$(CC) -MM $(SRCS) 2>/dev/null >$(DEPS) || \
+ 	( \
+ 		for I in $(wildcard *.h); do \
+ 			export $${I//[-.]/_}_DEPS="`sed '/^\#[ \t]*include \?"\(.*\)".*/!d;s//\1/' $$I`"; \
+-- 
+2.20.1
+
