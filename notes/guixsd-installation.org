@@ -1,0 +1,15 @@
+#+TITLE: Installation GuixSD
+
+I only installed it on a virtual machine for curiosity.  One problem I
+encountered is not able to log into normal user in Gnome.  It turns out I need
+to first set the password for normal user under ~root~ account.
+
+
+* Hardware support
+Although the documentation says that GuixSD supports most of the existing
+hardware, but that's not true and I think it's an elephant in the room. :( Most
+of the modern GPUs are not supported in Guix with their restricted kernel.
+
+Build store environment has very restricted view of hardwares.  /dev/ directory
+is basically empty there and I don't know how to use udev rules to add more
+devices into store like what nix does. :(

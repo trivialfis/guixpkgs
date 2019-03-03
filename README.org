@@ -6,6 +6,9 @@ If any of the package is upstreamed, I will try to mention it in
 convenient for me to keep some of them local, so that I can work with it any
 time I want. :)
 
+I want to maintain this repository, but with my very limited resource, this
+doesn't seem possible.  If you want to help, please make an issue or PR. :)
+
 Some definitions are ported from:
 https://gitlab.com/genenetwork/guix-bioinformatics.
 Copyright notice is included.
