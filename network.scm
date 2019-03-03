@@ -3,11 +3,64 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
   #:use-module (guix download)
+  #:use-module (guix git-download)
   #:use-module (guix build-system gnu)
+  #:use-module (guix build-system python)
   #:use-module (guix build-system cmake)
   #:use-module (gnu packages base)
   #:use-module (gnu packages tls)
   #:use-module (gnu packages python))
+
+(define-public shadowsocks
+  (let* ((commit "5ff694b2c2978b432918dea6ac104706b25cbf48")
+         (revision "0")
+         (version (git-version "2.9.1" revision commit)))
+    (package
+      (name "shadowsocks")
+      (version version)
+      (home-page "https://github.com/shadowsocks/shadowsocks")
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url home-page)
+                      (commit commit)))
+                (sha256
+                 (base32
+		  "07g4qdqk93ij0ddhmas2ngpqa354gbnlk45ygy1j7kwsfsc8fimx"))
+                (file-name (git-file-name name version))))
+      (arguments
+       `(#:phases
+	 (modify-phases %standard-phases
+	   ;; Load openssl from guix.  Currently we just replace every
+	   ;; call to `load_openssl' with abs path.
+	   (add-after 'unpack 'use-opensslpath
+	     (lambda* (#:key inputs outputs #:allow-other-keys)
+	       (let* ((out (assoc-ref outputs "out"))
+		      (ssldir (assoc-ref inputs "openssl"))
+		      (ssl (string-append ssldir "/lib/libcrypto.so"))
+		      (files (find-files "." ".*\\.py")))
+		 (substitute* files
+		   (("load_openssl\\(.*\\)[^:]")
+		    (string-append
+		     "load_openssl(crypto_path={'openssl': '" ssl "'})\n"))
+		   ))
+	       #t)))))
+      (build-system python-build-system)
+      (inputs
+       `(("openssl" ,openssl-next)))
+      (synopsis "Fast tunnel proxy that helps you bypass firewalls")
+      (description
+       "This package is a fast tunnel proxy that helps you bypass firewalls.
+
+Features:
+@itemize
+@item TCP & UDP support
+@item User management API
+@item TCP Fast Open
+@item Workers and graceful restart
+@item Destination IP blacklist
+@end itemize")
+      (license license:asl2.0))))
 
 (define-public libevent
   (package
