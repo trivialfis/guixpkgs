@@ -1,34 +1,29 @@
 This repository hosts some guix package definitions that yet to be upstreamed
 or simply can not be upstreamed.
 
-If any of the package is upstreamed, I will try to removed it here. But
-sometimes it's more convenient for me to keep some of them local, so that I can
-work with it any time I want. :)
+If any of the package is upstreamed, I will try to mention it in
+`upstreamed.org` and remove it from the source tree. But sometimes it's more
+convenient for me to keep some of them local, so that I can work with it any
+time I want. :)
 
 Some definitions are ported from:
 https://gitlab.com/genenetwork/guix-bioinformatics.
 Copyright notice is included.
 
+* Channel
+You can use the following definition as additional, be aware that I'm not
+constantly following up the upstream, if you found some packages not building,
+please let me know.
+#+BEGIN_SRC scheme
+(cons
+ (channel
+  (name 'fis)
+  (url "https://github.com/trivialfis/guixpkgs.git")
+  (branch "master"))
+ %default-channels)
+#+END_SRC
+
 * Status
-
-** Cuda
-
-   Is not fully work yet, at least not in real pure environment. It seems that
-   some dynamic load path are messed up in the binaries. If I omit testing in
-   wrap-program, cuda builds alright, and *nvcc* *CAN* be used on *host system*.
-   However, it can not be invoked inside the store environment, which means you
-   *CAN'T* package other software having cuda as dependency, but you *CAN* use
-   it with `guix environment` during development process.
-
-   The failure is weird, no error message is emitted, nvcc just failed with
-   non-zero return code.
-   One possible explanation might be the /dev file is invisible inside store
-   environment, as mentioned in the link at following OpenCL section.
-
-   Other than that, I am still trying to get all those dynamic load path right.
-
-   How come the definition from nix looks so innocently simple anyway?
-
 ** OpenCL
 
    Testing for OpenCL implementation might not be doable inside the store
@@ -38,55 +33,17 @@ Copyright notice is included.
    + ClMath: clBLAS, clFFT
    + boost-compute
 
-*** Implementations:
-
-
 ** Arrayfire
 
    The old cpu version is working. I can't get any further due to broken cuda.
 
 ** Others
+   + redsocks
+   + cquery
+   + ccls
    + libffm
    + xgboost
    + python-xgboost
    + python-twython
-   + nextcloud-desktop
 
 Many libraries are packaged as dependencies, just grep "define-public".
-
-
-* Upstreamed
-I will try to document the upstreamed packages here, so that if someone found a package became missing, he will know why. Due to my laziness, the list is not complete.
-
-   + bear
-   + unittest-cpp
-   + qBittorrent
-   + python-autograd
-   + amule
-   + python-yapf
-   + python-parso
-   + python-glob2
-   + xtensor
-   + pybind11
-   + beignet
-   + lightgbm
-   + vowpal-wabbit
-   + shadowsocks
-   + ocl-icd
-   + clinfo
-   + opencl-headers
-   + opencl-clhpp
-   + json-modern-cxx
-   + xtl
-   + xsimd
-   + fifo-map
-   + catch2
-   + amalgamate
-   + shadowsocks
-   + pocl
-   + vigra-c
-
-#  LocalWords:  upstreamed LocalWords nvcc OpenCL Cuda cuda dev pocl
-#  LocalWords:  clinfo guix icd clFFT beignet qBittorrent cpp WIP
-#  LocalWords:  autograd Arrayfire libffm opencv amule lightgbm parso
-#  LocalWords:  pybind yapf shadowsocks
