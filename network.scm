@@ -55,8 +55,7 @@
 	       #t)))))
       (build-system python-build-system)
       (inputs
-       `(("openssl" ,openssl-next)
-	 ("libcork",libcork)))
+       `(("openssl" ,openssl-next)))
       (synopsis "Fast tunnel proxy that helps you bypass firewalls")
       (description
        "This package is a fast tunnel proxy that helps you bypass firewalls.
@@ -205,7 +204,8 @@ with some proxy configurations.
    (description "")
    (license license:lgpl2.0+)))
 
-(define-public shadowsocks-libev
+;; Not working yet.
+(define-public shadowsocks-libev-WIP
   (let* ((commit "c9159fc927e643f38bf60c2ded443fb1b6c70c51")
 	 (revision "0")
 	 (version (git-version "3.2.4" revision commit)))
@@ -238,6 +238,8 @@ with some proxy configurations.
 	("c-ares" ,c-ares-next)
 	("mbedtls-apache" ,mbedtls-apache)
 	("libsodium" ,libsodium)
+	("libbloom" ,libbloom)
+	("libcork" ,libcork)
 	("pcre" ,pcre)))
      (description
       "This package is a fast tunnel proxy that helps you bypass firewalls.
