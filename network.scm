@@ -7,9 +7,15 @@
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system python)
   #:use-module (guix build-system cmake)
+  #:use-module (c)
   #:use-module (gnu packages base)
   #:use-module (gnu packages tls)
-  #:use-module (gnu packages python))
+  #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages python)
+  #:use-module (gnu packages adns)
+  #:use-module (gnu packages pcre)
+  #:use-module (gnu packages libevent)	;libev
+  #:use-module (gnu packages crypto))	;libsodium
 
 (define-public shadowsocks
   (let* ((commit "5ff694b2c2978b432918dea6ac104706b25cbf48")
@@ -29,7 +35,9 @@
 		  "07g4qdqk93ij0ddhmas2ngpqa354gbnlk45ygy1j7kwsfsc8fimx"))
                 (file-name (git-file-name name version))))
       (arguments
-       `(#:phases
+       `(#:configure-flags
+	 (list "-DWITH_EMBEDDED_SRC=OFF")
+	 #:phases
 	 (modify-phases %standard-phases
 	   ;; Load openssl from guix.  Currently we just replace every
 	   ;; call to `load_openssl' with abs path.
@@ -47,7 +55,8 @@
 	       #t)))))
       (build-system python-build-system)
       (inputs
-       `(("openssl" ,openssl-next)))
+       `(("openssl" ,openssl-next)
+	 ("libcork",libcork)))
       (synopsis "Fast tunnel proxy that helps you bypass firewalls")
       (description
        "This package is a fast tunnel proxy that helps you bypass firewalls.
@@ -149,3 +158,96 @@ with some proxy configurations.
 
 @end itemize")
     (license license:expat)))
+
+(define-public libudns
+  (package
+   (name "libudns")
+   (version "0.4")
+   (home-page "http://www.corpit.ru/mjt/udns.html")
+   (source
+    (origin
+     (method url-fetch)
+     (uri "http://www.corpit.ru/mjt/udns/udns-0.4.tar.gz")
+     (sha256
+      (base32
+       "0447fv1hmb44nnchdn6p5pd9b44x8p5jn0ahw6crwbqsg7f0hl8i"))
+     (file-name (string-append name "-" version ".tar.gz"))))
+   (outputs '("out" "doc"))
+   (arguments
+    `(#:phases
+      (modify-phases %standard-phases
+	(replace 'configure
+	  (lambda _
+	    (invoke "./configure" "--enable-ipv6")))
+	(replace 'install
+	  (lambda* (#:key inputs outputs #:allow-other-keys)
+             (let* ((out (assoc-ref outputs "out"))
+                    (out-inc (string-append out "/include"))
+		    (out-bin (string-append out "/bin"))
+		    (out-lib (string-append out "/lib"))
+		    (doc (assoc-ref outputs "doc"))
+		    (doc-man (string-append doc "/man")))
+	       (install-file "udns.h" out-inc)
+	       (install-file "dnsget" out-bin)
+	       (install-file "rblcheck" out-bin)
+	       (install-file "libudns.a" out-lib)
+	       (install-file "libudns.so.0" out-lib)
+	       (symlink (string-append out-lib "/libudns.so.0")
+			(string-append out-lib "/libudns.so"))
+	       (install-file "dnsget.1" (string-append doc-man "/man1"))
+	       (install-file "rblcheck.1" (string-append doc-man "/man1"))
+	       (install-file "udns.3" (string-append doc-man "/man3"))))))
+      #:make-flags (list "staticlib" "sharedlib" "rblcheck" "dnsget")
+      ;; no test target
+      #:tests? #f))
+   (build-system gnu-build-system)
+   (synopsis "")
+   (description "")
+   (license license:lgpl2.0+)))
+
+(define-public shadowsocks-libev
+  (let* ((commit "c9159fc927e643f38bf60c2ded443fb1b6c70c51")
+	 (revision "0")
+	 (version (git-version "3.2.4" revision commit)))
+    (package
+     (name "shadowsocks-libev")
+     (version version)
+     (home-page "https://github.com/shadowsocks/shadowsocks-libev/")
+     (source
+      (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url home-page)
+             (commit commit)
+	     (recursive? #t)))
+       (sha256
+	(base32
+	 "1wr5aknvh6x4qf60cljm8bzyw5sf50fqqdifp3jp8qi5w37qg2c3"))
+       (file-name (git-file-name name version))))
+     (build-system cmake-build-system)
+     (synopsis "Fast tunnel proxy that helps you bypass firewalls")
+     (arguments
+      `(#:configure-flags
+	(list "-DWITH_STATIC=OFF"
+	      "-DCMAKE_BUILD_WITH_INSTALL_NAME_DIR=ON")
+	#:tests? #f))
+     (native-inputs
+      `(("pkg-config", pkg-config)))
+     (inputs
+      `(("libev" ,libev)
+	("c-ares" ,c-ares-next)
+	("mbedtls-apache" ,mbedtls-apache)
+	("libsodium" ,libsodium)
+	("pcre" ,pcre)))
+     (description
+      "This package is a fast tunnel proxy that helps you bypass firewalls.
+
+Features:
+@itemize
+@item TCP & UDP support
+@item User management API
+@item TCP Fast Open
+@item Workers and graceful restart
+@item Destination IP blacklist
+@end itemize")
+     (license license:gpl3+))))

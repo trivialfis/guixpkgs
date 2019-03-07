@@ -1,0 +1,74 @@
+From 9306d0d74c30b3ee3d9105db81f6cd1ada8ecc32 Mon Sep 17 00:00:00 2001
+From: fis <jm.yuan@outlook.com>
+Date: Fri, 8 Mar 2019 01:09:57 +0800
+Subject: [PATCH] Remove execute_process.
+
+---
+ CMakeLists.txt | 37 ++++++++++---------------------------
+ 1 file changed, 10 insertions(+), 27 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d7f67a0..007d336 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -18,42 +18,26 @@ find_package(CTargets)
+ #-----------------------------------------------------------------------
+ # Retrieve the current version number
+ 
+-execute_process(
+-    COMMAND
+-      ${CMAKE_CURRENT_SOURCE_DIR}/build-aux/calculate version .version-stamp
+-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+-    RESULT_VARIABLE VERSION_RESULT
+-    OUTPUT_VARIABLE VERSION
+-    OUTPUT_STRIP_TRAILING_WHITESPACE
+-)
+-if(VERSION_RESULT)
++if(NOT VERSION)
+     message(FATAL_ERROR
+-            "Cannot determine version number: " ${VERSION_RESULT})
+-endif(VERSION_RESULT)
++            "Cannot determine version number: " ${VERSION})
++endif(NOT VERSION)
+ message(STATUS "Current version: " ${VERSION})
+ 
+-string(REGEX REPLACE "-.*" "-dev" BASE_VERSION "${VERSION}")
++# string(REGEX REPLACE "-.*" "-dev" BASE_VERSION "${VERSION}")
+ 
+-if(BASE_VERSION MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-dev)?$")
++if(VERSION MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-dev)?$")
+     set(VERSION_MAJOR "${CMAKE_MATCH_1}")
+     set(VERSION_MINOR "${CMAKE_MATCH_2}")
+     set(VERSION_PATCH "${CMAKE_MATCH_3}")
+-else(BASE_VERSION MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-dev)?$")
++else(VERSION MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-dev)?$")
+     message(FATAL_ERROR "Invalid version number: ${VERSION}")
+-endif(BASE_VERSION MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-dev)?$")
+-
+-execute_process(
+-    COMMAND
+-      ${CMAKE_CURRENT_SOURCE_DIR}/build-aux/calculate commit .commit-stamp
+-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+-    RESULT_VARIABLE GIT_SHA1_RESULT
+-    OUTPUT_VARIABLE GIT_SHA1
+-    OUTPUT_STRIP_TRAILING_WHITESPACE
+-)
+-if(GIT_SHA1_RESULT)
++endif(VERSION MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-dev)?$")
++
++if(NOT GIT_SHA1)
+     message(FATAL_ERROR
+             "Cannot determine git commit: " ${GIT_SHA1_RESULT})
+-endif(GIT_SHA1_RESULT)
++endif(NOT GIT_SHA1)
+ message(STATUS "Current revision: " ${GIT_SHA1})
+ 
+ include(GNUInstallDirs)
+@@ -107,4 +91,3 @@ add_subdirectory(include)
+ add_subdirectory(share)
+ add_subdirectory(src)
+ add_subdirectory(tests)
+-add_subdirectory(docs/old)
+-- 
+2.20.1
+
