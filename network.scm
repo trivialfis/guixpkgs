@@ -9,6 +9,7 @@
   #:use-module (guix build-system cmake)
   #:use-module (c)
   #:use-module (gnu packages base)
+  #:use-module (gnu packages check)
   #:use-module (gnu packages tls)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python)
@@ -35,9 +36,7 @@
 		  "07g4qdqk93ij0ddhmas2ngpqa354gbnlk45ygy1j7kwsfsc8fimx"))
                 (file-name (git-file-name name version))))
       (arguments
-       `(#:configure-flags
-	 (list "-DWITH_EMBEDDED_SRC=OFF")
-	 #:phases
+       `(#:phases
 	 (modify-phases %standard-phases
 	   ;; Load openssl from guix.  Currently we just replace every
 	   ;; call to `load_openssl' with abs path.
@@ -204,13 +203,38 @@ with some proxy configurations.
    (description "")
    (license license:lgpl2.0+)))
 
+(define-public libipset
+  (let* ((commit "7f9c44ffe405b015d6ab9ca8359a62c09ba17f4d")
+	 (revision "0")
+	 (version (git-version "1.1.1" revision commit)))
+    (package
+      (name "libipset")
+      (version version)
+      (home-page "https://github.com/shadowsocks/ipset")
+      (source
+       (origin
+	 (method git-fetch)
+	 (uri (git-reference
+	       (url home-page)
+	       (commit commit)))
+	 (sha256
+	  (base32
+	   "00hlfpl8j6i4fc5j0q84rd46qabamwml17p0sva5dnrbzlj0ciri"))))
+      (native-inputs `(("pkg-config" ,pkg-config)
+		       ("check" ,check)))
+      (inputs `(("libcork" ,libcork)))
+      (build-system cmake-build-system)
+      (synopsis "small C helper library for storing sets of IPv4 and IPv6 addresses")
+      (description "")
+      (license license:bsd-3))))
+
 ;; Not working yet.
 (define-public shadowsocks-libev-WIP
   (let* ((commit "c9159fc927e643f38bf60c2ded443fb1b6c70c51")
 	 (revision "0")
 	 (version (git-version "3.2.4" revision commit)))
     (package
-     (name "shadowsocks-libev")
+     (name "shadowsocks-libev-WIP")
      (version version)
      (home-page "https://github.com/shadowsocks/shadowsocks-libev/")
      (source
@@ -223,13 +247,20 @@ with some proxy configurations.
        (sha256
 	(base32
 	 "1wr5aknvh6x4qf60cljm8bzyw5sf50fqqdifp3jp8qi5w37qg2c3"))
-       (file-name (git-file-name name version))))
+       (file-name (git-file-name name version))
+       (modules '((guix build utils)))
+	      (snippet
+	       '(begin
+		  (delete-file-recursively "libcork")
+		  (delete-file-recursively "libbloom")
+		  (delete-file-recursively "libipset")))))
      (build-system cmake-build-system)
      (synopsis "Fast tunnel proxy that helps you bypass firewalls")
      (arguments
       `(#:configure-flags
 	(list "-DWITH_STATIC=OFF"
-	      "-DCMAKE_BUILD_WITH_INSTALL_NAME_DIR=ON")
+	      "-DCMAKE_BUILD_WITH_INSTALL_NAME_DIR=ON"
+	      "-DWITH_EMBEDDED_SRC=OFF")
 	#:tests? #f))
      (native-inputs
       `(("pkg-config", pkg-config)))
@@ -238,6 +269,7 @@ with some proxy configurations.
 	("c-ares" ,c-ares-next)
 	("mbedtls-apache" ,mbedtls-apache)
 	("libsodium" ,libsodium)
+	("libipset" ,libipset)
 	("libbloom" ,libbloom)
 	("libcork" ,libcork)
 	("pcre" ,pcre)))
