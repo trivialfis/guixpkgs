@@ -1,0 +1,67 @@
+From 193fb2a67d77317337b0ca825770b3069aa130f6 Mon Sep 17 00:00:00 2001
+From: fis <jm.yuan@outlook.com>
+Date: Tue, 12 Mar 2019 21:18:29 +0800
+Subject: [PATCH 2/2] Find correct ipset.
+
+---
+ src/CMakeLists.txt | 35 ++++++++++++++++++++---------------
+ 1 file changed, 20 insertions(+), 15 deletions(-)
+
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 30939e7..b011b55 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -116,22 +116,27 @@ find_library(LIBUDNS_SHARED cares)
+ find_library(LIBPCRE_SHARED pcre)
+ 
+ if (WITH_EMBEDDED_SRC)
+-list(APPEND DEPS_SHARED
+-        m
+-        bloom-shared
+-        cork-shared
+-        ipset-shared
+-        ${LIBEV_SHARED}
+-        ${LIBUDNS_SHARED}
+-        ${LIBPCRE_SHARED}
+-        ${LIBSODIUM_SHARED}
+-        ${LIBMBEDTLS_SHARED}
+-        ${LIBMBEDCRYPTO_SHARED}
+-        )
+-else ()
++  list(APPEND DEPS_SHARED
++    m
++    bloom-shared
++    cork-shared
++    ipset-shared
++    ${LIBEV_SHARED}
++    ${LIBUDNS_SHARED}
++    ${LIBPCRE_SHARED}
++    ${LIBSODIUM_SHARED}
++    ${LIBMBEDTLS_SHARED}
++    ${LIBMBEDCRYPTO_SHARED})
++else (WITH_EMBEDDED_SRC)
++
+ find_library(LIBBLOOM_SHARED bloom)
+ find_library(LIBCORK_SHARED cork)
+-find_library(LIBCORKIPSET_SHARED corkipset)
++find_library(LIBCORKIPSET_SHARED
++  NAMES ipset
++  PATHS
++  ${CMAKE_PREFIX_PATH}/lib
++  ${CMAKE_PREFIX_PATH}/lib64)
++
+ list(APPEND DEPS_SHARED
+         m
+         ${LIBBLOOM_SHARED}
+@@ -144,7 +149,7 @@ list(APPEND DEPS_SHARED
+         ${LIBMBEDTLS_SHARED}
+         ${LIBMBEDCRYPTO_SHARED}
+         )
+-endif ()
++endif (WITH_EMBEDDED_SRC)
+ 
+ find_package (Threads)
+ 
+-- 
+2.21.0
+

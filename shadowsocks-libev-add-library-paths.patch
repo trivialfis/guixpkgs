@@ -1,0 +1,29 @@
+From 53b33897c6019d870c958d5393fb4d38573f64d7 Mon Sep 17 00:00:00 2001
+From: fis <jm.yuan@outlook.com>
+Date: Tue, 5 Mar 2019 23:23:08 +0800
+Subject: [PATCH 1/2] Add library paths
+
+---
+ src/CMakeLists.txt | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 987ddee..30939e7 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -91,9 +91,9 @@ if (WITH_STATIC)
+ find_library(LIBSODIUM libsodium.a)
+ find_library(LIBMBEDTLS libmbedtls.a)
+ find_library(LIBMBEDCRYPTO libmbedcrypto.a)
+-find_library(LIBEV libev.a)
+-find_library(LIBUDNS libcares.a)
+-find_library(LIBPCRE libpcre.a)
++find_library(LIBEV libev.a PATHS ${LIBEV_PATH})
++find_library(LIBUDNS libcares.a PATH ${LIBUDNS_PATH})
++find_library(LIBPCRE libpcre.a PATH ${LIBPCRE_PATH})
+ 
+ # Dependencies we need for static and shared
+ list(APPEND DEPS
+-- 
+2.21.0
+

@@ -229,12 +229,12 @@ with some proxy configurations.
       (license license:bsd-3))))
 
 ;; Not working yet.
-(define-public shadowsocks-libev-WIP
+(define-public shadowsocks-libev
   (let* ((commit "c9159fc927e643f38bf60c2ded443fb1b6c70c51")
 	 (revision "0")
 	 (version (git-version "3.2.4" revision commit)))
     (package
-     (name "shadowsocks-libev-WIP")
+     (name "shadowsocks-libev")
      (version version)
      (home-page "https://github.com/shadowsocks/shadowsocks-libev/")
      (source
@@ -243,10 +243,15 @@ with some proxy configurations.
        (uri (git-reference
              (url home-page)
              (commit commit)
-	     (recursive? #t)))
+	     (recursive? #f)))
        (sha256
 	(base32
-	 "1wr5aknvh6x4qf60cljm8bzyw5sf50fqqdifp3jp8qi5w37qg2c3"))
+	 "1l7p7hks0m01nyg8k42dy7bazl6jih7h64rwp9gw3dpq23kkmwwy"))
+       (patches (search-patches "shadowsocks-libev-add-find-correct-ipset.patch"
+				"shadowsocks-libev-add-library-paths.patch"
+				"shadowsocks-libev-remove-not-relevant-code.patch"
+				"shadowsocks-libev-remove-more-non-relevant-code.patch"
+				"shadowsocks-libev-install-appropriate-target.patch"))
        (file-name (git-file-name name version))
        (modules '((guix build utils)))
 	      (snippet
@@ -259,7 +264,6 @@ with some proxy configurations.
      (arguments
       `(#:configure-flags
 	(list "-DWITH_STATIC=OFF"
-	      "-DCMAKE_BUILD_WITH_INSTALL_NAME_DIR=ON"
 	      "-DWITH_EMBEDDED_SRC=OFF")
 	#:tests? #f))
      (native-inputs

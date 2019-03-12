@@ -1,0 +1,80 @@
+From 676932114e89cb9b6e07e1325a96aecf2b020e8a Mon Sep 17 00:00:00 2001
+From: fis <jm.yuan@outlook.com>
+Date: Tue, 12 Mar 2019 21:38:46 +0800
+Subject: [PATCH] Remove more non relevant code.
+
+---
+ src/CMakeLists.txt | 38 +-------------------------------------
+ 1 file changed, 1 insertion(+), 37 deletions(-)
+
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index aa06e9c..a578830 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -97,6 +97,7 @@ find_library(LIBCORKIPSET_SHARED
+   PATHS
+   ${CMAKE_PREFIX_PATH}/lib
+   ${CMAKE_PREFIX_PATH}/lib64)
++message(STATUS "LIBBLOOM_SHARED: ${LIBBLOOM_SHARED}")
+ 
+ list(APPEND DEPS_SHARED
+   m
+@@ -112,37 +113,6 @@ list(APPEND DEPS_SHARED
+ 
+ find_package (Threads)
+ 
+-if (WITH_STATIC)
+-# ------------------------------------------------------------------
+-# Static
+-# By default we use normal name for static, all shared targets will add a `-shared' suffix
+-add_executable(ss-server ${SS_SERVER_SOURCE})
+-add_executable(ss-tunnel ${SS_TUNNEL_SOURCE})
+-add_executable(ss-manager ${SS_MANAGER_SOURCE})
+-add_executable(ss-local ${SS_LOCAL_SOURCE})
+-if (WITH_SS_REDIR)
+-    add_executable(ss-redir ${SS_REDIR_SOURCE})
+-else ()
+-    add_executable(ss-redir EXCLUDE_FROM_ALL ${SS_REDIR_SOURCE})
+-endif ()
+-add_library(shadowsocks-libev STATIC ${LIBSHADOWSOCKS_LIBEV_SOURCE})
+-
+-
+-target_compile_definitions(ss-server PUBLIC -DMODULE_REMOTE)
+-target_compile_definitions(ss-tunnel PUBLIC -DMODULE_TUNNEL)
+-target_compile_definitions(ss-manager PUBLIC -DMODULE_MANAGER)
+-target_compile_definitions(ss-local PUBLIC -DMODULE_LOCAL)
+-target_compile_definitions(ss-redir PUBLIC -DMODULE_REDIR)
+-target_compile_definitions(shadowsocks-libev PUBLIC -DMODULE_LOCAL)
+-
+-target_link_libraries(ss-server cork ipset ${DEPS})
+-target_link_libraries(ss-tunnel cork ${DEPS})
+-target_link_libraries(ss-manager m bloom cork ${LIBEV} ${LIBUDNS})
+-target_link_libraries(ss-local cork ipset ${DEPS})
+-target_link_libraries(ss-redir cork ipset ${DEPS})
+-target_link_libraries(shadowsocks-libev cork ipset ${DEPS})
+-endif ()
+-
+ # ------------------------------------------------------------------
+ # Shared
+ # Shared target will have a `-shared' suffix
+@@ -194,17 +164,11 @@ target_link_libraries(shadowsocks-libev-shared ${DEPS_SHARED})
+ install(DIRECTORY ${RUNTIME_SHARED_OUTPUT_DIRECTORY}/
+         DESTINATION bin)
+ 
+-if (WITH_STATIC)
+-    install(TARGETS shadowsocks-libev
+-        ARCHIVE DESTINATION lib)
+-endif ()
+-
+ install(TARGETS shadowsocks-libev-shared
+         LIBRARY DESTINATION lib)
+ 
+ install(FILES shadowsocks.h DESTINATION include)
+ 
+-
+ add_custom_target(distclean
+         COMMAND ${CMAKE_COMMAND} -E echo WARNING: distclean target is not functional
+         COMMAND ${CMAKE_COMMAND} -E echo Use 'git clean -fdx' instead
+-- 
+2.21.0
+

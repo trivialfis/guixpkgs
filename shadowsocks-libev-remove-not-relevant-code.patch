@@ -1,0 +1,333 @@
+From 11fb06287bd5c3888c4dd710ed6124dfcee8c8bc Mon Sep 17 00:00:00 2001
+From: fis <jm.yuan@outlook.com>
+Date: Tue, 12 Mar 2019 21:35:29 +0800
+Subject: [PATCH] Remove not relevant code.
+
+---
+ CMakeLists.txt     |  96 +--------------------------
+ src/CMakeLists.txt | 161 +++++++++++++++++----------------------------
+ 2 files changed, 62 insertions(+), 195 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 4b7b1da..83c1c23 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -45,102 +45,10 @@ add_definitions(-DHAVE_CONFIG_H)
+ configure_file(
+         ${CMAKE_SOURCE_DIR}/cmake/shadowsocks-libev.pc.cmake
+         ${CMAKE_BINARY_DIR}/pkgconfig/shadowsocks-libev.pc
+-        @ONLY
+-)
++        @ONLY)
+ install(FILES
+         ${CMAKE_BINARY_DIR}/pkgconfig/shadowsocks-libev.pc
+-        DESTINATION pkgconfig
+-        )
+-
+-if (WITH_EMBEDDED_SRC)
+-# We need libcork,libipset headers
+-include_directories(libcork/include)
+-include_directories(libipset/include)
+-include_directories(libbloom/murmur2)
+-include_directories(libbloom)
+-
+-set(LIBCORK_SOURCE
+-        libcork/src/libcork/cli/commands.c
+-        libcork/src/libcork/core/allocator.c
+-        libcork/src/libcork/core/error.c
+-        libcork/src/libcork/core/gc.c
+-        libcork/src/libcork/core/hash.c
+-        libcork/src/libcork/core/ip-address.c
+-        libcork/src/libcork/core/mempool.c
+-        libcork/src/libcork/core/timestamp.c
+-        libcork/src/libcork/core/u128.c
+-        libcork/src/libcork/core/version.c
+-        libcork/src/libcork/ds/array.c
+-        libcork/src/libcork/ds/bitset.c
+-        libcork/src/libcork/ds/buffer.c
+-        libcork/src/libcork/ds/dllist.c
+-        libcork/src/libcork/ds/file-stream.c
+-        libcork/src/libcork/ds/hash-table.c
+-        libcork/src/libcork/ds/managed-buffer.c
+-        libcork/src/libcork/ds/ring-buffer.c
+-        libcork/src/libcork/ds/slice.c
+-        libcork/src/libcork/posix/directory-walker.c
+-        libcork/src/libcork/posix/env.c
+-        libcork/src/libcork/posix/exec.c
+-        libcork/src/libcork/posix/files.c
+-        libcork/src/libcork/posix/process.c
+-        libcork/src/libcork/posix/subprocess.c
+-        libcork/src/libcork/pthreads/thread.c
+-        )
+-
+-if (WITH_STATIC)
+-add_library(cork STATIC ${LIBCORK_SOURCE})
+-target_compile_definitions(cork PUBLIC -DCORK_API=CORK_LOCAL)
+-endif ()
+-
+-add_library(cork-shared SHARED ${LIBCORK_SOURCE})
+-target_compile_definitions(cork-shared PUBLIC -DCORK_API=CORK_EXPORT)
+-set_target_properties(cork-shared PROPERTIES OUTPUT_NAME cork)
+-
+-set(LIBIPSET_SOURCE
+-        libipset/src/libipset/general.c
+-        libipset/src/libipset/bdd/assignments.c
+-        libipset/src/libipset/bdd/basics.c
+-        libipset/src/libipset/bdd/bdd-iterator.c
+-        libipset/src/libipset/bdd/expanded.c
+-        libipset/src/libipset/bdd/reachable.c
+-        libipset/src/libipset/bdd/read.c
+-        libipset/src/libipset/bdd/write.c
+-        libipset/src/libipset/map/allocation.c
+-        libipset/src/libipset/map/inspection.c
+-        libipset/src/libipset/map/ipv4_map.c
+-        libipset/src/libipset/map/ipv6_map.c
+-        libipset/src/libipset/map/storage.c
+-        libipset/src/libipset/set/allocation.c
+-        libipset/src/libipset/set/inspection.c
+-        libipset/src/libipset/set/ipv4_set.c
+-        libipset/src/libipset/set/ipv6_set.c
+-        libipset/src/libipset/set/iterator.c
+-        libipset/src/libipset/set/storage.c
+-        )
+-
+-if (WITH_STATIC)
+-add_library(ipset STATIC ${LIBIPSET_SOURCE})
+-endif ()
+-
+-add_library(ipset-shared SHARED ${LIBIPSET_SOURCE})
+-set_target_properties(ipset-shared PROPERTIES OUTPUT_NAME ipset)
+-
+-set(LIBBLOOM_SOURCE
+-        libbloom/bloom.c
+-        libbloom/murmur2/MurmurHash2.c
+-        )
+-
+-if (WITH_STATIC)
+-add_library(bloom STATIC ${LIBBLOOM_SOURCE})
+-target_link_libraries(ipset cork bloom)
+-endif ()
+-
+-add_library(bloom-shared SHARED ${LIBBLOOM_SOURCE})
+-target_link_libraries(ipset-shared cork-shared bloom-shared)
+-set_target_properties(bloom-shared PROPERTIES OUTPUT_NAME bloom)
+-endif ()
++        DESTINATION pkgconfig)
+ 
+ add_subdirectory(src)
+ add_subdirectory(doc)
+-
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index b011b55..aa06e9c 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -7,75 +7,64 @@ endif ()
+ 
+ 
+ set(SS_SNI_SOURCE
+-        http.c
+-        tls.c
+-        )
++  http.c
++  tls.c)
+ 
+ set(SS_ACL_SOURCE
+-        acl.c
+-        rule.c
+-        )
++  acl.c
++  rule.c)
+ 
+ set(SS_CRYPTO_SOURCE
+-        crypto.c
+-        aead.c
+-        stream.c
+-        base64.c
+-        )
++  crypto.c
++  aead.c
++  stream.c
++  base64.c)
+ 
+ set(SS_PLUGIN_SOURCE
+-        plugin.c
+-        )
++  plugin.c)
+ 
+ set(SS_SHARED_SOURCES
+-        ppbloom.c
+-        utils.c
+-        jconf.c
+-        json.c
+-        netutils.c
+-        )
++  ppbloom.c
++  utils.c
++  jconf.c
++  json.c
++  netutils.c)
+ 
+ set(LIBSHADOWSOCKS_LIBEV_SOURCE
+-        ${SS_SHARED_SOURCES}
+-        udprelay.c
+-        cache.c
+-        local.c
+-        ${SS_CRYPTO_SOURCE}
+-        ${SS_PLUGIN_SOURCE}
+-        ${SS_SNI_SOURCE}
+-        ${SS_ACL_SOURCE}
+-        )
++  ${SS_SHARED_SOURCES}
++  udprelay.c
++  cache.c
++  local.c
++  ${SS_CRYPTO_SOURCE}
++  ${SS_PLUGIN_SOURCE}
++  ${SS_SNI_SOURCE}
++  ${SS_ACL_SOURCE})
+ 
+ set(SS_LOCAL_SOURCE
+-        ${LIBSHADOWSOCKS_LIBEV_SOURCE}
+-
+-        )
++  ${LIBSHADOWSOCKS_LIBEV_SOURCE})
+ 
+ set(SS_TUNNEL_SOURCE
+-        ${SS_SHARED_SOURCES}
+-        udprelay.c
+-        cache.c
+-        tunnel.c
+-        ${SS_CRYPTO_SOURCE}
+-        ${SS_PLUGIN_SOURCE}
+-        )
++  ${SS_SHARED_SOURCES}
++  udprelay.c
++  cache.c
++  tunnel.c
++  ${SS_CRYPTO_SOURCE}
++  ${SS_PLUGIN_SOURCE})
+ 
+ set(SS_SERVER_SOURCE
+-        ${SS_SHARED_SOURCES}
+-        udprelay.c
+-        cache.c
+-        resolv.c
+-        server.c
+-        ${SS_CRYPTO_SOURCE}
+-        ${SS_PLUGIN_SOURCE}
+-        ${SS_SNI_SOURCE}
+-        ${SS_ACL_SOURCE}
+-        )
++  ${SS_SHARED_SOURCES}
++  udprelay.c
++  cache.c
++  resolv.c
++  server.c
++  ${SS_CRYPTO_SOURCE}
++  ${SS_PLUGIN_SOURCE}
++  ${SS_SNI_SOURCE}
++  ${SS_ACL_SOURCE})
+ 
+ set(SS_MANAGER_SOURCE
+-        ${SS_SHARED_SOURCES}
+-        manager.c
+-        )
++  ${SS_SHARED_SOURCES}
++  manager.c)
+ 
+ set(SS_REDIR_SOURCE
+         ${SS_SHARED_SOURCES}
+@@ -86,28 +75,6 @@ set(SS_REDIR_SOURCE
+         ${SS_PLUGIN_SOURCE}
+         )
+ 
+-
+-if (WITH_STATIC)
+-find_library(LIBSODIUM libsodium.a)
+-find_library(LIBMBEDTLS libmbedtls.a)
+-find_library(LIBMBEDCRYPTO libmbedcrypto.a)
+-find_library(LIBEV libev.a PATHS ${LIBEV_PATH})
+-find_library(LIBUDNS libcares.a PATH ${LIBUDNS_PATH})
+-find_library(LIBPCRE libpcre.a PATH ${LIBPCRE_PATH})
+-
+-# Dependencies we need for static and shared
+-list(APPEND DEPS
+-        m
+-        bloom
+-        ${LIBEV}
+-        ${LIBUDNS}
+-        ${LIBPCRE}
+-        ${LIBSODIUM}
+-        ${LIBMBEDTLS}
+-        ${LIBMBEDCRYPTO}
+-        )
+-endif ()
+-
+ find_library(LIBSODIUM_SHARED sodium)
+ find_library(LIBMBEDTLS_SHARED mbedtls)
+ find_library(LIBMBEDCRYPTO_SHARED mbedcrypto)
+@@ -115,22 +82,16 @@ find_library(LIBEV_SHARED ev)
+ find_library(LIBUDNS_SHARED cares)
+ find_library(LIBPCRE_SHARED pcre)
+ 
+-if (WITH_EMBEDDED_SRC)
+-  list(APPEND DEPS_SHARED
+-    m
+-    bloom-shared
+-    cork-shared
+-    ipset-shared
+-    ${LIBEV_SHARED}
+-    ${LIBUDNS_SHARED}
+-    ${LIBPCRE_SHARED}
+-    ${LIBSODIUM_SHARED}
+-    ${LIBMBEDTLS_SHARED}
+-    ${LIBMBEDCRYPTO_SHARED})
+-else (WITH_EMBEDDED_SRC)
+-
+-find_library(LIBBLOOM_SHARED bloom)
+-find_library(LIBCORK_SHARED cork)
++find_library(LIBBLOOM_SHARED
++  NAMES bloom
++  PATHS
++  ${CMAKE_PREFIX_PATH}/lib
++  ${CMAKE_PREFIX_PATH}/lib64)
++find_library(LIBCORK_SHARED
++  NAMES cork
++  PATHS
++  ${CMAKE_PREFIX_PATH}/lib
++  ${CMAKE_PREFIX_PATH}/lib64)
+ find_library(LIBCORKIPSET_SHARED
+   NAMES ipset
+   PATHS
+@@ -138,18 +99,16 @@ find_library(LIBCORKIPSET_SHARED
+   ${CMAKE_PREFIX_PATH}/lib64)
+ 
+ list(APPEND DEPS_SHARED
+-        m
+-        ${LIBBLOOM_SHARED}
+-        ${LIBCORK_SHARED}
+-        ${LIBCORKIPSET_SHARED}
+-        ${LIBEV_SHARED}
+-        ${LIBUDNS_SHARED}
+-        ${LIBPCRE_SHARED}
+-        ${LIBSODIUM_SHARED}
+-        ${LIBMBEDTLS_SHARED}
+-        ${LIBMBEDCRYPTO_SHARED}
+-        )
+-endif (WITH_EMBEDDED_SRC)
++  m
++  ${LIBBLOOM_SHARED}
++  ${LIBCORK_SHARED}
++  ${LIBCORKIPSET_SHARED}
++  ${LIBEV_SHARED}
++  ${LIBUDNS_SHARED}
++  ${LIBPCRE_SHARED}
++  ${LIBSODIUM_SHARED}
++  ${LIBMBEDTLS_SHARED}
++  ${LIBMBEDCRYPTO_SHARED})
+ 
+ find_package (Threads)
+ 
+-- 
+2.21.0
+
