@@ -1,0 +1,61 @@
+From f5baff0e90e9fe6cb269e57b84af001cec66e55f Mon Sep 17 00:00:00 2001
+From: fis <jm.yuan@outlook.com>
+Date: Tue, 19 Mar 2019 08:10:39 +0800
+Subject: [PATCH] Use shared library
+
+---
+ CMakeLists.txt | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e1283f3fa..b256c1561 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -50,6 +50,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+   message("Windows: setting CMAKE_OBJECT_PATH_MAX to ${CMAKE_OBJECT_PATH_MAX}")
+ endif()
+ 
++option(CLANG_BINARY_DIR "Clang path." "")
++
+ # Require C++11 for everything.
+ set(CMAKE_CXX_STANDARD 11)
+ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+@@ -68,19 +70,19 @@ set(LLVM_VERSION "${LLVM_VERSION_MAJOR}${LLVM_VERSION_MINOR}")
+ 
+ file(TO_NATIVE_PATH "${LLVM_TOOLS_BINARY_DIR}/llvm-as${CMAKE_EXECUTABLE_SUFFIX}" LLVM_AS)
+ file(TO_NATIVE_PATH "${LLVM_TOOLS_BINARY_DIR}/llvm-nm${CMAKE_EXECUTABLE_SUFFIX}" LLVM_NM)
+-file(TO_NATIVE_PATH "${LLVM_TOOLS_BINARY_DIR}/clang${CMAKE_EXECUTABLE_SUFFIX}" CLANG)
+ file(TO_NATIVE_PATH "${LLVM_TOOLS_BINARY_DIR}/llvm-config${CMAKE_EXECUTABLE_SUFFIX}" LLVM_CONFIG)
++file(TO_NATIVE_PATH "${LLVM_TOOLS_BINARY_DIR}/clang${CMAKE_EXECUTABLE_SUFFIX}" CLANG)
+ 
+ # LLVM doesn't appear to expose --system-libs via its CMake interface,
+ # so we must shell out to llvm-config to find this info
+-execute_process(COMMAND ${LLVM_CONFIG} --system-libs --link-static OUTPUT_VARIABLE HALIDE_SYSTEM_LIBS_RAW)
++execute_process(COMMAND ${LLVM_CONFIG} --system-libs --link-shared OUTPUT_VARIABLE HALIDE_SYSTEM_LIBS_RAW)
+ string(STRIP "${HALIDE_SYSTEM_LIBS_RAW}" HALIDE_SYSTEM_LIBS_RAW)  # strip whitespace from start & end
+ string(REPLACE " " ";" HALIDE_SYSTEM_LIBS "${HALIDE_SYSTEM_LIBS_RAW}")  # convert into a list
+ if("${HALIDE_SYSTEM_LIBS}" STREQUAL "")
+   # It's theoretically possible that this could be legitimately empty,
+   # but in practice that doesn't really happen, so we'll assume it means we
+   # aren't configured correctly.
+-  message(WARNING "'llvm-config --system-libs --link-static' is empty; this is possibly wrong.")
++  message(WARNING "'llvm-config --system-libs --link-shared' is empty; this is possibly wrong.")
+ endif()
+ 
+ # Check LLVM
+@@ -110,7 +112,11 @@ endfunction()
+ # Check LLVM tools exist
+ check_tool_exists(llvm-as "${LLVM_AS}")
+ check_tool_exists(llvm-nm "${LLVM_NM}")
+-check_tool_exists(clang "${CLANG}")
++if (CLANG_BINARY_DIR)
++  check_tool_exists(clang "${CLANG_BINARY_DIR}")
++else ()
++  check_tool_exists(clang "${CLANG}")
++endif (CLANG_BINARY_DIR)
+ 
+ # Check reported LLVM version
+ if (NOT "${LLVM_VERSION}" MATCHES "^[0-9][0-9]$")
+-- 
+2.21.0
+
