@@ -7,11 +7,10 @@
   #:use-module (gnu packages python)
   #:use-module (gnu packages boost))
 
-;; FIXME: Where is the tests?
 (define-public hyperscan
   (package
    (name "hyperscan")
-   (version "5.0.0")
+   (version "5.1.0")
    (home-page "https://www.hyperscan.io")
    (source (origin
 	    (method git-fetch)
@@ -20,13 +19,13 @@
 		  (commit (string-append "v" version))))
 	    (sha256
 	     (base32
-	      "017dxg0n3gn9i4j27rcvpnp4rkqgycqni6x5d15dqpidl7zg7059"))
+	      "0r2c7s7alnq14yhbfhpkq6m28a3pyfqd427115k0754afxi82vbq"))
 	    (file-name (git-file-name name version))))
    (arguments
     `(#:configure-flags
       '("-DBUILD_SHARED_LIBS=ON"
 	"-DFAT_RUNTIME=ON")
-      #:tests? #f))
+      #:test-target "unit"))
    (native-inputs
     `(("boost" ,boost)
       ("python" ,python-2)))
