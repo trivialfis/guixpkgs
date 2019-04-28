@@ -1,0 +1,35 @@
+From 90409aeaa471743eacbf7018da249bcb96c32bb6 Mon Sep 17 00:00:00 2001
+From: fis <jm.yuan@outlook.com>
+Date: Sun, 28 Apr 2019 16:11:58 +0800
+Subject: [PATCH 1/2] Suppress autoload message.
+
+---
+ lisp/international/mule.el | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/lisp/international/mule.el b/lisp/international/mule.el
+index cc0658dc3f..e4e7619314 100644
+--- a/lisp/international/mule.el
++++ b/lisp/international/mule.el
+@@ -312,7 +312,7 @@ Return t if file exists."
+             (get-buffer-create (generate-new-buffer-name " *load*")))
+ 	   (load-in-progress t)
+ 	   (source (save-match-data (string-match "\\.el\\'" fullname))))
+-      (unless nomessage
++      (unless (or nomessage (string-suffix-p "autoloads.el" file))
+ 	(if source
+ 	    (message "Loading %s (source)..." file)
+ 	  (message "Loading %s..." file)))
+@@ -349,7 +349,8 @@ Return t if file exists."
+ 	  (kill-buffer buffer)))
+       (do-after-load-evaluation fullname)
+ 
+-      (unless (or nomessage noninteractive)
++      (unless (or nomessage noninteractive
++                  (string-suffix-p "autoloads.el" file))
+ 	(if source
+ 	    (message "Loading %s (source)...done" file)
+ 	  (message "Loading %s...done" file)))
+-- 
+2.21.0
+

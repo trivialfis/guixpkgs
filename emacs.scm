@@ -31,8 +31,9 @@
     (source (origin
 	      (inherit (package-source emacs))
 	      (patches (append (search-patches
-				"emacs-suppress-message-for-autoloads.patch"
-				"emacs-add-atom-dark-theme.el.patch")
+				"emacs-suppress-autoload-message.patch"
+				"emacs-add-darktooth.patch"
+				"emacs-add-dash-and-auto-themer.patch")
 			       (origin-patches (package-source emacs))))))
     (inputs
      `(,@(package-inputs emacs)
