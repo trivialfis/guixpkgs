@@ -147,16 +147,15 @@ interrupting workflow.")
 (define-public ccls
   (package
       (name "ccls")
-      (version "0.20190308")
+      (version "0.20190314.1")
       (home-page "https://github.com/MaskRay/ccls")
       (source (origin
-	       (method url-fetch)
+		(method url-fetch)
 		(uri (string-append
-		      "https://github.com/MaskRay/ccls/archive/"
-		      version ".tar.gz"))
+		      home-page "/archive/" version ".tar.gz"))
 		(sha256
                  (base32
-		  "017pg167hzcxkp9g7q91n7cnnxng41qhd6c65z1l4l8283s0p1xa"))
+		  "0msf479by5vd4qk9p52hq1jvbg4135a390xaxfhk1dbiq1knf581"))
 		(file-name (string-append name "-" version ".tar.gz"))))
       (build-system cmake-build-system)
       (arguments
