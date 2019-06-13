@@ -135,7 +135,7 @@ interested in making ctags better can work together.")
 	 '("-DSYSTEM_CLANG=ON")
 	 #:tests? #f))
       (inputs
-       `(("clang" ,clang-7.0.1)))
+       `(("clang" ,clang-8.0.0)))
       (synopsis "C/C++ language server supporting multi-million line code base,
 powered by libclang.")
       (description "cquery is a highly-scalable, low-latency language server for
