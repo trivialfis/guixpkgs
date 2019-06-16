@@ -45,8 +45,6 @@ please let me know.
    + cquery
    + ccls
    + libffm
-   + xgboost
-   + python-xgboost
    + python-twython
 
 Many libraries are packaged as dependencies, just grep "define-public".

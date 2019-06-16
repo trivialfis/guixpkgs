@@ -1,6 +1,6 @@
 #+TITLE: bash completions
 
-To enable bash completion for guix itself, one solution is first install guix under ~root~'s profile, then source the completion script of guix:
+To enable bash completion for guix itself:
 #+BEGIN_SRC bash
-source /var/guix/profiles/per-user/root/guix-profile/etc/bash_completion.d/guix
+source ~/.config/guix/current/etc/bash_completion.d/guix
 #+END_SRC
