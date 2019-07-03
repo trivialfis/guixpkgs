@@ -130,12 +130,18 @@ interested in making ctags better can work together.")
 		  "15hndagk8szyxd34fp3z753i4vqb37p2b835a1k7pjff0hgdmg75"))
 		(file-name (git-file-name name version))))
       (build-system cmake-build-system)
+      (native-inputs
+       `(("gcc-toolchain" ,gcc-toolchain-8)))
       (arguments
        `(#:configure-flags
-	 '("-DSYSTEM_CLANG=ON")
+	 (list "-DSYSTEM_CLANG=ON"
+	       "-DUSE_SYSTEM_RAPIDJSON=ON"
+	       (string-append "-DCMAKE_CXX_FLAGS='-isystem "
+			      (assoc-ref %build-inputs "gcc-toolchain")
+			      "/include/c++'"))
 	 #:tests? #f))
       (inputs
-       `(("clang" ,clang-8.0.0)))
+       `(("clang-trivialfis" ,clang-8.0.0)))
       (synopsis "C/C++ language server supporting multi-million line code base,
 powered by libclang.")
       (description "cquery is a highly-scalable, low-latency language server for
@@ -145,18 +151,23 @@ interrupting workflow.")
       (license license:expat))))
 
 (define-public ccls
-  (package
+  (let* ((commit "990925d806989f1dbd3f703ac02f8c442492c42c")
+	 (revision "1")
+	 (version (git-version "0.20190314.1" revision commit)))
+    (package
       (name "ccls")
-      (version "0.20190314.1")
+      (version version)
       (home-page "https://github.com/MaskRay/ccls")
-      (source (origin
-		(method url-fetch)
-		(uri (string-append
-		      home-page "/archive/" version ".tar.gz"))
-		(sha256
-                 (base32
-		  "0msf479by5vd4qk9p52hq1jvbg4135a390xaxfhk1dbiq1knf581"))
-		(file-name (string-append name "-" version ".tar.gz"))))
+      (source
+       (origin
+	 (method git-fetch)
+	 (uri (git-reference
+	       (url home-page)
+	       (commit commit)))
+	 (sha256
+	  (base32
+	   "1lv94h74zdpz1pwb1rwnx4f0nbz7i3dgirsyl8c9inbxl830cs4a"))
+	 (file-name (git-file-name name version))))
       (build-system cmake-build-system)
       (arguments
        `(#:configure-flags
@@ -167,10 +178,10 @@ interrupting workflow.")
 	 #:tests? #f))
       (native-inputs
        `(("rapidjson" ,rapidjson)
-	 ("gcc-toolchain" ,gcc-toolchain-7)))
+	 ("gcc-toolchain" ,gcc-toolchain-8)))
       (inputs
-       `(("clang" ,clang-7.0.1)
+       `(("clang-trivialfis" ,clang-8.0.0-libcxx)
 	 ("ncurses" ,ncurses)))
       (synopsis "C/C++/ObjC language server.")
       (description "C/C++/ObjC language server.")
-      (license license:expat)))
+      (license license:expat))))
