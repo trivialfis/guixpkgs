@@ -54,6 +54,7 @@
 	     "-DLLVM_ENABLE_FFI:BOOL=TRUE"
 	     "-DLLVM_REQUIRES_RTTI=1" ; For some third-party utilities
 	     "-DLLVM_INSTALL_UTILS=ON" ; Needed for rustc.
+	     ;; "-DLLVM_ENABLE_PROJECTS=lld"
 	     (string-append "-DCMAKE_CXX_FLAGS='-isystem "
 			    (assoc-ref %build-inputs "gcc-toolchain")
 			    "/include/c++'"))
