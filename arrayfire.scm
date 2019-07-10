@@ -1,5 +1,5 @@
 ;;; Copyright © 2016 Dennis Mungai <dmngaie@gmail.com>
-;;; Copyright © 2018 Fis Trivial <ybbs.daans@hotmail.com>
+;;; Copyright © 2018-2019 Fis Trivial <ybbs.daans@hotmail.com>
 ;;;
 ;;; This file is NOT part of GNU Guix.
 ;;;
@@ -24,7 +24,6 @@
   #:use-module (guix packages)
   #:use-module (boost-compute)
   #:use-module (clmath)
-  #:use-module (cuda)
   #:use-module (gnu packages algebra)
   #:use-module (gnu packages boost)
   #:use-module (gnu packages check)
@@ -64,31 +63,31 @@ lambdas, and variadic templates, instead of relying on macros.")
     (name "forge")
     (version "1.0.2")
     (source (origin
-              (method url-fetch)
-              (uri (string-append
-                    "https://github.com/arrayfire/forge/archive/v"
-                    version "-ft.tar.gz"))
-              (sha256
-               (base32
+	      (method url-fetch)
+	      (uri (string-append
+		    "https://github.com/arrayfire/forge/archive/v"
+		    version "-ft.tar.gz"))
+	      (sha256
+	       (base32
 		"0m0bc75a6gdq84gs3sh069f7q0idmgh1ikc6znjjm2hxc35pz7wd"))))
     (native-inputs `(("opencl-clhpp" ,opencl-clhpp)
-                     ("glm" ,glm)))
+		     ("glm" ,glm)))
     (inputs `(("freeimage" ,freeimage)
-              ("freetype" ,freetype)
-              ("fontconfig" ,fontconfig)
-              ("glfw" ,glfw)
-              ("glu" ,glu)
-              ("boost" ,boost)
-              ("glbinding" ,glbinding)))
+	      ("freetype" ,freetype)
+	      ("fontconfig" ,fontconfig)
+	      ("glfw" ,glfw)
+	      ("glu" ,glu)
+	      ("boost" ,boost)
+	      ("glbinding" ,glbinding)))
     (build-system cmake-build-system)
     (arguments
      `(#:configure-flags
        '("-DUSE_SYSTEM_CL2HPP=ON"
-         "-DUSE_SYSTEM_GLBINDING=ON"
-         "-DUSE_SYSTEM_FREETYPE=ON"
-         "-DUSE_SYSTEM_GLM=ON"
-         "-DBUILD_DOCUMENTATION=OFF"
-         "-DBUILD_EXAMPLES=OFF")
+	 "-DUSE_SYSTEM_GLBINDING=ON"
+	 "-DUSE_SYSTEM_FREETYPE=ON"
+	 "-DUSE_SYSTEM_GLM=ON"
+	 "-DBUILD_DOCUMENTATION=OFF"
+	 "-DBUILD_EXAMPLES=OFF")
        #:tests? #f))
     (home-page "https://github.com/arrayfire/forge")
     (synopsis "High Performance Visualization")
@@ -99,7 +98,7 @@ that use CUDA/OpenCL.")
     (license license:bsd-3)))
 
 
-(define* (make-arrayfire cl? cuda? name #:optional (cpu? #t))
+(define* (make-arrayfire cl? name #:optional (cpu? #t))
   (let* ((cpu-native `(,cpu? (("googletest" ,googletest)
                               ("pkg-config" ,pkg-config))))
          (cpu-inputs `(,cpu? (("freeimage" ,freeimage)
@@ -120,14 +119,10 @@ that use CUDA/OpenCL.")
                       (("clblas" ,clblas)
                        ("clfft" ,clfft)
                        ("ocl-icd" ,ocl-icd))))
-         (cuda-native `(,cuda? ()))
-         (cuda-inputs `(,cuda?
-                        (("cuda" ,cuda))))
-         (native-inputs `(,cpu-native ,cl-native ,cuda-native))
-         (inputs `(,cpu-inputs ,cl-inputs ,cuda-inputs))
+         (native-inputs `(,cpu-native ,cl-native))
+         (inputs `(,cpu-inputs ,cl-inputs))
          (switchs (lambda (s) (if s "ON" "OFF")))
          (flags `(list
-                  (string-append "-DBUILD_CUDA=" (if ,cuda? "ON" "OFF"))
                   (string-append "-DBUILD_OPENCL=" (if ,cl? "ON" "OFF"))
                   "-DUSE_SYSTEM_CLBLAS=ON"
                   "-DUSE_SYSTEM_CLFFT=ON"
@@ -176,13 +171,9 @@ architectures including CPUs, GPUs, and other hardware acceleration devices.")
       (license (list license:bsd-3)))))
 
 (define-public arrayfire-cpu
-  (make-arrayfire #f #f "arrayfire-cpu"))
+  (make-arrayfire #f "arrayfire-cpu"))
 (define-public arrayfire-cl
-  (make-arrayfire #t #f "arrayfire-cl"))
-(define-public arrayfire-cuda
-  (make-arrayfire #f #t "arrayfire-cuda"))
-(define-public arrayfire-full
-  (make-arrayfire #t #t "arrayfire-full"))
+  (make-arrayfire #t "arrayfire-cl"))
 
 (define-public glm
   (package
