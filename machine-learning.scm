@@ -27,7 +27,6 @@
   #:use-module (gnu packages boost)
   #:use-module (gnu packages check)
   #:use-module (gnu packages compression)
-  #:use-module (gnu packages machine-learning)
   #:use-module (gnu packages mpi)
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-xyz)

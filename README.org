@@ -1,22 +1,17 @@
 This repository hosts some guix package definitions that yet to be upstreamed
 or simply can not be upstreamed.
 
-If any of the package is upstreamed, I will try to mention it in
-`upstreamed.org` and remove it from the source tree. But sometimes it's more
-convenient for me to keep some of them local, so that I can work with it any
-time I want. :)
+If any of the package is merged into upstream, it should gain an entry in
+`upstreamed.org` and will be removed from the source tree.  Sometimes it's more
+convenient for me to keep a few of them here. :)
 
 I want to maintain this repository, but with my very limited resource, this
 doesn't seem possible.  If you want to help, please make an issue or PR. :)
 
-Some definitions are ported from:
-https://gitlab.com/genenetwork/guix-bioinformatics.
-Copyright notice is included.
-
 * Channel
-You can use the following definition as additional, be aware that I'm not
-constantly following up the upstream, if you found some packages not building,
-please let me know.
+You can use the following snippet for making this repository as additional channel, be aware that I'm not
+constantly following up with the upstream.  Feel free to open an issue if you found some broken packages.
+
 #+BEGIN_SRC scheme
 (cons
  (channel
@@ -25,26 +20,5 @@ please let me know.
   (branch "master"))
  %default-channels)
 #+END_SRC
-
-* Status
-** OpenCL
-
-   Testing for OpenCL implementation might not be doable inside the store
-   environment, as mentioned in:
-   https://lists.gnu.org/archive/html/guix-devel/2018-04/msg00293.html
-
-   + ClMath: clBLAS, clFFT
-   + boost-compute
-
-** Arrayfire
-
-   The old cpu version is working. I can't get any further due to broken cuda.
-
-** Others
-   + redsocks
-   + cquery
-   + ccls
-   + libffm
-   + python-twython
 
 Many libraries are packaged as dependencies, just grep "define-public".
