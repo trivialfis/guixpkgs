@@ -69,41 +69,6 @@ runtime, and idle-time optimization of programs from arbitrary programming
 languages.")
     (license license:ncsa)))
 
-;; /tmp/guix-build-llvm-t-8.0.1.drv-0/llvm-8.0.1.src/unittests/Support/Path.cpp:523: Failure
-;; fs::real_path(HomeDir, Expected): did not return errc::success.
-;; error number: 2
-;; error message: No such file or directory
-;;
-;; /tmp/guix-build-llvm-t-8.0.1.drv-0/llvm-8.0.1.src/unittests/Support/Path.cpp:440: Failure
-;; fs::remove(TestDirectory.str()): did not return errc::success.
-;; error number: 39
-;; error message: Directory not empty
-;;
-;; [  FAILED  ] FileSystemTest.RealPath (0 ms)
-;; [----------] 1 test from FileSystemTest (0 ms total)
-;;
-;; [----------] Global test environment tear-down
-;; [==========] 1 test from 1 test case ran. (0 ms total)
-;; [  PASSED  ] 0 tests.
-;; [  FAILED  ] 1 test, listed below:
-;; [  FAILED  ] FileSystemTest.RealPath
-;;
-;;  1 FAILED TEST
-;; Test Directory: /tmp/guix-build-llvm-t-8.0.1.drv-0/lit_tmp_iozc16yi/file-system-test-9e9a1f
-;;
-;; ********************
-;; Testing: 0 .. 10.. 20.. 30.. 40.. 50.. 60.. 70.. 80.. 90..
-;;
-;; 1 warning(s) in tests.
-;; Testing Time: 223.72s
-;; ********************
-;; Failing Tests (1):
-;;     LLVM-Unit :: Support/./SupportTests/FileSystemTest.RealPath
-;;
-;;   Expected Passes    : 28038
-;;   Expected Failures  : 144
-;;   Unsupported Tests  : 1190
-;;   Unexpected Failures: 1
 (define-public llvm-8.0.1
   (package
     (name "llvm-t")
@@ -136,7 +101,13 @@ languages.")
 	     )
        ;; Don't use '-g' during the build, to save space.
        #:build-type "Release"
-       #:test-target "check-all"))
+       #:test-target "check-all"
+       #:phases
+       (modify-phases %standard-phases
+	 (add-before 'check 'set-HOME
+	   (lambda _
+	     (setenv "HOME" "/tmp")
+	     #t)))))
     (home-page "https://www.llvm.org")
     (synopsis "Optimizing compiler infrastructure")
     (description
