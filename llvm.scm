@@ -85,7 +85,8 @@ languages.")
     (build-system cmake-build-system)
     (native-inputs
      `(("perl"   ,perl)
-       ("python", python-wrapper)))
+       ("python", python-wrapper)
+       ("python-psutil" ,python-psutil))) ; for llvm-lit
     (inputs
      `(("libffi" ,libffi)))
     (propagated-inputs
