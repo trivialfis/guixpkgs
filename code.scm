@@ -141,7 +141,7 @@ interested in making ctags better can work together.")
 			      "/include/c++'"))
 	 #:tests? #f))
       (inputs
-       `(("clang-trivialfis" ,clang-8.0.0)))
+       `(("clang-t" ,clang-8.0.1)))
       (synopsis "C/C++ language server supporting multi-million line code base,
 powered by libclang.")
       (description "cquery is a highly-scalable, low-latency language server for
@@ -180,7 +180,7 @@ interrupting workflow.")
        `(("rapidjson" ,rapidjson)
 	 ("gcc-toolchain" ,gcc-toolchain-8)))
       (inputs
-       `(("clang-trivialfis" ,clang-8.0.0-libcxx)
+       `(("clang-t" ,clang-8.0.1)
 	 ("ncurses" ,ncurses)))
       (synopsis "C/C++/ObjC language server.")
       (description "C/C++/ObjC language server.")

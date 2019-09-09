@@ -28,7 +28,7 @@
       (build-system cmake-build-system)
       (inputs
        `(("llvm" ,llvm)
-	 ("clang" ,clang-7.0.1)))
+	 ("clang" ,clang-8.0.1)))
       (arguments
        `(#:configure-flags
 	 (list (string-append
