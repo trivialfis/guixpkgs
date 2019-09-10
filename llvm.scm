@@ -226,3 +226,27 @@ drop-in replacement for system linkers and runs much faster than
 them. It also provides features that are useful for toolchain
 developers.")
    (license license:ncsa)))
+
+(define-public libcxx-8.0.1
+  (package
+   (name "libcxx-t")
+   (version (package-version llvm-8.0.1))
+   (source
+    (origin
+     (method url-fetch)
+     (uri
+      (string-append
+       "https://github.com/llvm/llvm-project/releases/download/llvmorg-"
+       version "/libcxx-" version ".src.tar.xz"))
+     (sha256
+      (base32
+       "0y4vc9z36c1zlq15cnibdzxnc1xi5glbc6klnm8a41q3db4541kz"))
+     (file-name (string-append name "-" version ".tar.gz"))))
+   (native-inputs
+    `(("clang-t" ,clang-8.0.1)
+      ("llvm-t" ,llvm-8.0.1)))
+   (build-system cmake-build-system)
+   (home-page "https://lld.llvm.org/")
+   (synopsis "Implementation of the C++ standard library.")
+   (description "Implementation of the C++ standard library.")
+   (license license:ncsa)))
