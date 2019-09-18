@@ -250,3 +250,29 @@ developers.")
    (synopsis "Implementation of the C++ standard library.")
    (description "Implementation of the C++ standard library.")
    (license license:ncsa)))
+
+
+(define-public openmp
+  (package
+   (name "openmp-t")
+   (version (package-version llvm-8.0.1))
+   (source
+    (origin
+     (method url-fetch)
+     (uri
+      (string-append "https://github.com/llvm/llvm-project/releases/download/llvmorg-"
+		     version "/openmp-" version ".src.tar.xz"))
+     (sha256
+      (base32
+       "0b3jlxhqbpyd1nqkpxjfggm5d9va5qpyf7d4i5y7n4a1mlydv19y"))
+     (file-name (string-append name "-" version ".tar.gz"))))
+   (native-inputs
+    `(("llvm-t" ,llvm-8.0.1)
+      ("perl"   ,perl)))
+   (arguments
+     `(#:tests? #f))
+   (build-system cmake-build-system)
+   (home-page "https://openmp.llvm.org/")
+   (synopsis "")
+   (description "")
+   (license license:ncsa)))
