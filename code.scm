@@ -151,9 +151,9 @@ interrupting workflow.")
       (license license:expat))))
 
 (define-public ccls
-  (let* ((commit "990925d806989f1dbd3f703ac02f8c442492c42c")
-	 (revision "1")
-	 (version (git-version "0.20190314.1" revision commit)))
+  (let* ((commit "a5b00dd54610e55bda11b56c14d72e6dd81b046d")
+	 (revision "0")
+	 (version (git-version "0.20190823.2" revision commit)))
     (package
       (name "ccls")
       (version version)
@@ -166,7 +166,7 @@ interrupting workflow.")
 	       (commit commit)))
 	 (sha256
 	  (base32
-	   "1lv94h74zdpz1pwb1rwnx4f0nbz7i3dgirsyl8c9inbxl830cs4a"))
+	   "178s54nk40y4bc1811lgigk1qbwsvghpmanipawi1xf19lf9dg9b"))
 	 (file-name (git-file-name name version))))
       (build-system cmake-build-system)
       (arguments

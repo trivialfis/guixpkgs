@@ -54,7 +54,7 @@
 	       #t)))))
       (build-system python-build-system)
       (inputs
-       `(("openssl" ,openssl-next)))
+       `(("openssl" ,openssl)))
       (synopsis "Fast tunnel proxy that helps you bypass firewalls")
       (description
        "This package is a fast tunnel proxy that helps you bypass firewalls.
@@ -86,7 +86,7 @@ Features:
      `(#:parallel-tests? #t))
     (inputs
      `(("python" ,python)
-       ("openssl", openssl-next)))           ; for 'event_rpcgen.py'
+       ("openssl", openssl)))           ; for 'event_rpcgen.py'
     (native-inputs
      `(("which" ,which)))
     (home-page "http://libevent.org/")
@@ -270,7 +270,7 @@ with some proxy configurations.
       `(("pkg-config", pkg-config)))
      (inputs
       `(("libev" ,libev)
-	("c-ares" ,c-ares-next)
+	("c-ares" ,c-ares)
 	("mbedtls-apache" ,mbedtls-apache)
 	("libsodium" ,libsodium)
 	("libipset" ,libipset)
