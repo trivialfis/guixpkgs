@@ -251,7 +251,6 @@ developers.")
    (description "Implementation of the C++ standard library.")
    (license license:ncsa)))
 
-
 (define-public openmp
   (package
    (name "openmp-t")
@@ -275,4 +274,53 @@ developers.")
    (home-page "https://openmp.llvm.org/")
    (synopsis "")
    (description "")
+   (license license:ncsa)))
+
+(define-public llvm-project
+  (package
+   (name "llvm-project")
+   (version "9.0.0")
+   (source
+    (origin
+     (method url-fetch)
+     (uri
+      (string-append
+       "https://github.com/llvm/llvm-project/archive/llvmorg-"version"9.0.0"".tar.gz"))
+     (sha256
+      (base32
+       "0y4vc9z36c1zlq15cnibdzxnc1xi5glbc6klnm8a41q3db4541kz"))
+     (file-name (string-append name "-" version ".tar.gz"))))
+   (build-system cmake-build-system)
+   (arguments
+     `(#:configure-flags
+       (list "-DCMAKE_SKIP_BUILD_RPATH=FALSE"
+	     "-DCMAKE_BUILD_WITH_INSTALL_RPATH=FALSE"
+	     "-DBUILD_SHARED_LIBS:BOOL=TRUE"
+	     "-DLLVM_ENABLE_FFI:BOOL=TRUE"
+	     "-DLLVM_REQUIRES_RTTI=1"  ; Needed for rustc.
+	     "-DLLVM_INSTALL_UTILS=ON" ; For some third-party utilities
+	     "-DLLVM_ENABLE_PROJECTS=clang;lldb;compiler-rt;libcxx;libcxxabi;openmp;polly"
+	     )
+       ;; Don't use '-g' during the build, to save space.
+       #:test-target "check-all"
+       #:phases
+       (modify-phases %standard-phases
+	 (add-before 'check 'set-HOME
+	   (lambda _
+	     (setenv "HOME" "/tmp")
+	     #t)))))
+   (native-inputs
+     `(("perl"   ,perl)
+       ("python", python-wrapper)
+       ("python-psutil" ,python-psutil))) ; for llvm-lit
+    (inputs
+     `(("libffi" ,libffi)
+       ("linux-libre-headers" ,linux-libre-headers) ; clang
+       ("libxml2" ,libxml2)			    ; clang
+       ("libedit" ,libedit)))			    ; lldb
+    (propagated-inputs
+     `(("zlib" ,zlib)))
+   (home-page "http://llvm.org/")
+   (synopsis "Collection of modular and reusable compiler and toolchain technologies")
+   (description "Collection of modular and reusable compiler and toolchain technologies")
    (license license:ncsa)))
