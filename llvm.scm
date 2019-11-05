@@ -285,10 +285,10 @@ developers.")
      (method url-fetch)
      (uri
       (string-append
-       "https://github.com/llvm/llvm-project/archive/llvmorg-"version"9.0.0"".tar.gz"))
+       "https://github.com/llvm/llvm-project/archive/llvmorg-"  version ".tar.gz"))
      (sha256
       (base32
-       "0y4vc9z36c1zlq15cnibdzxnc1xi5glbc6klnm8a41q3db4541kz"))
+       "1win216na1k26qi87fpxqjfbqjykbn2wsinaanclxqihag1gl1vq"))
      (file-name (string-append name "-" version ".tar.gz"))))
    (build-system cmake-build-system)
    (arguments
@@ -305,6 +305,9 @@ developers.")
        #:test-target "check-all"
        #:phases
        (modify-phases %standard-phases
+	 (add-before 'configure 'chwdir
+	     (lambda -
+	       (chdir "llvm")))
 	 (add-before 'check 'set-HOME
 	   (lambda _
 	     (setenv "HOME" "/tmp")
@@ -315,8 +318,10 @@ developers.")
        ("python-psutil" ,python-psutil))) ; for llvm-lit
     (inputs
      `(("libffi" ,libffi)
+       ("swig" ,swig)
        ("linux-libre-headers" ,linux-libre-headers) ; clang
        ("libxml2" ,libxml2)			    ; clang
+       ("ncurses" ,ncurses)			    ; lldb
        ("libedit" ,libedit)))			    ; lldb
     (propagated-inputs
      `(("zlib" ,zlib)))
