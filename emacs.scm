@@ -27,7 +27,7 @@
 (define-public emacs-trivialfis
   (package (inherit emacs)
     (name "emacs-trivialfis")
-    (version "26.1")
+    (version (package-version emacs))
     (source (origin
 	      (inherit (package-source emacs))
 	      (patches (append (search-patches
